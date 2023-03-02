@@ -1,0 +1,11 @@
+.main .container .floto-danger {
+    background-color: #f8d7da;
+}
+
+.main .container {
+    max-width: 96%;
+}
+
+.site-header {
+    border-bottom: 1px solid black;
+}

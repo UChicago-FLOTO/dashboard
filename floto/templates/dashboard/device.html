@@ -1,0 +1,103 @@
+{% extends 'default.html' %}
+
+{% block title %} Device {% endblock %}
+
+{% block content %}
+<h1>Devices</h1>
+<table class="table">
+  <tr>
+    <th>Name</th>
+    <td>{{device.device_name}}</td>
+  </tr>
+  <tr>
+    <th>UUID</th>
+    <td>{{device.uuid}}</td>
+  </tr>
+  <tr>
+    <th>Heartbeat State</th>
+    <td class="{% if device.api_heartbeat_state == "offline" %}floto-danger{% endif %}">
+      {{ device.api_heartbeat_state }} since {{device.last_connectivity_event}}
+    </td>
+  </tr>
+  <tr>
+    <th>VPN connected</th>
+    <td class="{% if not device.is_online %}floto-danger{% endif %}">
+      {{ device.is_online }} since {{device.last_vpn_event}}
+    </td>
+  </tr>
+  <tr>
+    <th>Status</th>
+    <td>{{ device.status }} </td>
+  </tr>
+  <tr>
+    <th>Provisioning State</th>
+    <td>{{ device.provisioning_state }} </td>
+  </tr>
+  <tr>
+    <th>OS Version</th>
+    <td>{{ device.os_version }} </td>
+  </tr>
+  <tr>
+    <th>Supervisor Version</th>
+    <td>{{ device.supervisor_version }} </td>
+  </tr>
+  <tr>
+    <th>Release</th>
+    <td>{{ device.running_release }} </td>
+  </tr>
+  <tr>
+    <th>Fleet</th>
+    <td>{{ device.fleet }} </td>
+  </tr>
+  <tr>
+    <th>IP address</th>
+    <td>{{device.ip_address}}</td>
+  </tr>
+  <tr>
+    <th>MAC address</th>
+    <td>{{device.mac_address}}</td>
+  </tr>
+  <tr>
+    <th>actions</th>
+    <td>
+      <a href="{% url 'dashboard:logs' device.uuid %}">
+        <button class="btn btn-primary" type="button" >
+          Logs
+        </button>
+      </a>
+    </td>
+  </tr>
+</table>
+
+
+
+<div>
+  {% csrf_token %}
+  <input type="hidden" name="uuid" value="{{ device.uuid }}">
+  <label for="commandInput">Command</label>
+  <input type="text" name="command" id="commandInput" placeholder="uptime">
+
+  <button onclick="run_command()" class="btn btn-secondary">Run</button>
+</div>
+<script>
+  const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  function run_command(){
+    const form_data = new FormData()
+    form_data.append("command", document.querySelector(`input[name=command]`).value)
+    form_data.append("uuid", document.querySelector(`input[name=uuid]`).value)
+    const request = new Request(
+        url="{% url 'api:command' %}",
+        {
+          method: 'POST',
+          headers: {'X-CSRFToken': csrftoken},
+          mode: 'same-origin',
+          body: form_data,
+        }
+    );
+    fetch(request).then( (res) => res.json()).then( res => {
+        console.log(res)
+    })
+  }
+</script>
+
+{% endblock %}

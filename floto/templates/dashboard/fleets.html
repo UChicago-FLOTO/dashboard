@@ -1,0 +1,19 @@
+{% extends 'default.html' %}
+
+{% block title %} Fleets {% endblock %}
+
+{% block content %}
+<h1>Fleets</h1>
+<table class="table">
+  <tr>
+    <th>Name</th>
+    <th>Target Release</th>
+  </tr>
+  {% for fleet in fleets %}
+  <tr>
+    <td>{{ fleet.app_name }}</td>
+    <td>{{ fleet.target_release }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

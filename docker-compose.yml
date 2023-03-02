@@ -3,7 +3,7 @@ version: "3.5"
 services:
   floto:
     container_name: floto_web
-    image: ${DOCKER_IMAGE_LATEST}
+    image: floto-dev:latest
     restart: on-failure
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${FLOTO_PORT}"]
@@ -14,9 +14,10 @@ services:
     volumes:
       - .:/project
       - ./media:/media
+      - ./keys:/keys
       - static:/static
     ports:
-      - "127.0.0.1:8890:${FLOTO_PORT}"
+      - "127.0.0.1:8080:${FLOTO_PORT}"
     entrypoint: ["python3", "manage.py"]
     command: ["runserver", "0.0.0.0:${FLOTO_PORT}"]
     depends_on:

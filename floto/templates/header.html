@@ -1,0 +1,25 @@
+{% load static cache %}
+
+<header class="site-header">
+  <div class="container">
+    <nav class="navbar">
+      <div>
+        <a href="{% url 'dashboard:devices' %}">
+          <button type="button" class="btn btn-primary">
+            Devices
+          </button>
+        </a>
+        <a href="{% url 'dashboard:fleets' %}">
+          <button type="button" class="btn btn-primary">
+            Fleets
+          </button>
+        </a>
+        <a href="{% url 'dashboard:releases' %}">
+          <button type="button" class="btn btn-primary">
+            Releases
+          </button>
+        </a>
+      </div>
+    </nav>
+  </div>
+</header>

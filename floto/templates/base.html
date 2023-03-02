@@ -1,0 +1,26 @@
+{% load static bootstrap5 %}
+<!DOCTYPE html>
+<html>
+  <head>
+      <meta charset="utf-8">
+      <title>{% block title %}{% endblock %} | FLOTO</title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="description" content="{{ site.description }}">
+      <link rel="icon" href="{% static "images/favicon.ico" %}">
+      <link rel="canonical" href="{{request.get_full_path}}">
+
+      <!-- Custom CSS -->
+      <link rel="stylesheet" href="{% static 'main.css' %}">
+      {% bootstrap_css %}
+      {% block styles %}{% endblock %}
+  </head>
+  <body>
+    {% include "header.html" %}
+
+    {% block page_main %}{% endblock %}
+
+    {% include "footer.html" %}
+    {% block scripts %}{% endblock %}
+    {% bootstrap_javascript %}
+  </body>
+</html>

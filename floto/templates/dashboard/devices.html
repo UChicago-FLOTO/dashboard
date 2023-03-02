@@ -1,0 +1,80 @@
+{% extends 'default.html' %}
+
+{% block title %} Devices {% endblock %}
+
+{% block content %}
+<h1>Devices</h1>
+<table class="table">
+  <tr>
+    <th>Count</th>
+    <th>Heartbeat State</th>
+    <th>VPN connected</th>
+    <th>Status</th>
+    <th>Provisioning State</th>
+    <th>OS Version</th>
+    <th>Supervisor Version</th>
+    <th>Release</th>
+    <th>Fleet</th>
+    <th>Devices</th>
+  </tr>
+  {% for row in row_data %}
+  <tr>
+    <td>{{row.devices | length}}</td>
+    <td class="{% if row.api_heartbeat_state == "offline" %}floto-danger{% endif %}">
+      {{ row.api_heartbeat_state }}
+    </td>
+    <td class="{% if not row.is_online %}floto-danger{% endif %}">
+      {{ row.is_online }}
+    </td>
+    <td>{{ row.status }} </td>
+    <td>{{ row.provisioning_state }} </td>
+    <td>{{ row.os_version }} </td>
+    <td>{{ row.supervisor_version }} </td>
+    <td>{{ row.running_release }} </td>
+    <td>{{ row.fleet }} </td>
+    <td>
+      <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#devices-{{forloop.counter}}" aria-expanded="false" aria-controls="devices-{{forloop.counter}}">
+      Details
+      </button>
+    </td>
+  </tr>
+  <tr class="collapse" id="devices-{{forloop.counter}}">
+    <td colspan=100%">
+        <table class=table>
+          <tr>
+            <th>name</th>
+            <th>uuid</th>
+            <th>ip</th>
+            <th>mac</th>
+            <th>last VPN</th>
+            <th>last API</th>
+            <th>actions</th>
+          </tr>
+          {% for device in row.devices %}
+          <tr>
+            <td>{{device.device_name}}</td>
+            <td>{{device.uuid}}</td>
+            <td>{{device.ip_address}}</td>
+            <td>{{device.mac_address}}</td>
+            <td>{{device.last_vpn_event}}</td>
+            <td>{{device.last_connectivity_event}}</td>
+            <td>
+              <a href="{% url 'dashboard:logs' device.uuid %}">
+                <button class="btn btn-primary" type="button" >
+                  Logs
+                </button>
+              </a>
+              <a href="{% url 'dashboard:device' device.uuid %}">
+                <button class="btn btn-primary" type="button" >
+                  Overview
+                </button>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

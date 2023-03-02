@@ -1,0 +1,53 @@
+{% extends 'default.html' %}
+
+{% block title %} Releases {% endblock %}
+
+{% block content %}
+<h1>Releases</h1>
+<table class="table">
+  <tr>
+    <th>Fleet</th>
+    <th>ID</th>
+    <th>Created</th>
+    <th>Alt Name</th>
+  </tr>
+  {% for release in releases %}
+  <tr>
+    <td>{{ release.fleet }}</td>
+    <td>{{ release.id }}</td>
+    <td>{{ release.created_at }}</td>
+    <td class="col-6">
+      {{ release.note }}
+      <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#note-{{release.id}}" aria-expanded="false" aria-controls="note-{{release.id}}">
+      Edit
+      </button>
+      <div class="collapse" id="note-{{release.id}}">
+          {% csrf_token %}
+          <input type="text" name="note" value="{{release.note}}">
+          <input type="hidden" name="release" value="{{ release.commit }}">
+          <button onclick="on_note_submit('#note-{{release.id}}')" class="btn btn-secondary" id="btn_update_project_pi">Update</button>
+      </div>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+<script>
+  const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  function on_note_submit(id){
+    const form_data = new FormData()
+    console.log(`${id} input[name=note]`)
+    form_data.append("note", document.querySelector(`${id} input[name=note]`).value)
+    form_data.append("id", document.querySelector(`${id} input[name=release]`).value)
+    const request = new Request(
+        url="{% url 'api:note' %}",
+        {
+          method: 'POST',
+          headers: {'X-CSRFToken': csrftoken},
+          mode: 'same-origin',
+          body: form_data,
+        }
+    );
+    fetch(request).then( () => location.reload() )
+  }
+</script>
+{% endblock %}

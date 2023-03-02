@@ -1,0 +1,13 @@
+{% extends 'default.html' %}
+
+{% block title %} Logs {% endblock %}
+
+{% block content %}
+<h1>Logs for {{ uuid }}</h1>
+<h2>Last {{ count }} entries</h2>
+
+<pre>
+{% for entry in logs %}{{ entry.message }}
+{% endfor %}
+</pre>
+{% endblock %}
