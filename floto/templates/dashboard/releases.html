@@ -13,7 +13,7 @@
   </tr>
   {% for release in releases %}
   <tr>
-    <td>{{ release.fleet }}</td>
+    <td>{{ release.fleet.app_name }}</td>
     <td>{{ release.id }}</td>
     <td>{{ release.created_at }}</td>
     <td class="col-6">
@@ -25,7 +25,7 @@
           {% csrf_token %}
           <input type="text" name="note" value="{{release.note}}">
           <input type="hidden" name="release" value="{{ release.commit }}">
-          <button onclick="on_note_submit('#note-{{release.id}}')" class="btn btn-secondary" id="btn_update_project_pi">Update</button>
+          <button onclick="on_note_submit('#note-{{release.id}}', '{% url 'api:fleet-note' release.fleet.app_name release.commit %}')" class="btn btn-secondary" id="btn_update_project_pi">Update</button>
       </div>
     </td>
   </tr>
@@ -33,13 +33,13 @@
 </table>
 <script>
   const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-  function on_note_submit(id){
+  function on_note_submit(id, url){
     const form_data = new FormData()
     console.log(`${id} input[name=note]`)
     form_data.append("note", document.querySelector(`${id} input[name=note]`).value)
     form_data.append("id", document.querySelector(`${id} input[name=release]`).value)
     const request = new Request(
-        url="{% url 'api:note' %}",
+        url=url,
         {
           method: 'POST',
           headers: {'X-CSRFToken': csrftoken},

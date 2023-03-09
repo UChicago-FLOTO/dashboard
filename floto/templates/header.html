@@ -20,6 +20,17 @@
           </button>
         </a>
       </div>
+      <div>
+        {% if user.is_authenticated %}
+          <form action="{% url 'oidc_logout' %}" method="post">
+            <span>{{ user.email }}</span>
+            {% csrf_token %}
+            <input class="btn btn-primary" type="submit" value="logout">
+          </form>
+        {% else %}
+          <a href="{% url 'oidc_authentication_init' %}">Login</a>
+        {% endif %}
+      </div>
     </nav>
   </div>
 </header>

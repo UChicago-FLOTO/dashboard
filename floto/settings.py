@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bootstrap5',
+    'mozilla_django_oidc',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -142,6 +144,25 @@ LOGGING = {
     },
 }
 
+# Auth
+AUTHENTICATION_BACKENDS = (
+    'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
+)
+
+OIDC_RP_SIGN_ALGO = "RS256"
+OIDC_OP_JWKS_ENDPOINT="https://auth.floto.science/realms/floto/protocol/openid-connect/certs"
+
+OIDC_RP_CLIENT_ID = os.environ['OIDC_RP_CLIENT_ID']
+OIDC_RP_CLIENT_SECRET = os.environ['OIDC_RP_CLIENT_SECRET']
+
+OIDC_OP_AUTHORIZATION_ENDPOINT = "https://auth.floto.science/realms/floto/protocol/openid-connect/auth"
+OIDC_OP_TOKEN_ENDPOINT = "https://auth.floto.science/realms/floto/protocol/openid-connect/token"
+OIDC_OP_USER_ENDPOINT = "https://auth.floto.science/realms/floto/protocol/openid-connect/userinfo"
+
+LOGIN_URL = "oidc_authentication_init"
+LOGIN_REDIRECT_URL = "/dashboard"
+LOGOUT_REDIRECT_URL = "/dashboard"
+
 # Balena variables
 BALENA_API_ENDPOINT = os.environ.get("BALENA_API_ENDPOINT")
 BALENA_PINE_ENDPOINT = os.environ.get("BALENA_PINE_ENDPOINT")
@@ -149,3 +170,14 @@ BALENA_USERNAME = os.environ.get("BALENA_USERNAME")
 BALENA_PASSWORD = os.environ.get("BALENA_PASSWORD")
 BALENA_TUNNEL_PORT = os.environ.get("BALENA_TUNNEL_PORT")
 BALENA_TUNNEL_HOST = os.environ.get("BALENA_TUNNEL_HOST")
+
+# DRF
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        "floto.api.permissions.IsAdmin"
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+}

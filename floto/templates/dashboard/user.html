@@ -1,0 +1,16 @@
+{% extends 'default.html' %}
+
+{% block title %} User {% endblock %}
+
+{% block content %}
+
+<div>{{user.username}}</div>
+
+{{claims}}
+<ul>
+  {% for group in groups %}
+    <li>{{ group }}</li>
+  {% endfor %}
+</ul>
+
+{% endblock %}

@@ -4,64 +4,13 @@ from django.urls import reverse
 
 import collections
 import datetime
-import requests
 
-
-def get_releases_by_id(request):
-    """Get a dictionary of (id, release_json)"""
-    releases_by_id = {}
-    for release in get_all_releases(request):
-        releases_by_id[release["id"]] = release
-    return releases_by_id
-
-
-def get_fleets_by_id(request):
-    """Get a dictionary of (id, fleet_json)"""
-    fleet_res = requests.get(
-        request.build_absolute_uri(reverse('api:applications'))).json()
-    fleets_by_id = {}
-    for fleet in fleet_res["applications"]:
-        fleets_by_id[fleet["id"]] = fleet
-    return fleets_by_id
-
-
-def get_all_releases(request, fleet=None):
-    """Get all releases, across all fleets"""
-    releases = []
-    if not fleet:
-        url = request.build_absolute_uri(reverse('api:applications'))
-        res = requests.get(url).json()
-        fleets = [f["id"] for f in res["applications"]]
-    else:
-        fleets = [fleet]
-    fleets_by_id = get_fleets_by_id(request)
-    for fleet in fleets:
-        url = request.build_absolute_uri(reverse('api:releases', args=[fleet]))
-        res = requests.get(url).json()
-        for r in res["releases"]:
-            r["fleet"] = fleets_by_id[r["belongs_to__application"]["__id"]]
-            r["note"] = r["note"] if r["note"] else ""
-            releases.append(r)
-    return releases
-
-
-def transform_device_dict(releases_by_id, fleets_by_id, device):
-    try:
-        release_id = device["is_running__release"]["__id"]
-        note = releases_by_id[release_id]["note"]
-        device["running_release"] = note if note else release_id
-    except (KeyError, TypeError):
-        device["running_release"] = "None"
-    try:
-        fleet_id = device["belongs_to__application"]["__id"]
-        device["fleet"] = fleets_by_id[fleet_id]["app_name"]
-    except (KeyError, TypeError):
-        device["fleet"] = "None"
+from . import util
 
 
 def devices(request):
-    url = request.build_absolute_uri(reverse('api:devices'))
-    res = requests.get(url).json()
+    url = request.build_absolute_uri(reverse('api:device-list'))
+    devices = util.get(request, url)
     collapsable_device_fields = [
         "api_heartbeat_state",
         "is_online",
@@ -82,11 +31,11 @@ def devices(request):
     ]
     merged_devices = collections.defaultdict(list)
 
-    releases_by_id = get_releases_by_id(request)
-    fleets_by_id = get_fleets_by_id(request)
+    releases_by_id = util.get_releases_by_id(request)
+    fleets_by_id = util.get_fleets_by_id(request)
 
-    for device in res["devices"]:
-        filtered_device = transform_device_dict(
+    for device in devices:
+        filtered_device = util.transform_device_dict(
             releases_by_id, fleets_by_id, device)
         filtered_device = {
             k: v for k, v in device.items() if k in collapsable_device_fields
@@ -109,21 +58,21 @@ def devices(request):
 
     template = loader.get_template("dashboard/devices.html")
     context = {
-        "devices": res["devices"],
+        "devices": devices,
         "row_data": row_data,
     }
     return HttpResponse(template.render(context, request))
 
 
 def device(request, uuid):
-    url = request.build_absolute_uri(reverse('api:device', args=[uuid]))
-    res = requests.get(url).json()
+    url = request.build_absolute_uri(
+        reverse('api:device-detail', args=[uuid]))
+    device = util.get(request, url)
 
-    releases_by_id = get_releases_by_id(request)
-    fleets_by_id = get_fleets_by_id(request)
+    releases_by_id = util.get_releases_by_id(request)
+    fleets_by_id = util.get_fleets_by_id(request)
 
-    device = res["device"]
-    transform_device_dict(releases_by_id, fleets_by_id, device)
+    util.transform_device_dict(releases_by_id, fleets_by_id, device)
     context = {
         "device": device,
     }
@@ -132,7 +81,7 @@ def device(request, uuid):
 
 
 def releases(request, fleet=None):
-    releases = get_all_releases(request, fleet)
+    releases = util.get_all_releases(request, fleet)
 
     context = {
        "releases": sorted(releases, key=lambda r: (r["id"]), reverse=True),
@@ -142,11 +91,11 @@ def releases(request, fleet=None):
 
 
 def fleets(request):
-    url = request.build_absolute_uri(reverse('api:applications'))
-    res = requests.get(url).json()
-    releases_by_id = get_releases_by_id(request)
+    url = request.build_absolute_uri(reverse('api:fleet-list'))
+    fleets = util.get(request, url)
+    releases_by_id = util.get_releases_by_id(request)
     processed_fleets = []
-    for fleet in res["applications"]:
+    for fleet in fleets:
         processed_fleets.append({
             "app_name": fleet["app_name"],
         })
@@ -166,10 +115,11 @@ def fleets(request):
 
 
 def logs(request, uuid, count=100):
-    url = request.build_absolute_uri(reverse('api:logs', args=[uuid, count]))
-    res = requests.get(url).json()
+    url = request.build_absolute_uri(reverse('api:device-logs', args=[uuid, count]))
+    logs = util.get(request, url)
+    #raise Exception(logs)
     processed_logs = []
-    for entry in res["logs"]:
+    for entry in logs:
         processed_logs.append({
             "message": entry["message"],
             "timestamp": datetime.datetime.fromtimestamp(
@@ -187,4 +137,14 @@ def logs(request, uuid, count=100):
 def overview(request):
     context = {}
     template = loader.get_template("dashboard/overview.html")
+    return HttpResponse(template.render(context, request))
+
+
+def user(request):
+    context = {
+        "user": request.user,
+        "groups": request.user.groups.all(),
+        "claims": dir(request.user),
+    }
+    template = loader.get_template("dashboard/user.html")
     return HttpResponse(template.render(context, request))

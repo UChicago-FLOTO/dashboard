@@ -69,24 +69,23 @@
   </tr>
 </table>
 
-
-
 <div>
   {% csrf_token %}
-  <input type="hidden" name="uuid" value="{{ device.uuid }}">
   <label for="commandInput">Command</label>
   <input type="text" name="command" id="commandInput" placeholder="uptime">
 
-  <button onclick="run_command()" class="btn btn-secondary">Run</button>
+  <button id="run_command" onclick="run_command()" class="btn btn-secondary">Run</button>
+</div>
+<div>
+  <pre><code id="command_output"></code></pre>
 </div>
 <script>
   const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
   function run_command(){
     const form_data = new FormData()
     form_data.append("command", document.querySelector(`input[name=command]`).value)
-    form_data.append("uuid", document.querySelector(`input[name=uuid]`).value)
     const request = new Request(
-        url="{% url 'api:command' %}",
+        url="{% url 'api:device-command' device.uuid %}",
         {
           method: 'POST',
           headers: {'X-CSRFToken': csrftoken},
@@ -94,8 +93,10 @@
           body: form_data,
         }
     );
+    document.getElementById("run_command").disabled = true
     fetch(request).then( (res) => res.json()).then( res => {
-        console.log(res)
+      document.getElementById("command_output").innerText = res.stdout
+      document.getElementById("run_command").disabled = false
     })
   }
 </script>
