@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+import logging
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,6 +26,7 @@ SECRET_KEY = 'django-insecure-qux#e31z&)6bp&=2ggy-#gh5o90_g1_+o!()6x+@-@+^iseo7e
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO)
 
 ALLOWED_HOSTS = []
 
@@ -130,17 +132,43 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, "floto", "static"),)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOG_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "INFO")
+LOG_VERBOSITY = os.getenv("DJANGO_LOG_VERBOSITY", "SHORT")
+logging.captureWarnings(True)
+
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
         },
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'WARNING',
+    "formatters": {
+        "default_short": {
+            "format": "[DJANGO] %(levelname)s %(name)s.%(funcName)s: %(message)s"
+        },
+        "default_verbose": {
+            "format": "[DJANGO] %(levelname)s %(asctime)s %(module)s %(name)s.%(funcName)s: %(message)s"
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": LOG_LEVEL,
+            "class": "logging.StreamHandler",
+            "formatter": f"default_{LOG_VERBOSITY.lower()}",
+        },
+    },
+    "loggers": {
+        "default": {"handlers": ["console"], "level": "DEBUG"},
+        "console": {"handlers": ["console"], "level": "DEBUG"},
+        "django": {"handlers": ["console"], "level": "INFO"},
+        "py.warnings": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": True,
+        },
+        "pipeline": {"handlers": ["console"], "level": "INFO"},
     },
 }
 
@@ -175,7 +203,8 @@ BALENA_TUNNEL_HOST = os.environ.get("BALENA_TUNNEL_HOST")
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        "floto.api.permissions.IsAdmin"
+        "rest_framework.permissions.IsAuthenticated",
+        "floto.api.permissions.IsAdmin",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         'rest_framework.authentication.SessionAuthentication',
