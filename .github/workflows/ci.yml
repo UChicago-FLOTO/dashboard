@@ -45,7 +45,7 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: ./docker
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           target: release
