@@ -13,7 +13,7 @@ balena-sdk = "^12.5.0"
 django-bootstrap-v5 = "^1.0.11"
 paramiko = "^3.0.0"
 mozilla-django-oidc = "^3.0.0"
-python-keycloak-client = "^0.2.3"
+python-keycloak = "^2.13.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2.1"

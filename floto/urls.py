@@ -3,6 +3,7 @@ from django.urls import path, include
 
 import floto.api.urls
 import floto.dashboard.urls
+from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -10,4 +11,5 @@ urlpatterns = [
     path('dashboard/',
          include((floto.dashboard.urls, "dashboard"), namespace="dashboard")),
     path('oidc/', include('mozilla_django_oidc.urls')),
+    path('', views.index),
 ]

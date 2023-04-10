@@ -9,3 +9,16 @@
 .site-header {
     border-bottom: 1px solid black;
 }
+
+
+.floto-alert {
+    padding: 0.5rem;
+    border: 1px solid;
+    border-radius: 10px;
+    margin: 0.5rem;
+}
+
+.floto-alert-error {
+    background-color: #ffa4a4;
+    border-color: #ff5151;
+}

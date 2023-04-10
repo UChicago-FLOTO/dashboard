@@ -1,8 +1,19 @@
 import requests
+import logging
 from django.urls import reverse
+from django.contrib import messages
 
-def get(request, url):
-    return requests.get(url, cookies={"sessionid": request.session.session_key}).json()
+LOG = logging.getLogger(__name__)
+
+
+def get(request, url, default_ret=None):
+    res = requests.get(url, cookies={"sessionid": request.session.session_key})
+    data = res.json()
+    if res.ok:
+        return data
+    else:
+        messages.error(request, data["detail"])
+    return default_ret
 
 def get_releases_by_id(request):
     """Get a dictionary of (id, release_json)"""
@@ -15,7 +26,7 @@ def get_releases_by_id(request):
 def get_fleets_by_id(request):
     """Get a dictionary of (id, fleet_json)"""
     fleets = get(request,
-        request.build_absolute_uri(reverse('api:fleet-list')))
+        request.build_absolute_uri(reverse('api:fleet-list')), [])
     fleets_by_id = {}
     for fleet in fleets:
         fleets_by_id[fleet["id"]] = fleet
@@ -27,14 +38,15 @@ def get_all_releases(request, fleet=None):
     releases = []
     if not fleet:
         url = request.build_absolute_uri(reverse('api:fleet-list'))
-        applications = get(request, url)
+        applications = get(request, url, [])
+        LOG.info(applications)
         fleets = [f["id"] for f in applications]
     else:
         fleets = [fleet]
     fleets_by_id = get_fleets_by_id(request)
     for fleet in fleets:
         url = request.build_absolute_uri(reverse('api:fleet-releases', args=[fleet]))
-        res = get(request, url)
+        res = get(request, url, [])
         for r in res:
             r["fleet"] = fleets_by_id[r["belongs_to__application"]["__id"]]
             r["note"] = r["note"] if r["note"] else ""

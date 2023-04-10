@@ -174,14 +174,18 @@ LOGGING = {
 
 # Auth
 AUTHENTICATION_BACKENDS = (
+    #"floto.FlotoAuthBackend.FlotoAuthBackend",
     'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
 )
 
 OIDC_RP_SIGN_ALGO = "RS256"
 OIDC_OP_JWKS_ENDPOINT="https://auth.floto.science/realms/floto/protocol/openid-connect/certs"
+#OIDC_RP_SCOPES = "openid email group role"
 
 OIDC_RP_CLIENT_ID = os.environ['OIDC_RP_CLIENT_ID']
 OIDC_RP_CLIENT_SECRET = os.environ['OIDC_RP_CLIENT_SECRET']
+OIDC_RP_ADMIN_CLIENT_ID = os.environ['OIDC_RP_ADMIN_CLIENT_ID']
+OIDC_RP_ADMIN_CLIENT_SECRET = os.environ['OIDC_RP_ADMIN_CLIENT_SECRET']
 
 OIDC_OP_AUTHORIZATION_ENDPOINT = "https://auth.floto.science/realms/floto/protocol/openid-connect/auth"
 OIDC_OP_TOKEN_ENDPOINT = "https://auth.floto.science/realms/floto/protocol/openid-connect/token"

@@ -10,7 +10,7 @@ from . import util
 
 def devices(request):
     url = request.build_absolute_uri(reverse('api:device-list'))
-    devices = util.get(request, url)
+    devices = util.get(request, url, [])
     collapsable_device_fields = [
         "api_heartbeat_state",
         "is_online",
@@ -67,7 +67,7 @@ def devices(request):
 def device(request, uuid):
     url = request.build_absolute_uri(
         reverse('api:device-detail', args=[uuid]))
-    device = util.get(request, url)
+    device = util.get(request, url, {})
 
     releases_by_id = util.get_releases_by_id(request)
     fleets_by_id = util.get_fleets_by_id(request)
@@ -92,7 +92,7 @@ def releases(request, fleet=None):
 
 def fleets(request):
     url = request.build_absolute_uri(reverse('api:fleet-list'))
-    fleets = util.get(request, url)
+    fleets = util.get(request, url, [])
     releases_by_id = util.get_releases_by_id(request)
     processed_fleets = []
     for fleet in fleets:
@@ -116,7 +116,7 @@ def fleets(request):
 
 def logs(request, uuid, count=100):
     url = request.build_absolute_uri(reverse('api:device-logs', args=[uuid, count]))
-    logs = util.get(request, url)
+    logs = util.get(request, url, [])
     #raise Exception(logs)
     processed_logs = []
     for entry in logs:
