@@ -32,7 +32,8 @@ if DEBUG:
     ALLOWED_HOSTS = []
 else:
     ALLOWED_HOSTS = ["portal.floto.science"]
-
+    USE_X_FORWARDED_HOST = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 
@@ -196,7 +197,7 @@ OIDC_OP_USER_ENDPOINT = "https://auth.floto.science/realms/floto/protocol/openid
 
 LOGIN_URL = "oidc_authentication_init"
 LOGIN_REDIRECT_URL = "/dashboard"
-LOGOUT_REDIRECT_URL = "/dashboard"
+LOGOUT_REDIRECT_URL = "/"
 
 # Balena variables
 BALENA_API_ENDPOINT = os.environ.get("BALENA_API_ENDPOINT")
