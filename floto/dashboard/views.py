@@ -1,6 +1,5 @@
 from django.http import HttpResponse
 from django.template import loader
-from django.urls import reverse
 
 import collections
 import datetime
@@ -53,7 +52,7 @@ def devices(request):
         })
         row_data[-1]["devices"] = devices
 
-    row_data = sorted(row_data, key=lambda r: len(r["devices"]), reverse=True)
+    row_data = sorted(row_data, key=lambda r: (r["fleet"], -len(r["devices"])), reverse=False)
 
     template = loader.get_template("dashboard/devices.html")
     context = {
@@ -71,6 +70,8 @@ def device(request, uuid):
     fleets_by_id = util.get_fleets_by_id(request)
 
     util.transform_device_dict(releases_by_id, fleets_by_id, device)
+    device["memory_percentage"] = round(device["memory_usage"] / device["memory_total"], 2) * 100
+    device["storage_percentage"] = round(device["storage_usage"] / device["storage_total"], 2) * 100
     context = {
         "device": device,
     }

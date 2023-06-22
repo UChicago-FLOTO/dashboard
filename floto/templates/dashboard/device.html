@@ -3,16 +3,71 @@
 {% block title %} Device {% endblock %}
 
 {% block content %}
-<h1>Devices</h1>
+<div class="device_header">
+  <h1>Device "{{ device.device_name }}"</h1>
+  <div class="flex_container">
+    <table class="device_summary">
+      <tr>
+        <th>Name: </th>
+        <td>{{device.device_name}}</td>
+      </tr>
+      <tr>
+        <th>UUID: </th>
+        <td>{{device.uuid}}</td>
+      </tr>
+      <tr>
+        <td>
+          <a href="{% url 'dashboard:logs' device.uuid %}">
+            <button class="btn btn-primary" type="button" >
+              Logs
+            </button>
+          </a>
+        </td>
+      </tr>
+    </table>
+    <div class="bars">
+      <table>
+        <tr>
+          <td>Temp: {{ device.cpu_temp }}°C</td>
+          <td>
+            <div class="progress">
+              <div class="progress-bar" role="progressbar" style="width: {{ device.cpu_temp }}%" aria-valuenow="{{ device.cpu_temp }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>CPU: {{ device.cpu_usage }}%</td>
+          <td>
+            <div class="progress">
+              <div class="progress-bar" role="progressbar" style="width: {{ device.cpu_usage }}%" aria-valuenow="{{ device.cpu_usage }}" aria-valuemin="0" aria-valuemax="100">
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>Memory: {{ device.memory_percentage }}%</td>
+          <td>
+            <div class="progress">
+              <div class="progress-bar" role="progressbar" style="width: {{ device.memory_percentage }}%" aria-valuenow="{{ device.memory_usage }}" aria-valuemin="0" aria-valuemax="{{ device.memory_total}}">
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="bars_label">Storage: {{ device.storage_percentage }}%</td>
+          <td class="bars_progress">
+            <div class="progress">
+              <span>
+              <div class="progress-bar" role="progressbar" style="width: {{ device.storage_percentage }}%" aria-valuenow="{{ device.storage_usage }}" aria-valuemin="0" aria-valuemax="{{ device.storage_total}}">
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
 <table class="table">
-  <tr>
-    <th>Name</th>
-    <td>{{device.device_name}}</td>
-  </tr>
-  <tr>
-    <th>UUID</th>
-    <td>{{device.uuid}}</td>
-  </tr>
   <tr>
     <th>Heartbeat State</th>
     <td class="{% if device.api_heartbeat_state == "offline" %}floto-danger{% endif %}">
@@ -59,26 +114,24 @@
   </tr>
   <tr>
     <th>actions</th>
-    <td>
-      <a href="{% url 'dashboard:logs' device.uuid %}">
-        <button class="btn btn-primary" type="button" >
-          Logs
-        </button>
-      </a>
-    </td>
   </tr>
 </table>
 
-<div>
-  {% csrf_token %}
-  <label for="commandInput">Command</label>
-  <input type="text" name="command" id="commandInput" placeholder="uptime">
+{% if device.is_online %}
+  <div>
+    {% csrf_token %}
+    <label for="commandInput">Command</label>
+    <input type="text" name="command" id="commandInput" placeholder="uptime">
 
-  <button id="run_command" onclick="run_command()" class="btn btn-secondary">Run</button>
-</div>
-<div>
-  <pre><code id="command_output"></code></pre>
-</div>
+    <button id="run_command" onclick="run_command()" class="btn btn-secondary">Run</button>
+  </div>
+  <div>
+    <pre><code id="command_output"></code>
+<code id="command_error"></code></pre>
+  </div>
+{% else %}
+  <div>Device is offline, cannot run commands</div>
+{% endif %}
 <script>
   const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
   function run_command(){
@@ -94,8 +147,10 @@
         }
     );
     document.getElementById("run_command").disabled = true
+
     fetch(request).then( (res) => res.json()).then( res => {
       document.getElementById("command_output").innerText = res.stdout
+      document.getElementById("command_error").innerText = res.stderr
       document.getElementById("run_command").disabled = false
     })
   }

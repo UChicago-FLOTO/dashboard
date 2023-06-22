@@ -8,6 +8,8 @@
 
 .site-header {
     border-bottom: 1px solid black;
+    background-color: #5c9eff;
+    color: white;
 }
 
 
@@ -21,4 +23,59 @@
 .floto-alert-error {
     background-color: #ffa4a4;
     border-color: #ff5151;
+}
+
+.new_fleet_row {
+    border-top: 2px solid black;
+}
+
+.device_header {
+    border-radius: 5px;
+    background-color: #5c9eff;
+    color: white;
+    padding: 1rem;
+    margin: 1rem;
+}
+
+.flex_container {
+    display: flex;
+}
+
+.device_summary {
+    flex-grow: 1;
+}
+
+.bars {
+    flex-grow: 3;
+}
+
+.bars table {
+    padding: 1rem;
+    width: 100%;
+}
+
+.bars tr {
+    width: 100%;
+}
+
+.bars .progress-bar {
+    background-color: red;
+    color: black;
+}
+
+.bars_progress {
+    width: 80%;
+}
+
+pre {
+    background-color: #d0d0d0;
+    padding: 2rem;
+}
+
+code#command_output {
+    color: black;
+}
+
+code#command_error {
+    color: #d63384;
 }

@@ -18,20 +18,48 @@
     <th>Devices</th>
   </tr>
   {% for row in row_data %}
+  {% ifchanged row.fleet %}
+  <tr class="new_fleet_row">
+  {% else %}
   <tr>
+  {% endifchanged %}
     <td>{{row.devices | length}}</td>
-    <td class="{% if row.api_heartbeat_state == "offline" %}floto-danger{% endif %}">
+    <td class="{% if row.api_heartbeat_state != "online" %}floto-danger{% endif %}">
       {{ row.api_heartbeat_state }}
     </td>
     <td class="{% if not row.is_online %}floto-danger{% endif %}">
       {{ row.is_online }}
     </td>
-    <td>{{ row.status }} </td>
-    <td>{{ row.provisioning_state }} </td>
-    <td>{{ row.os_version }} </td>
-    <td>{{ row.supervisor_version }} </td>
-    <td>{{ row.running_release }} </td>
-    <td>{{ row.fleet }} </td>
+    <td>
+      {% ifchanged row.status %}
+      {{ row.status }}
+      {% endifchanged %}
+    </td>
+    <td>
+      {% ifchanged row.provisioning_state %}
+      {{ row.provisioning_state }}
+      {% endifchanged %}
+    </td>
+    <td>
+      {% ifchanged row.os_version %}
+      {{ row.os_version }}
+      {% endifchanged %}
+    </td>
+    <td>
+      {% ifchanged row.supervisor_version %}
+      {{ row.supervisor_version }}
+      {% endifchanged %}
+    </td>
+    <td>
+      {% ifchanged row.running_release %}
+      {{ row.running_release }}
+      {% endifchanged %}
+    </td>
+    <td>
+      {% ifchanged row.fleet %}
+      {{ row.fleet }}
+      {% endifchanged %}
+    </td>
     <td>
       <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#devices-{{forloop.counter}}" aria-expanded="false" aria-controls="devices-{{forloop.counter}}">
       Details
@@ -76,5 +104,6 @@
     </td>
   </tr>
   {% endfor %}
+  <tr class="new_fleet_row"></tr>
 </table>
 {% endblock %}
