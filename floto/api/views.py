@@ -9,6 +9,8 @@ import paramiko
 from .balena import get_balena_client
 from balena import exceptions
 
+from models import CollectionDevice, Collection
+
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -98,3 +100,26 @@ class FleetViewSet(viewsets.ViewSet):
         balena = get_balena_client()
         balena.models.release.set_note(release_ref, request.POST["note"])
         return Response({"status": "OK"})
+
+
+class CollectionViewSet(viewsets.ViewSet):
+
+    @action(methods=['GET'])
+    def list(self, request):
+        return Response(Collection.objects.all())
+
+    @action(methods=['GET'])
+    def details(self, request):
+        pass
+
+    @action(methods=['POST'])
+    def create(self, request):
+        pass
+
+    @action(methods=['PUT'])
+    def update(self, request):
+        pass
+
+    @action(methods=['DELETE'])
+    def delete(self, request):
+        pass
