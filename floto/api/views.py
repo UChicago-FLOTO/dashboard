@@ -139,7 +139,6 @@ class CollectionViewSet(viewsets.ModelViewSet):
         new_collection.save()
         return Response(status=status.HTTP_200_OK, data=data)
 
-    # @action(detail=True, url_path=r'collections/(?P<collection_uuid>[^/.]+)')
     def update(self, request, *args, **kwargs):
         collection_uuid = self.kwargs.get('pk')
         print("****************", collection_uuid)
@@ -163,12 +162,12 @@ class CollectionViewSet(viewsets.ModelViewSet):
         instance.save()
         return Response(status=204)
 
-    def delete(self, request, *args, **kwargs):
-        collection_id = kwargs['uuid']
+    def destroy(self, request, *args, **kwargs):
+        collection_uuid = self.kwargs.get('pk')
         try:
-            instance = Collection.objects.get(id=collection_id)
+            instance = Collection.objects.get(uuid=collection_uuid)
         except Collection.DoesNotExist:
-            return Response({'message': 'Instance not found.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': f'Instance not found {collection_uuid}.'}, status=status.HTTP_404_NOT_FOUND)
 
         instance.delete()
         return Response({'message': 'Collection deleted'}, status=status.HTTP_200_OK)
