@@ -3,6 +3,7 @@ import json
 import django.core.serializers
 from django.conf import settings
 from django.core.serializers import serialize
+from django.core import serializers
 import base64
 import ssl
 import socket
@@ -105,13 +106,11 @@ class FleetViewSet(viewsets.ViewSet):
 
 
 class CollectionViewSet(viewsets.ModelViewSet):
-    queryset = Collection.objects.all()
-    collection_serializer = CollectionSerializer
 
     def list(self, request, *args, **kwargs):
         print(request.user.id)
         collections = Collection.objects.all()
-        collections_json = django.core.serializers.serialize('json', collections)
+        collections_json = django.core.serializers.serialize('python', collections)
         data = {
             'user': request.user.id,
             'collection': collections_json
@@ -125,27 +124,41 @@ class CollectionViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         data = json.loads(request.data)
         user = request.user
-        print("User type: ", type(user), " the actual user:", user)
+        if user is None:
+            user = ""
         new_collection = Collection(
-            user="root",  # need to replace this with request.user.id but not user in the request till auth works
+            user=user,  # need to replace this with request.user.id but not user in the request till auth works
             name=data['name'],
             description=data['description'],
             is_public=data['is_public'],
             created_by=data['name'],
         )
+        data = serializers.serialize('python', [new_collection])
+
         # Save the instance to the database
         new_collection.save()
-        return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_200_OK, data=data)
 
+    # @action(detail=True, url_path=r'collections/(?P<collection_uuid>[^/.]+)')
     def update(self, request, *args, **kwargs):
-        collection_id = kwargs['uuid']
+        collection_uuid = self.kwargs.get('pk')
+        print("****************", collection_uuid)
+        print(request)
         try:
-            instance = Collection.objects.get(id=collection_id)
-
+            instance = Collection.objects.get(name=collection_uuid)
         except Collection.DoesNotExist:
-            return Response({'message': 'Instance not found.'}, status=status.HTTP_404_NOT_FOUND)
-        serializer = CollectionSerializer(request.data)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            data = {
+                'message': 'Instance not found with Collection UUID ' + collection_uuid
+            }
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+        is_public = request.data.get('is_public', instance.is_public)
+        description = request.data.get('description', instance.description)
+        name = request.data.get('name', instance.name)
+        instance.is_public = is_public
+        instance.description = description
+        instance.name = name
+        instance.save()
+        return Response(status=204)
 
     def delete(self, request, *args, **kwargs):
         collection_id = kwargs['uuid']
