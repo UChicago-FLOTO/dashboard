@@ -108,7 +108,6 @@ class FleetViewSet(viewsets.ViewSet):
 class CollectionViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
-        print(request.user.id)
         collections = Collection.objects.all()
         collections_json = django.core.serializers.serialize('python', collections)
         data = {
@@ -117,9 +116,13 @@ class CollectionViewSet(viewsets.ModelViewSet):
         }
         return Response(data=data)
 
-    @action(methods=['GET'], detail=True)
-    def details(self, request):
-        return Response(Collection.objects.filter(user=request.user.id))
+    def retrieve(self, request, *args, **kwargs):
+        collection = Collection.objects.get(pk=self.kwargs.get('pk'))
+        print(collection)
+        collection_json = CollectionSerializer(collection).data
+        # collection_json = serializers.serialize('json', collection)
+        # collection_json = serializers.serialize('python', collection)
+        return Response(data=collection_json)
 
     def create(self, request, *args, **kwargs):
         data = json.loads(request.data)

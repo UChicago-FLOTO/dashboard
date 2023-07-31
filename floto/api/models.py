@@ -18,7 +18,7 @@ class Collection(models.Model):
 class CollectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
-        fields = ['user', 'description', 'is_public', 'created_at']
+        fields = '__all__'
 
 
 class CollectionDevice(models.Model):
