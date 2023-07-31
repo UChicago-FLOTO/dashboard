@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'bootstrap5',
     'mozilla_django_oidc',
     'rest_framework',
+    'floto.api',
+    'floto.dashboard'
 ]
 
 MIDDLEWARE = [

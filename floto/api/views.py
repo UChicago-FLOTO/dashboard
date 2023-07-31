@@ -1,6 +1,8 @@
-from django.conf import settings
-from django.http import JsonResponse
+import json
 
+import django.core.serializers
+from django.conf import settings
+from django.core.serializers import serialize
 import base64
 import ssl
 import socket
@@ -9,11 +11,11 @@ import paramiko
 from .balena import get_balena_client
 from balena import exceptions
 
-from models import CollectionDevice, Collection
-
+from floto.api.models import CollectionDevice, CollectionDeviceSerializer, Collection, CollectionSerializer
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import status
 
 
 class DeviceViewSet(viewsets.ViewSet):
@@ -102,24 +104,55 @@ class FleetViewSet(viewsets.ViewSet):
         return Response({"status": "OK"})
 
 
-class CollectionViewSet(viewsets.ViewSet):
+class CollectionViewSet(viewsets.ModelViewSet):
+    queryset = Collection.objects.all()
+    collection_serializer = CollectionSerializer
 
-    @action(methods=['GET'])
-    def list(self, request):
-        return Response(Collection.objects.all())
+    def list(self, request, *args, **kwargs):
+        print(request.user.id)
+        collections = Collection.objects.all()
+        collections_json = django.core.serializers.serialize('json', collections)
+        data = {
+            'user': request.user.id,
+            'collection': collections_json
+        }
+        return Response(data=data)
 
-    @action(methods=['GET'])
+    @action(methods=['GET'], detail=True)
     def details(self, request):
-        pass
+        return Response(Collection.objects.filter(user=request.user.id))
 
-    @action(methods=['POST'])
-    def create(self, request):
-        pass
+    def create(self, request, *args, **kwargs):
+        data = json.loads(request.data)
+        user = request.user
+        print("User type: ", type(user), " the actual user:", user)
+        new_collection = Collection(
+            user="root",  # need to replace this with request.user.id but not user in the request till auth works
+            name=data['name'],
+            description=data['description'],
+            is_public=data['is_public'],
+            created_by=data['name'],
+        )
+        # Save the instance to the database
+        new_collection.save()
+        return Response(status=status.HTTP_200_OK)
 
-    @action(methods=['PUT'])
-    def update(self, request):
-        pass
+    def update(self, request, *args, **kwargs):
+        collection_id = kwargs['uuid']
+        try:
+            instance = Collection.objects.get(id=collection_id)
 
-    @action(methods=['DELETE'])
-    def delete(self, request):
-        pass
+        except Collection.DoesNotExist:
+            return Response({'message': 'Instance not found.'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = CollectionSerializer(request.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        collection_id = kwargs['uuid']
+        try:
+            instance = Collection.objects.get(id=collection_id)
+        except Collection.DoesNotExist:
+            return Response({'message': 'Instance not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        instance.delete()
+        return Response({'message': 'Collection deleted'}, status=status.HTTP_200_OK)
