@@ -145,15 +145,18 @@ class CollectionViewSet(viewsets.ModelViewSet):
         print("****************", collection_uuid)
         print(request)
         try:
-            instance = Collection.objects.get(name=collection_uuid)
+            instance = Collection.objects.get(uuid=collection_uuid)
         except Collection.DoesNotExist:
             data = {
                 'message': 'Instance not found with Collection UUID ' + collection_uuid
             }
             return Response(data=data, status=status.HTTP_404_NOT_FOUND)
-        is_public = request.data.get('is_public', instance.is_public)
-        description = request.data.get('description', instance.description)
-        name = request.data.get('name', instance.name)
+        print(request.data)
+
+        data = json.loads(request.data)
+        is_public = data.get('is_public', instance.is_public)
+        description = data.get('description', instance.description)
+        name = data.get('name', instance.name)
         instance.is_public = is_public
         instance.description = description
         instance.name = name
