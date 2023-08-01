@@ -118,10 +118,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         collection = Collection.objects.get(pk=self.kwargs.get('pk'))
-        print(collection)
         collection_json = CollectionSerializer(collection).data
-        # collection_json = serializers.serialize('json', collection)
-        # collection_json = serializers.serialize('python', collection)
         return Response(data=collection_json)
 
     def create(self, request, *args, **kwargs):
@@ -144,8 +141,6 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         collection_uuid = self.kwargs.get('pk')
-        print("****************", collection_uuid)
-        print(request)
         try:
             instance = Collection.objects.get(uuid=collection_uuid)
         except Collection.DoesNotExist:
@@ -153,7 +148,6 @@ class CollectionViewSet(viewsets.ModelViewSet):
                 'message': 'Instance not found with Collection UUID ' + collection_uuid
             }
             return Response(data=data, status=status.HTTP_404_NOT_FOUND)
-        print(request.data)
 
         data = json.loads(request.data)
         is_public = data.get('is_public', instance.is_public)
