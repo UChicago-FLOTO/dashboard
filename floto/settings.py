@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'bootstrap5',
     'mozilla_django_oidc',
     'rest_framework',
+    'floto.api',
+    'floto.dashboard'
 ]
 
 MIDDLEWARE = [
@@ -221,6 +223,6 @@ REST_FRAMEWORK = {
         "floto.api.permissions.IsAdmin",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
     ],
 }
