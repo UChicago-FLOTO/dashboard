@@ -35,6 +35,20 @@ class DeviceViewSet(viewsets.ViewSet):
         res = balena.logs.history(pk, count)
         return Response(res)
 
+    @action(methods=["POST"], detail=True, url_path="action")
+    def device_action(self, request, pk):
+        data = json.loads(request.data)
+        device_action = data['action']
+        balena = get_balena_client()
+        if device_action == 'RESTART':
+            balena.models.device.reboot(uuid_or_id=pk, force=True)
+        elif device_action == 'BLINK':
+            balena.models.device.identify(uuid_or_id=pk)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(status=status.HTTP_200_OK)
+
     @action(methods=["POST"], detail=True, url_path="command/")
     def command(self, request, pk):
         balena = get_balena_client()
@@ -171,7 +185,6 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
 class EnvViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk):
-        print(pk)
         client = get_balena_client()
         env = client.models.device.env_var.get_all_by_device(uuid_or_id=pk)
         return Response(env, status=status.HTTP_200_OK)
