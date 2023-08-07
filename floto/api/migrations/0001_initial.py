@@ -55,5 +55,84 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
+            options={
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='Application',
+            fields=[
+                ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
+                ('created_at', models.DateTimeField(default=datetime.datetime.now)),
+                ('updated_at', models.DateTimeField(default=datetime.datetime.now)),
+                ('created_by', models.CharField(max_length=256)),
+                ('name', models.CharField(max_length=200)),
+                ('description', models.CharField(max_length=2000)),
+                ('environment', models.JSONField()),
+            ],
+            options={
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='Collection',
+            fields=[
+                ('user', models.CharField(max_length=300)),
+                ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
+                ('name', models.CharField(max_length=200)),
+                ('description', models.CharField(max_length=2000)),
+                ('is_public', models.BooleanField(default=False)),
+                ('created_at', models.DateTimeField(blank=True, default=datetime.datetime.now)),
+                ('created_by', models.CharField(max_length=200)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Job',
+            fields=[
+                ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
+                ('created_at', models.DateTimeField(default=datetime.datetime.now)),
+                ('updated_at', models.DateTimeField(default=datetime.datetime.now)),
+                ('created_by', models.CharField(max_length=256)),
+                ('environment', models.JSONField()),
+                ('application', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.application')),
+            ],
+            options={
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='Service',
+            fields=[
+                ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
+                ('created_at', models.DateTimeField(default=datetime.datetime.now)),
+                ('updated_at', models.DateTimeField(default=datetime.datetime.now)),
+                ('created_by', models.CharField(max_length=256)),
+                ('container_ref', models.CharField(max_length=1000)),
+            ],
+            options={
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='JobDevice',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('job', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.job')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='CollectionDevice',
+            fields=[
+                ('collection_uuid', models.UUIDField(default=uuid.UUID('4c6ffe0f-9718-4ff6-8625-5cc8e21b965c'), editable=False, primary_key=True, serialize=False)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='ApplicationService',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('application', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.application')),
+                ('service', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.service')),
+            ],
         ),
     ]

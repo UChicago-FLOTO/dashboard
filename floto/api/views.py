@@ -11,8 +11,16 @@ import paramiko
 from .balena import get_balena_client
 from balena import exceptions
 
-from floto.api.models import Collection
-from floto.api.serializers import CollectionSerializer
+from floto.api.models import (
+    Collection,
+)
+from floto.api.serializers import (
+    ServiceSerializer,
+    ApplicationSerializer,
+    JobSerializer,
+    CollectionSerializer,
+)
+from floto.api import util
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -205,3 +213,21 @@ class EnvViewSet(viewsets.ViewSet):
         for key, value in data.items():
             client.models.device.env_var.set(uuid, env_var_name=key, value=value)
         return Response(status=status.HTTP_200_OK)
+
+
+class ModelWithOwnerViewSet(viewsets.ModelViewSet):
+    def get_queryset(self):
+        return util.filter_by_created_by_or_public(
+            self.serializer_class.Meta.model.objects, self.request)
+
+
+class ServiceViewSet(ModelWithOwnerViewSet):
+    serializer_class = ServiceSerializer
+
+
+class ApplicationViewSet(ModelWithOwnerViewSet):
+    serializer_class = ApplicationSerializer
+
+
+class JobViewSet(ModelWithOwnerViewSet):
+    serializer_class = JobSerializer
