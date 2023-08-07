@@ -1,0 +1,31 @@
+{% extends 'default.html' %}
+
+{% block title %} Services {% endblock %}
+
+{% block content %}
+<h1>Services</h1>
+<table class="table">
+  <tr>
+    <th>UUID</th>
+    <th>Container Image</th>
+    <th>Created By</th>
+    <th>Created At</th>
+    <th>Public</th>
+  </tr>
+  {% for service in services %}
+  <tr>
+    <td>{{ service.uuid }}</td>
+    <td>{{ service.container_ref }}</td>
+    <td>{{ service.created_by }}</td>
+    <td>{{ service.created_at }}</td>
+    <td>{{ service.is_public }}</td>
+  </tr>
+  {% endfor %}
+</table>
+<h2>New Service</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form }}
+  <input type="submit" value="Submit">
+</form>
+{% endblock %}

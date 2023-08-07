@@ -36,8 +36,5 @@ urlpatterns = [
         "fleets",
         login_required(views.fleets),
         name="fleets"),
-    path(
-        "user",
-        login_required(views.user),
-        name="user"),
-]
+    path("user", login_required(views.user), name="user"),
+    path("services", login_required(views.services), name="services"), ]

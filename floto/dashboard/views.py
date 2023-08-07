@@ -4,6 +4,7 @@ from django.template import loader
 import datetime
 
 from . import util
+from . import forms
 
 
 def devices(request):
@@ -83,4 +84,19 @@ def user(request):
         "api_key": request.user.auth_token.key,
     }
     template = loader.get_template("dashboard/user.html")
+    return HttpResponse(template.render(context, request))
+
+def services(request):
+    if request.method == "POST":
+        form = forms.ServiceForm(request.POST)
+        if form.is_valid():
+            util.post(request, "services-create", body=form.cleaned_data)
+            print(form.cleaned_data)
+
+    services = util.get(request, "services-list", [])
+    context = {
+        "services": services,
+        "form": forms.ServiceForm(),
+    }
+    template = loader.get_template("dashboard/services.html")
     return HttpResponse(template.render(context, request))

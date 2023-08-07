@@ -1,9 +1,8 @@
-from email.policy import default
-import requests
 import logging
-from django.urls import reverse
 from django.contrib import messages
-from floto.api.views import FleetViewSet, DeviceViewSet
+from floto.api.views import (
+    FleetViewSet, DeviceViewSet, ServiceViewSet
+)
 
 LOG = logging.getLogger(__name__)
 
@@ -13,11 +12,32 @@ VIEWS = {
     "device-logs": DeviceViewSet.as_view({"get": "logs"}),
     "fleet-list": FleetViewSet.as_view({"get": "list"}),
     "fleet-releases": FleetViewSet.as_view({"get": "releases"}),
+    "services-list": ServiceViewSet.as_view({"get": "list"}),
+    "services-create": ServiceViewSet.as_view({"post": "create"}),
+
 }
+
+
+def post(request, view_name, body=None, default_ret=None):
+    request.method = "POST"
+    res = VIEWS.get(view_name)(request, body=body)
+    if res.status_code < 400:
+        return res.data
+    else:
+        try:
+            data = res.data
+            messages.error(request, data["detail"])
+        except Exception:
+            messages.error(
+                request,
+                f"Unexpected error, API returned status {res.status_code}")
+    return default_ret
+
 
 def get(request, view_name, request_kwargs=None, default_ret=None):
     if not request_kwargs:
         request_kwargs = {}
+    request.method = "GET"
     res = VIEWS.get(view_name)(request, **request_kwargs)
     if res.status_code == 200:
         return res.data
@@ -57,7 +77,8 @@ def get_all_releases(request, fleet=None):
         fleets = [fleet]
     fleets_by_id = get_fleets_by_id(request)
     for fleet in fleets:
-        res = get(request, "fleet-releases", request_kwargs={"pk": fleet}, default_ret=[])
+        res = get(request, "fleet-releases",
+                  request_kwargs={"pk": fleet}, default_ret=[])
         for r in res:
             r["fleet"] = fleets_by_id[r["belongs_to__application"]["__id"]]
             r["note"] = r["note"] if r["note"] else ""
