@@ -2,7 +2,6 @@ import json
 
 import django.core.serializers
 from django.conf import settings
-from django.core.serializers import serialize
 from django.core import serializers
 import base64
 import ssl
@@ -12,7 +11,7 @@ import paramiko
 from .balena import get_balena_client
 from balena import exceptions
 
-from floto.api.models import CollectionDevice, CollectionDeviceSerializer, Collection, CollectionSerializer
+from floto.api.models import Collection, CollectionSerializer
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -36,10 +35,24 @@ class DeviceViewSet(viewsets.ViewSet):
         res = balena.logs.history(pk, count)
         return Response(res)
 
+    @action(methods=["POST"], detail=True, url_path="action")
+    def device_action(self, request, pk):
+        data = json.loads(request.data)
+        device_action = data['action']
+        balena = get_balena_client()
+        if device_action == 'RESTART':
+            balena.models.device.reboot(uuid_or_id=pk, force=True)
+        elif device_action == 'BLINK':
+            balena.models.device.identify(uuid_or_id=pk)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(status=status.HTTP_200_OK)
+
     @action(methods=["POST"], detail=True, url_path="command/")
     def command(self, request, pk):
         balena = get_balena_client()
-        jwt = balena.auth.settings.get("token")
+        jwt = balena.settings.get("token")
         command = request.POST["command"]
         ssh_port = settings.BALENA_TUNNEL_PORT
         encoded_auth = base64.b64encode(
@@ -168,3 +181,24 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
         instance.delete()
         return Response({'message': 'Collection deleted'}, status=status.HTTP_200_OK)
+
+
+class EnvViewSet(viewsets.ViewSet):
+    def retrieve(self, request, pk):
+        client = get_balena_client()
+        env = client.models.device.env_var.get_all_by_device(uuid_or_id=pk)
+        return Response(env, status=status.HTTP_200_OK)
+
+    def destroy(self, request, pk):
+        client = get_balena_client()
+        env_key = request.query_params.get('env_key')
+        client.models.device.env_var.remove(uuid_or_id=pk, key=env_key)
+        return Response(status=status.HTTP_200_OK)
+
+    def create(self, request):
+        client = get_balena_client()
+        data = json.loads(request.data)
+        uuid = data.pop('uuid')
+        for key, value in data.items():
+            client.models.device.env_var.set(uuid, env_var_name=key, value=value)
+        return Response(status=status.HTTP_200_OK)

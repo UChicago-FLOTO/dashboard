@@ -7,9 +7,9 @@ LOG = logging.getLogger(__name__)
 
 def get_balena_client():
     balena_client = balena.Balena()
-    balena_client.auth.settings.set(
+    balena_client.settings.set(
         "api_endpoint", settings.BALENA_API_ENDPOINT)
-    balena_client.auth.settings.set(
+    balena_client.settings.set(
         "pine_endpoint", settings.BALENA_PINE_ENDPOINT)
     credentials = {
         'username': settings.BALENA_USERNAME,
