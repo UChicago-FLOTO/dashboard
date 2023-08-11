@@ -9,6 +9,21 @@
             Devices
           </button>
         </a>
+        <a href="{% url 'dashboard:services' %}">
+          <button type="button" class="btn btn-primary">
+            Services
+          </button>
+        </a>
+        <a href="{% url 'dashboard:applications' %}">
+          <button type="button" class="btn btn-primary">
+            Applications
+          </button>
+        </a>
+        <a href="{% url 'dashboard:jobs' %}">
+          <button type="button" class="btn btn-primary">
+            Jobs
+          </button>
+        </a>
       </div>
       <div class="flex-container">
         {% if user.is_authenticated %}

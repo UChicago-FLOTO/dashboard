@@ -65,10 +65,11 @@ class Migration(migrations.Migration):
                 ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
                 ('created_at', models.DateTimeField(default=datetime.datetime.now)),
                 ('updated_at', models.DateTimeField(default=datetime.datetime.now)),
-                ('created_by', models.CharField(max_length=256)),
+                ('is_public', models.BooleanField(default=False)),
                 ('name', models.CharField(max_length=200)),
                 ('description', models.CharField(max_length=2000)),
                 ('environment', models.JSONField()),
+                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'abstract': False,
@@ -92,9 +93,10 @@ class Migration(migrations.Migration):
                 ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
                 ('created_at', models.DateTimeField(default=datetime.datetime.now)),
                 ('updated_at', models.DateTimeField(default=datetime.datetime.now)),
-                ('created_by', models.CharField(max_length=256)),
+                ('is_public', models.BooleanField(default=False)),
                 ('environment', models.JSONField()),
                 ('application', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.application')),
+                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'abstract': False,
@@ -106,24 +108,46 @@ class Migration(migrations.Migration):
                 ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
                 ('created_at', models.DateTimeField(default=datetime.datetime.now)),
                 ('updated_at', models.DateTimeField(default=datetime.datetime.now)),
-                ('created_by', models.CharField(max_length=256)),
+                ('is_public', models.BooleanField(default=False)),
                 ('container_ref', models.CharField(max_length=1000)),
+                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'abstract': False,
             },
         ),
         migrations.CreateModel(
+            name='JobTiming',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('timing', models.CharField(max_length=2000)),
+                ('job', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='timings', to='api.job')),
+            ],
+        ),
+        migrations.CreateModel(
             name='JobDevice',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('job', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.job')),
+                ('device_uuid', models.CharField(max_length=36)),
+                ('job', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='devices', to='api.job')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='DeviceTimeslot',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('start', models.DateTimeField()),
+                ('stop', models.DateTimeField()),
+                ('device_uuid', models.CharField(max_length=36)),
+                ('note', models.CharField(max_length=2000)),
+                ('category', models.CharField(choices=[('JOB', 'Job'), ('OTHER', 'Other')], max_length=32)),
+                ('job', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='timeslots', to='api.job')),
             ],
         ),
         migrations.CreateModel(
             name='CollectionDevice',
             fields=[
-                ('collection_uuid', models.UUIDField(default=uuid.UUID('4c6ffe0f-9718-4ff6-8625-5cc8e21b965c'), editable=False, primary_key=True, serialize=False)),
+                ('collection_uuid', models.UUIDField(default=uuid.UUID('cf8ab350-58b1-4c2a-a168-89e56fcb8884'), editable=False, primary_key=True, serialize=False)),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
@@ -131,8 +155,8 @@ class Migration(migrations.Migration):
             name='ApplicationService',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('application', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.application')),
-                ('service', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='api.service')),
+                ('application', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='services', to='api.application')),
+                ('service', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='applications', to='api.service')),
             ],
         ),
     ]

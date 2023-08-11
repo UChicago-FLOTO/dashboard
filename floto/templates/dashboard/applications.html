@@ -1,0 +1,43 @@
+{% extends 'default.html' %}
+
+{% block title %} Applications {% endblock %}
+
+{% block content %}
+<h1>Applications</h1>
+<table class="table">
+  <tr>
+    <th>Name</th>
+    <th>Description</th>
+    <th>Environment</th>
+    <th>Services</th>
+    <th>Created By</th>
+    <th>Is Public</th>
+  </tr>
+  {% for app in applications %}
+  <tr>
+    <td>{{ app.name }}</td>
+    <td>{{ app.description }}</td>
+    <td>{{ app.environment }}</td>
+    <td>
+      <ul>
+        {% for s in app.services %}
+        <li>{{ s.container_ref }}</li>
+        {% endfor %}
+      </ul>
+    </td>
+    <td>{{ app.created_by }}</td>
+    <td>{{ app.is_public }}</td>
+  </tr>
+  {% endfor %}
+</table>
+<h2>New Application</h2>
+{{ form.errors }}
+{{ form.non_field_errors }}
+<form method="post">
+  {% csrf_token %}
+  <table>
+  {{ form.as_table }}
+  </table>
+  <input type="submit" value="Submit">
+</form>
+{% endblock %}

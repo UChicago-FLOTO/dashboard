@@ -17,6 +17,15 @@
     color: white;
 }
 
+.site-header a {
+    color: white;
+    text-decoration: none;
+}
+
+.site-header a:hover {
+    color: #DDD;
+    text-decoration: none;
+}
 
 .floto-alert {
     padding: 0.5rem;

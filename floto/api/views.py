@@ -4,6 +4,7 @@ import django.core.serializers
 from django.conf import settings
 from django.core import serializers
 import base64
+import logging
 import ssl
 import socket
 import paramiko
@@ -14,6 +15,7 @@ from balena import exceptions
 from floto.api.models import (
     Collection,
 )
+from floto.api import permissions
 from floto.api.serializers import (
     ServiceSerializer,
     ApplicationSerializer,
@@ -25,6 +27,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+
+LOG = logging.getLogger(__name__)
 
 
 class DeviceViewSet(viewsets.ViewSet):
@@ -216,9 +220,24 @@ class EnvViewSet(viewsets.ViewSet):
 
 
 class ModelWithOwnerViewSet(viewsets.ModelViewSet):
+    destroy_permision_classes = [permissions.IsOwnerOfObject]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
     def get_queryset(self):
         return util.filter_by_created_by_or_public(
             self.serializer_class.Meta.model.objects, self.request)
+
+    def get_permissions(self):
+        action_permissions = []
+        if self.action in ("destroy", "unassign"):
+            action_permissions = self.destroy_permision_classes
+        return super(ModelWithOwnerViewSet, self).get_permissions() + [
+            permission() for permission in action_permissions
+        ]
 
 
 class ServiceViewSet(ModelWithOwnerViewSet):

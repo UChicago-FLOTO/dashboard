@@ -15,7 +15,7 @@ class CreatedByUserBase(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4)
     created_at = models.DateTimeField(default=datetime.now)
     updated_at = models.DateTimeField(default=datetime.now)
-    created_by = models.CharField(max_length=256)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     is_public = models.BooleanField(default=False)
 
 

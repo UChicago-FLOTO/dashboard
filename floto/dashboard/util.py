@@ -1,52 +1,60 @@
+import datetime
 import logging
+import requests
+
 from django.contrib import messages
-from floto.api.views import (
-    FleetViewSet, DeviceViewSet, ServiceViewSet
-)
+from django.urls import reverse
 
 LOG = logging.getLogger(__name__)
 
-VIEWS = {
-    "device-list": DeviceViewSet.as_view({"get": "list"}),
-    "device-detail": DeviceViewSet.as_view({"get": "retrieve"}),
-    "device-logs": DeviceViewSet.as_view({"get": "logs"}),
-    "fleet-list": FleetViewSet.as_view({"get": "list"}),
-    "fleet-releases": FleetViewSet.as_view({"get": "releases"}),
-    "services-list": ServiceViewSet.as_view({"get": "list"}),
-    "services-create": ServiceViewSet.as_view({"post": "create"}),
-
-}
-
 
 def post(request, view_name, body=None, default_ret=None):
-    request.method = "POST"
-    res = VIEWS.get(view_name)(request, body=body)
-    if res.status_code < 400:
-        return res.data
-    else:
-        try:
-            data = res.data
-            messages.error(request, data["detail"])
-        except Exception:
-            messages.error(
-                request,
-                f"Unexpected error, API returned status {res.status_code}")
+    headers = {k: v for k, v in request.headers.items()}
+    headers["Accept"] = "application/json"
+    headers["Cookie"] = request.headers["Cookie"]
+    headers["Content-Type"] = "application/json"
+    res = requests.post(
+        request.build_absolute_uri(reverse(view_name)),
+        json=body,
+        headers=headers,
+    )
+    try:
+        res_json = res.json()
+        if res.status_code < 400:
+            return res_json
+        else:
+            messages.error(request, res_json.get("detail", res_json))
+    except Exception as e:
+        LOG.error(e)
+        res_json = None
+        messages.error(
+            request,
+            f"Unexpected error, API returned status {res.status_code}. {res.text}")
     return default_ret
 
 
-def get(request, view_name, request_kwargs=None, default_ret=None):
+def getURL(request, view_name, request_kwargs=None, default_ret=None):
     if not request_kwargs:
         request_kwargs = {}
-    request.method = "GET"
-    res = VIEWS.get(view_name)(request, **request_kwargs)
-    if res.status_code == 200:
-        return res.data
-    else:
-        try:
-            data = res.data
-            messages.error(request, data["detail"])
-        except Exception:
-            messages.error(request, "Unexpected error")
+    headers = {k: v for k, v in request.headers.items()}
+    headers["Accept"] = "application/json"
+    res = requests.get(
+        request.build_absolute_uri(
+            reverse(view_name, kwargs=request_kwargs)
+        ),
+        headers=headers,
+    )
+    try:
+        res_json = res.json()
+        if res.status_code < 400:
+            return res_json
+        else:
+            messages.error(request, res_json.get("detail", res_json))
+    except Exception:
+        res_json = None
+        messages.error(
+            request,
+            f"Unexpected error, API returned status {res.status_code}")
     return default_ret
 
 
@@ -60,7 +68,7 @@ def get_releases_by_id(request):
 
 def get_fleets_by_id(request):
     """Get a dictionary of (id, fleet_json)"""
-    fleets = get(request, "fleet-list", [])
+    fleets = getURL(request, "api:fleet-list", [])
     fleets_by_id = {}
     for fleet in fleets:
         fleets_by_id[fleet["id"]] = fleet
@@ -71,14 +79,14 @@ def get_all_releases(request, fleet=None):
     """Get all releases, across all fleets"""
     releases = []
     if not fleet:
-        applications = get(request, "fleet-list", [])
+        applications = getURL(request, "api:fleet-list", [])
         fleets = [f["id"] for f in applications]
     else:
         fleets = [fleet]
     fleets_by_id = get_fleets_by_id(request)
     for fleet in fleets:
-        res = get(request, "fleet-releases",
-                  request_kwargs={"pk": fleet}, default_ret=[])
+        res = getURL(request, "api:fleet-releases",
+                     request_kwargs={"pk": fleet}, default_ret=[])
         for r in res:
             r["fleet"] = fleets_by_id[r["belongs_to__application"]["__id"]]
             r["note"] = r["note"] if r["note"] else ""
@@ -98,3 +106,6 @@ def transform_device_dict(releases_by_id, fleets_by_id, device):
         device["fleet"] = fleets_by_id[fleet_id]["app_name"]
     except (KeyError, TypeError):
         device["fleet"] = "None"
+
+def parse_date(date_string):
+    return datetime.datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%fZ")
