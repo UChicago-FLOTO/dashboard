@@ -7,9 +7,9 @@ from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include((floto.api.urls, "api"), namespace="api")),
+    path('api/', include((floto.api.urls, "floto.api"), namespace="api")),
     path('dashboard/',
-         include((floto.dashboard.urls, "dashboard"), namespace="dashboard")),
+         include((floto.dashboard.urls, "floto.dashboard"), namespace="dashboard")),
     path('oidc/', include('mozilla_django_oidc.urls')),
     path('', views.index),
 ]

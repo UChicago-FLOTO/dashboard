@@ -1,8 +1,10 @@
-from django.db import models
-from rest_framework import serializers
-from django.contrib.auth.models import User
 import uuid
 from datetime import datetime
+
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.auth.models import User
+from django.db import models
 
 
 class Collection(models.Model):
@@ -15,19 +17,9 @@ class Collection(models.Model):
     created_by = models.CharField(max_length=200)
 
 
-class CollectionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Collection
-        fields = '__all__'
-
-
 class CollectionDevice(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    collection_uuid = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    collection_uuid = models.UUIDField(
+        primary_key=True, default=uuid.uuid4(), editable=False
+    )
     device_uuid = models.UUIDField
-
-
-class CollectionDeviceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CollectionDevice
-        fields = '__all__'

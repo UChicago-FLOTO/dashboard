@@ -11,7 +11,8 @@ import paramiko
 from .balena import get_balena_client
 from balena import exceptions
 
-from floto.api.models import Collection, CollectionSerializer
+from floto.api.models import Collection
+from floto.api.serializers import CollectionSerializer
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -138,9 +139,11 @@ class CollectionViewSet(viewsets.ModelViewSet):
         data = json.loads(request.data)
         user = request.user
         if user is None:
-            user = ""
+            user_id = ""
+        else:
+            user_id = user.id
         new_collection = Collection(
-            user=user,  # need to replace this with request.user.id but not user in the request till auth works
+            user=user_id,
             name=data['name'],
             description=data['description'],
             is_public=data['is_public'],
