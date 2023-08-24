@@ -14,6 +14,8 @@ from pathlib import Path
 import os
 import logging
 
+import rest_framework.authentication
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -47,8 +49,11 @@ INSTALLED_APPS = [
     'bootstrap5',
     'mozilla_django_oidc',
     'rest_framework',
+    'rest_framework.authtoken',
+    'floto',
     'floto.api',
-    'floto.dashboard'
+    'floto.auth',
+    'floto.dashboard',
 ]
 
 MIDDLEWARE = [
@@ -87,12 +92,24 @@ WSGI_APPLICATION = 'floto.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if os.getenv("DB_ENGINE"):
+    DATABASES = {
+        "default": {
+            "ENGINE": os.getenv("DB_ENGINE"),
+            "NAME": os.getenv("DB_NAME"),
+            "HOST": os.getenv("DB_HOST"),
+            "PORT": os.getenv("DB_PORT"),
+            "USER": os.getenv("DB_USER"),
+            "PASSWORD": os.getenv("DB_PASSWORD"),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Password validation
@@ -185,10 +202,11 @@ LOGGING = {
 }
 
 # Auth
-AUTHENTICATION_BACKENDS = (
-    #"floto.FlotoAuthBackend.FlotoAuthBackend",
-    'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
-)
+AUTH_USER_MODEL = "floto_auth.KeycloakUser"
+
+AUTHENTICATION_BACKENDS = [
+    "mozilla_django_oidc.auth.OIDCAuthenticationBackend",
+]
 
 OIDC_RP_SIGN_ALGO = "RS256"
 OIDC_OP_JWKS_ENDPOINT="https://auth.floto.science/realms/floto/protocol/openid-connect/certs"
@@ -223,6 +241,7 @@ REST_FRAMEWORK = {
         "floto.api.permissions.IsAdmin",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
         'rest_framework.authentication.SessionAuthentication',
     ],
 }

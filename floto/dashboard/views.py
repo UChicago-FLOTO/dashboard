@@ -140,8 +140,7 @@ def overview(request):
 def user(request):
     context = {
         "user": request.user,
-        "groups": request.user.groups.all(),
-        "claims": dir(request.user),
+        "api_key": request.user.auth_token.key,
     }
     template = loader.get_template("dashboard/user.html")
     return HttpResponse(template.render(context, request))

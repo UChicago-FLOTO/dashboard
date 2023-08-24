@@ -2,15 +2,17 @@
 
 {% block title %} User {% endblock %}
 
+{% load static %}
+
 {% block content %}
 
-<div>{{user.username}}</div>
+<div>
+  <label for="api-key">API Key</label>
+  <input readonly type="password" id="api-key" class="form-control" value="{{ api_key }}">
+  <button id="toggle-secret" class="btn btn-primary mt-2">View Key</button>
+  <button id="copy-key" class="btn btn-secondary mt-2">Copy Key</button>
+</div>
 
-{{claims}}
-<ul>
-  {% for group in groups %}
-    <li>{{ group }}</li>
-  {% endfor %}
-</ul>
+<script src="{% static 'apikey.js' %}"></script>
 
 {% endblock %}

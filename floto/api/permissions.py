@@ -1,8 +1,9 @@
+import logging
+
 from rest_framework import permissions
 
-from floto.api.keycloak import KeycloakClient
+from floto.auth.keycloak import KeycloakClient
 
-import logging
 LOG = logging.getLogger(__name__)
 
 

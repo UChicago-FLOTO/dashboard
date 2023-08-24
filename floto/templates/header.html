@@ -20,13 +20,21 @@
           </button>
         </a>
       </div>
-      <div>
+      <div class="flex-container">
         {% if user.is_authenticated %}
-          <form action="{% url 'oidc_logout' %}" method="post">
+          {% csrf_token %}
             <span>{{ user.email }}</span>
-            {% csrf_token %}
-            <input class="btn btn-primary" type="submit" value="logout">
-          </form>
+            <a href="{% url 'dashboard:user' %}">
+              <button type="button" class="btn btn-primary">
+                Profile
+              </button>
+            </a>
+            <form action="{% url 'oidc_logout' %}" method="post" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary">
+                Log Out
+              </button>
+            </form>
         {% else %}
           <a href="{% url 'oidc_authentication_init' %}">Login</a>
         {% endif %}
