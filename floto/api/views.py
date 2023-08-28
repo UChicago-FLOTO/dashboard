@@ -50,7 +50,7 @@ class DeviceViewSet(viewsets.ViewSet):
 
         return Response(status=status.HTTP_200_OK)
 
-    @action(methods=["POST"], detail=True, url_path="command/")
+    @action(methods=["POST"], detail=True, url_path="command")
     def command(self, request, pk):
         balena = get_balena_client()
         jwt = balena.settings.get("token")
@@ -79,7 +79,7 @@ class DeviceViewSet(viewsets.ViewSet):
                 ssh_client.set_missing_host_key_policy(
                     paramiko.AutoAddPolicy())
                 pkey = paramiko.RSAKey.from_private_key_file(
-                    "/keys/id_rsa")  # TODO
+                    "/config/keys/id_rsa")
                 ssh_client.connect(
                     "", username="root", pkey=pkey, sock=ssock)
                 _, stdout, stderr = ssh_client.exec_command(
