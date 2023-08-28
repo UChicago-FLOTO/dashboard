@@ -1,26 +1,44 @@
 {% load static bootstrap5 %}
+
 <!DOCTYPE html>
 <html>
   <head>
       <meta charset="utf-8">
       <title>{% block title %}{% endblock %} | FLOTO</title>
-      <meta name="viewport" content="width=device-width">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
       <meta name="description" content="{{ site.description }}">
       <link rel="icon" href="{% static "images/favicon.ico" %}">
       <link rel="canonical" href="{{request.get_full_path}}">
 
       <!-- Custom CSS -->
       <link rel="stylesheet" href="{% static 'main.css' %}">
+      <link rel="stylesheet" type="text/css" href="{% static 'vendor/vuetify.3.3.13.min.css' %}" />
+      <link rel="stylesheet" type="text/css" href="{% static 'vendor/vuetify-labs.3.3.13.min.css' %}" />
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css">
       {% bootstrap_css %}
+
       {% block styles %}{% endblock %}
   </head>
   <body>
-    {% include "header.html" %}
+    <div id="app">
+      {% include "header.html" %}
 
-    {% block page_main %}{% endblock %}
+      {% block page_main %}{% endblock %}
 
-    {% include "footer.html" %}
+      {% include "footer.html" %}
+    </div>
+    <script src="{%static 'vendor/vue.3.3.4.js' %}"></script>
+    <script src="{% static 'vendor/vuetify.3.3.13.min.js' %}"></script>
+    <script src="{% static 'vendor/vuetify-labs.3.3.13.js' %}"></script>
+    <script src="{% static 'util.js' %}"></script>
+    <script>
+      FLOTO_CONFIG = {
+        // TODO this is a second place configuration is done in.
+        // This could be replaced with a context processor to add
+        // this info from settings.py
+        default_fleet: "floto-k3s",
+      }
+    </script>
     {% block scripts %}{% endblock %}
-    {% bootstrap_javascript %}
   </body>
 </html>

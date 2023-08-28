@@ -14,7 +14,7 @@ services:
     volumes:
       - .:/project
       - ./media:/media
-      - ./keys:/keys
+      - ./config:/config
       - static:/static
     ports:
       - "127.0.0.1:8080:${FLOTO_PORT}"

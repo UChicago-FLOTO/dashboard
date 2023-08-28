@@ -1,159 +1,175 @@
 {% extends 'default.html' %}
 
+{% load static %}
+
 {% block title %} Device {% endblock %}
 
 {% block content %}
+
 <div class="device_header">
-  <h1>Device "{{ device.device_name }}"</h1>
+  <h1>Device [[ device.value.device_name ]]</h1>
+
   <div class="flex_container">
     <table class="device_summary">
       <tr>
         <th>Name: </th>
-        <td>{{device.device_name}}</td>
+        <td>[[ device.value.device_name ]]</td>
       </tr>
       <tr>
         <th>UUID: </th>
-        <td>{{device.uuid}}</td>
-      </tr>
-      <tr>
-        <td>
-          <a href="{% url 'dashboard:logs' device.uuid %}">
-            <button class="btn btn-primary" type="button" >
-              Logs
-            </button>
-          </a>
-        </td>
+        <td>[[ device.value.uuid ]]</td>
       </tr>
     </table>
     <div class="bars">
       <table>
         <tr>
-          <td>Temp: {{ device.cpu_temp }}°C</td>
+          <td>Temp: [[ device.value.cpu_temp ]]°C</td>
           <td>
-            <div class="progress">
-              <div class="progress-bar" role="progressbar" style="width: {{ device.cpu_temp }}%" aria-valuenow="{{ device.cpu_temp }}" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
+            <v-progress-linear color="primary" v-model="device.value.cpu_temp" :height="12"></v-progress-linear>
           </td>
         </tr>
         <tr>
-          <td>CPU: {{ device.cpu_usage }}%</td>
+          <td>CPU: [[ device.value.cpu_usage ]]%</td>
           <td>
-            <div class="progress">
-              <div class="progress-bar" role="progressbar" style="width: {{ device.cpu_usage }}%" aria-valuenow="{{ device.cpu_usage }}" aria-valuemin="0" aria-valuemax="100">
-              </div>
-            </div>
+            <v-progress-linear color="primary" v-model="device.value.cpu_usage" :height="12"></v-progress-linear>
           </td>
         </tr>
         <tr>
-          <td>Memory: {{ device.memory_percentage }}%</td>
+          <td>Memory: [[ device.value.memory_percentage ]]%</td>
           <td>
-            <div class="progress">
-              <div class="progress-bar" role="progressbar" style="width: {{ device.memory_percentage }}%" aria-valuenow="{{ device.memory_usage }}" aria-valuemin="0" aria-valuemax="{{ device.memory_total}}">
-              </div>
-            </div>
+            <v-progress-linear color="primary" v-model="device.value.memory_percentage" :height="12"></v-progress-linear>
           </td>
         </tr>
         <tr>
-          <td class="bars_label">Storage: {{ device.storage_percentage }}%</td>
-          <td class="bars_progress">
-            <div class="progress">
-              <span>
-              <div class="progress-bar" role="progressbar" style="width: {{ device.storage_percentage }}%" aria-valuenow="{{ device.storage_usage }}" aria-valuemin="0" aria-valuemax="{{ device.storage_total}}">
-              </div>
-            </div>
+          <td class="bars_label">Storage: {{ device.value.storage_percentage }}%</td>
+          <td>
+            <v-progress-linear color="primary" v-model="device.value.storage_percentage" :height="12"></v-progress-linear>
           </td>
         </tr>
       </table>
     </div>
   </div>
 </div>
-<table class="table">
-  <tr>
-    <th>Heartbeat State</th>
-    <td class="{% if device.api_heartbeat_state == "offline" %}floto-danger{% endif %}">
-      {{ device.api_heartbeat_state }} since {{device.last_connectivity_event}}
-    </td>
-  </tr>
-  <tr>
-    <th>VPN connected</th>
-    <td class="{% if not device.is_online %}floto-danger{% endif %}">
-      {{ device.is_online }} since {{device.last_vpn_event}}
-    </td>
-  </tr>
-  <tr>
-    <th>Status</th>
-    <td>{{ device.status }} </td>
-  </tr>
-  <tr>
-    <th>Provisioning State</th>
-    <td>{{ device.provisioning_state }} </td>
-  </tr>
-  <tr>
-    <th>OS Version</th>
-    <td>{{ device.os_version }} </td>
-  </tr>
-  <tr>
-    <th>Supervisor Version</th>
-    <td>{{ device.supervisor_version }} </td>
-  </tr>
-  <tr>
-    <th>Release</th>
-    <td>{{ device.running_release }} </td>
-  </tr>
-  <tr>
-    <th>Fleet</th>
-    <td>{{ device.fleet }} </td>
-  </tr>
-  <tr>
-    <th>IP address</th>
-    <td>{{device.ip_address}}</td>
-  </tr>
-  <tr>
-    <th>MAC address</th>
-    <td>{{device.mac_address}}</td>
-  </tr>
-  <tr>
-    <th>actions</th>
-  </tr>
-</table>
 
-{% if device.is_online %}
-  <div>
-    {% csrf_token %}
-    <label for="commandInput">Command</label>
-    <input type="text" name="command" id="commandInput" placeholder="uptime">
+<v-card
+  :loading="device_loading"
+>
+  <v-tabs
+    v-model="tab"
+    bg-color="primary"
+    >
+    <v-tab value="overview_tab">Overview</v-tab>
+    <v-tab value="command_tab">Command</v-tab>
+    <v-tab value="logs_tab">Logs</v-tab>
+  </v-tabs>
+  <v-card-text>
+    <v-window v-model="tab">
+      <v-window-item value="overview_tab">
+        <table class="table">
+          <tr>
+            <th>Heartbeat State</th>
+            <td>
+              [[ device.value.api_heartbeat_state ]] since [[ device.value.last_connectivity_event ]]
+            </td>
+          </tr>
+          <tr>
+            <th>VPN connected</th>
+            <td>
+              [[ device.value.is_online ]] since [[ device.value.last_vpn_event ]]
+            </td>
+          </tr>
+          <tr>
+            <th>Status</th>
+            <td>[[ device.value.status ]]</td>
+          </tr>
+          <tr>
+            <th>Provisioning State</th>
+            <td>[[ device.value.provisioning_state ]] </td>
+          </tr>
+          <tr>
+            <th>OS Version</th>
+            <td>[[ device.value.os_version ]] </td>
+          </tr>
+          <tr>
+            <th>Supervisor Version</th>
+            <td>[[ device.value.supervisor_version ]] </td>
+          </tr>
+          <tr>
+            <th>Release</th>
+            <td>[[ device.value.running_release ]]</td>
+          </tr>
+          <tr>
+            <th>Fleet</th>
+            <td>[[ device.value.fleet ]]</td>
+          </tr>
+          <tr>
+            <th>IP address</th>
+            <td>
+              <ul>
+                <li v-for="ip in device.value.split_ip">[[ ip ]]</li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <th>MAC address</th>
+            <td>
+              <ul>
+                <li v-for="mac in device.value.split_mac">[[ mac ]]</li>
+              </ul>
+            </td>
+          </tr>
+        </table>
+      </v-window-item>
+      <v-window-item value="command_tab">
+        <div v-if="device.value.is_online">
+          <div>
+            <v-form 
+              class="form-flex" @submit="run_command"
+              :disabled="command_disabled"
+              >
+              <v-text-field
+                label="Command:"
+                prepend-inner-icon="mdi-console-line"
+                v-model="command_text.value"
+              ></v-text-field>
+              <v-btn primary height="55">Submit</v-btn>
+            </v-form>
+          </div>
+          <div>
+            <pre>
+              <code>[[stdout]]</code>
+              <code>[[stderr]]</code>
+            </pre>
+          </div>  
+        </div>
+        <div v-else>
+          <p>Device is offline, cannot run commands</p>
+        </div>
+      </v-window-item>
+      <v-window-item value="logs_tab">
+        <template v-if="logs_loading">
+          <v-progress-circular v-if="logs_loading" indeterminate :size="128"></v-progress-circular>
+        </template>
+        <template v-else>
+          <pre>
+<template v-for="entry in logs.value">[[ entry.message ]]
+</template>
+          </pre>            
+        </template>
+      </v-window-item>
+    </v-window>
+  </v-card-text>
+</v-card>
 
-    <button id="run_command" onclick="run_command()" class="btn btn-secondary">Run</button>
-  </div>
-  <div>
-    <pre><code id="command_output"></code>
-<code id="command_error"></code></pre>
-  </div>
-{% else %}
-  <div>Device is offline, cannot run commands</div>
-{% endif %}
-<script>
-  const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-  function run_command(){
-    const form_data = new FormData()
-    form_data.append("command", document.querySelector(`input[name=command]`).value)
-    const request = new Request(
-        url="{% url 'api:device-command' device.uuid %}",
-        {
-          method: 'POST',
-          headers: {'X-CSRFToken': csrftoken},
-          mode: 'same-origin',
-          body: form_data,
-        }
-    );
-    document.getElementById("run_command").disabled = true
+<div v-if="device_loading" class="center_of_screen">
+  <v-progress-circular
+    :size="100"
+    indeterminate
+  ></v-progress-circular>
+</div>
 
-    fetch(request).then( (res) => res.json()).then( res => {
-      document.getElementById("command_output").innerText = res.stdout
-      document.getElementById("command_error").innerText = res.stderr
-      document.getElementById("run_command").disabled = false
-    })
-  }
-</script>
+{% endblock %}
 
+{% block scripts %}
+<script src="{% static 'device.js' %}"></script>
 {% endblock %}

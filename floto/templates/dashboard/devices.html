@@ -1,109 +1,43 @@
 {% extends 'default.html' %}
 
+{% load static %}
+
 {% block title %} Devices {% endblock %}
 
 {% block content %}
+
 <h1>Devices</h1>
-<table class="table">
-  <tr>
-    <th>Count</th>
-    <th>Heartbeat State</th>
-    <th>VPN connected</th>
-    <th>Status</th>
-    <th>Provisioning State</th>
-    <th>OS Version</th>
-    <th>Supervisor Version</th>
-    <th>Release</th>
-    <th>Fleet</th>
-    <th>Devices</th>
-  </tr>
-  {% for row in row_data %}
-  {% ifchanged row.fleet %}
-  <tr class="new_fleet_row">
-  {% else %}
-  <tr>
-  {% endifchanged %}
-    <td>{{row.devices | length}}</td>
-    <td class="{% if row.api_heartbeat_state != "online" %}floto-danger{% endif %}">
-      {{ row.api_heartbeat_state }}
-    </td>
-    <td class="{% if not row.is_online %}floto-danger{% endif %}">
-      {{ row.is_online }}
-    </td>
-    <td>
-      {% ifchanged row.status %}
-      {{ row.status }}
-      {% endifchanged %}
-    </td>
-    <td>
-      {% ifchanged row.provisioning_state %}
-      {{ row.provisioning_state }}
-      {% endifchanged %}
-    </td>
-    <td>
-      {% ifchanged row.os_version %}
-      {{ row.os_version }}
-      {% endifchanged %}
-    </td>
-    <td>
-      {% ifchanged row.supervisor_version %}
-      {{ row.supervisor_version }}
-      {% endifchanged %}
-    </td>
-    <td>
-      {% ifchanged row.running_release %}
-      {{ row.running_release }}
-      {% endifchanged %}
-    </td>
-    <td>
-      {% ifchanged row.fleet %}
-      {{ row.fleet }}
-      {% endifchanged %}
-    </td>
-    <td>
-      <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#devices-{{forloop.counter}}" aria-expanded="false" aria-controls="devices-{{forloop.counter}}">
-      Details
-      </button>
-    </td>
-  </tr>
-  <tr class="collapse" id="devices-{{forloop.counter}}">
-    <td colspan=100%">
-        <table class=table>
-          <tr>
-            <th>name</th>
-            <th>uuid</th>
-            <th>ip</th>
-            <th>mac</th>
-            <th>last VPN</th>
-            <th>last API</th>
-            <th>actions</th>
-          </tr>
-          {% for device in row.devices %}
-          <tr>
-            <td>{{device.device_name}}</td>
-            <td>{{device.uuid}}</td>
-            <td>{{device.ip_address}}</td>
-            <td>{{device.mac_address}}</td>
-            <td>{{device.last_vpn_event}}</td>
-            <td>{{device.last_connectivity_event}}</td>
-            <td>
-              <a href="{% url 'dashboard:logs' device.uuid %}">
-                <button class="btn btn-primary" type="button" >
-                  Logs
-                </button>
-              </a>
-              <a href="{% url 'dashboard:device' device.uuid %}">
-                <button class="btn btn-primary" type="button" >
-                  Overview
-                </button>
-              </a>
-            </td>
-          </tr>
-          {% endfor %}
-        </table>
-    </td>
-  </tr>
-  {% endfor %}
-  <tr class="new_fleet_row"></tr>
-</table>
+
+<v-select
+  clearable
+  chips
+  label="Select fleets"
+  :items="fleets.value"
+  item-title="app_name"
+  item-value="id"
+  multiple
+  v-model="selected_fleets.value"
+></v-select>
+
+<v-data-table
+  items-per-page="-1"
+  :headers="headers"
+  :items="devices.value.filter(d => selected_fleets.value.includes(d.belongs_to__application.__id))"
+  item-value="name"
+  @click:row="handleClick"
+  >
+</v-data-table>
+
+
+<div v-if="devices_loading && fleets_loading" class="center_of_screen">
+  <v-progress-circular
+    :size="100"
+    indeterminate
+  ></v-progress-circular>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'devices.js' %}"></script>
 {% endblock %}
