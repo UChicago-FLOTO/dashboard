@@ -20,3 +20,18 @@ function fetch_with_retry(url, callback, error_callback=function(r){}, backoff_c
   })
 }
 
+function get_headers(){
+  const token = get_token()
+  const headers = new Headers();
+  headers.append("Authorization", `Token ${token}`);  
+  headers.append("Content-Type", "application/json")
+  return headers  
+}
+
+
+function get_token(){
+  return document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("token="))
+    ?.split("=")[1];
+}

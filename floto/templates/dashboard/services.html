@@ -1,31 +1,64 @@
 {% extends 'default.html' %}
 
+{% load static %}
+
 {% block title %} Services {% endblock %}
 
 {% block content %}
-<h1>Services</h1>
-<table class="table">
-  <tr>
-    <th>UUID</th>
-    <th>Container Image</th>
-    <th>Created By</th>
-    <th>Created At</th>
-    <th>Public</th>
-  </tr>
-  {% for service in services %}
-  <tr>
-    <td>{{ service.uuid }}</td>
-    <td>{{ service.container_ref }}</td>
-    <td>{{ service.created_by }}</td>
-    <td>{{ service.created_at }}</td>
-    <td>{{ service.is_public }}</td>
-  </tr>
-  {% endfor %}
-</table>
+
+
+<div class="q-pa-md">
+  <q-table
+    :columns="headers"
+    :rows="services.value"
+    title="Services"
+    :pagination="initialPagination"
+    >
+    <template v-slot:body-cell-action="props">
+      <q-td :props="props">
+        <q-btn
+        v-if="props.row.is_owned_by_current_user"
+        color="negative"
+        icon-right="delete"
+        no-caps
+        flat
+        dense
+        @click="delete_item(services.value.indexOf(props.row))"
+      />
+      </q-td>
+    </template>
+  </q-table>
+</div>
+
+<div v-if="services_loading" class="center_of_screen">
+  <v-progress-circular
+    :size="100"
+    indeterminate
+  ></v-progress-circular>
+</div>
+
 <h2>New Service</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form }}
-  <input type="submit" value="Submit">
-</form>
+<div>
+  <v-alert v-if="services_loading_error_message" :text="services_loading_error_message" type="error"></v-alert>
+  <v-form @submit="submit"
+    validate-on="submit"
+    :disabled="services_form_disabled">
+    <!-- {% csrf_token %} -->
+    <v-text-field 
+      label="Container Reference" 
+      id="id_container_ref" 
+      name="container_ref" 
+      v-model="form_data.container_ref"
+      :rules="rules"
+    ></v-text-field>
+    <v-switch label="Public" color="primary" id="id_is_public" name="is_public" v-model="form_data.is_public"></v-switch>
+    <v-btn primary height="55" type="submit">Submit</v-btn>
+  </v-form>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script src="{% static 'services.js' %}"></script>
 {% endblock %}

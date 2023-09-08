@@ -39,13 +39,10 @@ createApp({
 
         const form_data = new FormData()
         form_data.append("command", command_text.value)
-        const token = cookieValue = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("token="))
-          ?.split("=")[1];
+        const token = get_token()
         const headers = new Headers();
         headers.append("Authorization", `Token ${token}`);
-
+        
         const request = new Request(
             url=`/api/devices/${device.value.uuid}/command/`,
             {

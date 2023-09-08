@@ -15,6 +15,8 @@
       <link rel="stylesheet" type="text/css" href="{% static 'vendor/vuetify.3.3.13.min.css' %}" />
       <link rel="stylesheet" type="text/css" href="{% static 'vendor/vuetify-labs.3.3.13.min.css' %}" />
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css">
+      <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet" type="text/css">
+      <link href="https://cdn.jsdelivr.net/npm/quasar@2.12.6/dist/quasar.prod.css" rel="stylesheet" type="text/css">
       {% bootstrap_css %}
 
       {% block styles %}{% endblock %}
@@ -27,8 +29,19 @@
 
       {% include "footer.html" %}
     </div>
+    <script>
+      function get_user_email(){
+        // this function generated in a django template
+        {% if user.is_authenticated %}
+        return "{{user.email}}"
+        {% else %}
+        return undefined
+        {% endif %}
+      }
+    </script>
     <script src="{%static 'vendor/vue.3.3.4.js' %}"></script>
     <script src="{% static 'vendor/vuetify.3.3.13.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quasar@2.12.6/dist/quasar.umd.prod.js"></script>
     <script src="{% static 'vendor/vuetify-labs.3.3.13.js' %}"></script>
     <script src="{% static 'util.js' %}"></script>
     <script>
