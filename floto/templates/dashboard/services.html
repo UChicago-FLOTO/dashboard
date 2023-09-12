@@ -8,10 +8,10 @@
 
 
 <div class="q-pa-md">
+  <h3>Services</h3>
   <q-table
     :columns="headers"
     :rows="services.value"
-    title="Services"
     :pagination="initialPagination"
     >
     <template v-slot:body-cell-action="props">
@@ -31,33 +31,41 @@
 </div>
 
 <div v-if="services_loading" class="center_of_screen">
-  <v-progress-circular
-    :size="100"
+  <q-circular-progress
+    size="100px"
     indeterminate
-  ></v-progress-circular>
+    rounded
+  ></q-circular-progress>
 </div>
 
-<h2>New Service</h2>
+<h4>New Service</h4>
 <div>
-  <v-alert v-if="services_loading_error_message" :text="services_loading_error_message" type="error"></v-alert>
-  <v-form @submit="submit"
-    validate-on="submit"
-    :disabled="services_form_disabled">
-    <!-- {% csrf_token %} -->
-    <v-text-field 
+  <q-banner inline-actions class="text-white bg-red" v-if="services_loading_error_message">
+    [[ services_loading_error_message ]]
+  </q-banner>
+
+  <q-form @submit.prevent="submit">
+    <q-input 
+      filled
       label="Container Reference" 
-      id="id_container_ref" 
       name="container_ref" 
       v-model="form_data.container_ref"
-      :rules="rules"
-    ></v-text-field>
-    <v-switch label="Public" color="primary" id="id_is_public" name="is_public" v-model="form_data.is_public"></v-switch>
-    <v-btn primary height="55" type="submit">Submit</v-btn>
+      :rules="[ val => val && val.length > 0 || 'Please type something']"
+    ></q-input>
+    <q-toggle 
+      label="Public"
+      name="is_public" v-model="form_data.is_public">
+    </q-toggle>
+
+    <div>
+      <q-btn primary height="55" type="submit" color="blue">
+        Submit
+      </q-btn>
+    </div>
   </v-form>
 </div>
 
 {% endblock %}
-
 
 {% block scripts %}
 <script src="{% static 'services.js' %}"></script>

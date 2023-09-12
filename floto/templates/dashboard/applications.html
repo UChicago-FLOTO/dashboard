@@ -1,43 +1,124 @@
 {% extends 'default.html' %}
 
+{% load static %}
+
 {% block title %} Applications {% endblock %}
 
 {% block content %}
-<h1>Applications</h1>
-<table class="table">
-  <tr>
-    <th>Name</th>
-    <th>Description</th>
-    <th>Environment</th>
-    <th>Services</th>
-    <th>Created By</th>
-    <th>Is Public</th>
-  </tr>
-  {% for app in applications %}
-  <tr>
-    <td>{{ app.name }}</td>
-    <td>{{ app.description }}</td>
-    <td>{{ app.environment }}</td>
-    <td>
-      <ul>
-        {% for s in app.services %}
-        <li>{{ s.container_ref }}</li>
-        {% endfor %}
-      </ul>
-    </td>
-    <td>{{ app.created_by }}</td>
-    <td>{{ app.is_public }}</td>
-  </tr>
-  {% endfor %}
-</table>
-<h2>New Application</h2>
-{{ form.errors }}
-{{ form.non_field_errors }}
-<form method="post">
-  {% csrf_token %}
-  <table>
-  {{ form.as_table }}
-  </table>
-  <input type="submit" value="Submit">
-</form>
+
+<div class="q-pa-md">
+  <h3>Applications</h3>
+  <q-table
+    :columns="headers"
+    :rows="applications.value"
+    :pagination="initialPagination"
+    >
+
+    <template v-slot:body-cell-services="props">
+      <q-td :props="props">
+        <ul>
+          <li v-for="wrapper in props.row.services">
+            <template v-if="wrapper.container_ref">
+              [[ wrapper.container_ref ]]
+            </template>
+            <template v-else>
+              [[ wrapper.service ]]
+            </template>
+          </li>
+        </ul>
+      </q-td>
+    </template>
+
+    <template v-slot:body-cell-environment="props">
+      <q-td :props="props">
+        <ul>
+          <li v-for="(value, name, index) in props.row.parsed_env">
+            [[ name ]]: [[ value ]]
+          </li>
+        </ul>
+      </q-td>
+    </template>
+
+
+    <template v-slot:body-cell-action="props">
+      <q-td :props="props">
+        <q-btn
+        v-if="props.row.is_owned_by_current_user"
+        color="negative"
+        icon-right="delete"
+        no-caps
+        flat
+        dense
+        @click="delete_item(applications.value.indexOf(props.row))"
+      />
+      </q-td>
+    </template>
+  </q-table>
+</div>
+
+<div v-if="applications_loading" class="center_of_screen">
+  <q-circular-progress
+    size="100px"
+    indeterminate
+    rounded
+  ></1-progress-circular>
+</div>
+
+<h4>New Application</h4>
+<div>
+  <q-banner inline-actions class="text-white bg-red" v-if="applications_loading_error_message">
+    [[ services_loading_error_message ]]
+  </q-banner>
+
+  <q-form @submit.prevent="submit">
+    <q-input
+      filled
+      v-model="form_data.name"
+      label="Name"
+      lazy-rules
+      :rules="[ val => val && val.length > 0 || 'Please type something']"
+    ></q-input>
+
+    <q-input
+      filled
+      v-model="form_data.description"
+      label="Description"
+      lazy-rules
+      :rules="[ val => val && val.length > 0 || 'Please type something']"
+    ></q-input>
+
+    <q-toggle v-model="form_data.is_public" label="Public"></q-toggle>
+
+    <div class="q-pa-md">
+      <div class="q-gutter-sm">
+        <q-item-label header>Services</q-item-label>
+        <q-list>
+          <q-item 
+            tag="label"
+            v-ripple
+            v-for="service in services.value"
+            :key="service.uuid"
+          >
+            <q-item-section avatar>
+              <q-checkbox v-model="form_data.services" :val="service.uuid" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>[[ service.container_ref ]]</q-item-label>
+            </q-item-section>  
+          </q-item>
+        </q-list>
+      </div>
+    </div>
+    <environment-component v-model="form_data.environment"></environment-component>
+    <div>
+      <q-btn primary height="55" type="submit" color="blue">
+        Submit
+      </q-btn>
+    </div>
+  </q-form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'applications.js' %}"></script>
 {% endblock %}

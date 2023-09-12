@@ -1,77 +1,123 @@
 const { createApp, ref, reactive } = Vue
-const { createVuetify } = Vuetify
-
-const vuetify = createVuetify()
 
 createApp({
   delimiters: ["[[", "]]"],
   setup() {
     const applications = reactive({"value": []})
+    const services = reactive({"value": []})
     let applications_loading = ref("primary")
     let applications_form_disabled = ref(false)
     let applications_loading_error_message = ref(undefined)
-    let form_data = reactive({})
+    let form_data = reactive({
+      name: "",
+      description: "",
+      environment: {},
+      is_public: false,
+      services: [],
+    })
 
     fetch_with_retry(`/api/applications/`, callback=function(json){
-      console.log(json)
-      services.value = json
-      services_loading.value = false
+      applications.value = json
+      applications_loading.value = false
+
+      applications.value.forEach(process_created_by)
+
+      fetch_with_retry(`/api/services/`, callback=function(json){
+        services.value = json
+        try {
+          applications.value.forEach((app) => {
+            app.services.forEach((wrapper) => {
+              let full_service = services.value.find((service) => {
+                return wrapper.service == service.uuid
+              })
+              wrapper.container_ref = full_service.container_ref
+            })
+          })
+        } catch (e){
+          console.error(e)
+          // TODO
+        }
+      }, error_callback=function(res){
+        // TODO
+      })
     }, error_callback=function(res){
-      services_loading_error_message = "Could not get services"
+      applications_loading_error_message = "Could not get applications"
     })
+
     return {
-      services, services_loading, services_form_disabled, services_loading_error_message,
+      applications, applications_loading, applications_form_disabled, applications_loading_error_message,
+      services,
       form_data,
       async submit(e) {
-        e.preventDefault()
-        services_form_disabled = true
-        services_loading = true
-        res = await e
-        if(res.valid){
-          const token = get_token()
-          const headers = new Headers();
-          headers.append("Authorization", `Token ${token}`);  
-          headers.append("Content-Type", "application/json")
-          const request = new Request(
-            url=`/api/services/`,
-            {
-              method: 'POST',
-              mode: 'same-origin',
-              body: JSON.stringify(form_data),
-              headers: headers,
-            }
-          );
-          fetch(request).then((res) => {
-            if (res.ok) {
-              return res.json()
-            }
-            return Promise.reject(res);  
-          }).then( res => {
-            services.value.push(res)
-          }).catch((response) => {
-            console.log(response)
-            services_loading_error_message = "Could not create service"
-          }).finally(() => {
-            services_form_disabled = false
-            services_loading = false
-          })
-        }
+        console.log(JSON.stringify(form_data))
+        applications_form_disabled = true
+        applications_loading = true
+        const request = new Request(
+          url=`/api/applications/`,
+          {
+            method: 'POST',
+            mode: 'same-origin',
+            body: JSON.stringify({
+              "name": form_data.name,
+              "description": form_data.description,
+              "environment": JSON.stringify(form_data.environment),
+              "is_public": form_data.is_public,
+              "services": form_data.services.map((uuid) => {
+                return {"service": uuid}
+              }),
+            }),
+            headers: get_headers(),
+          }
+        );
+        fetch(request).then((res) => {
+          if (res.ok) {
+            return res.json()
+          }
+          return Promise.reject(res);  
+        }).then( res => {
+          process_created_by(res)
+          applications.value.push(res)
+        }).catch((response) => {
+          applications_loading_error_message = "Could not create application"
+        }).finally(() => {
+          applications_form_disabled = false
+          applications_loading = false
+        })
       },
-      rules: [
+      delete_item(index){
+        fetch(`/api/applications/${this.applications.value[index].uuid}`, {
+          method: "DELETE",
+          headers: get_headers(),
+        }).then((response) => {
+          if (response.ok) {
+            this.applications.value.splice(index, 1);
+          } else {
+            return Promise.reject(response);
+          }
+        }).catch((res) => {
+          alert(`Could not delete application: ${res.detail}`)
+        })
+      },
+      not_empty: [
         value => {
           if (value) return true
           return 'Value cannot be empty.'
         },
       ],
       headers: [
-        { label: "UUID", field: "uuid", name: "uuid", sortable: true, align: "left" },
-        { label: "Image", field: "container_ref", name: "container_ref", sortable: true, align: "left" },
+        { label: "Name", field: "name", name: "name", sortable: true, align: "left" },
         { label: "Created By", field: "created_by", name: "created_by", sortable: true, align: "left" },
         { label: "Created At", field: "created_at", name: "created_at", sortable: true, align: "left" },
         { label: "Public?", field: "is_public", name: "is_public", sortable: true, align: "left" },
+        { label: "Description", field: "description", name: "description", sortable: true, align: "left" },
+        { label: "Services", field: "services", name: "services", align: "left" },
+        { label: "Environment", field: "environment", name: "environment", align: "left" },
+        { name: 'action', label: 'Action', field: 'action' },
       ],
       initialPagination: {
         rowsPerPage: 0,
       }
     }
-}}).use(vuetify).use(Quasar).mount('#app')
+}}).use(Quasar)
+.component("environment-component", EnvironmentComponent)
+.mount('#app')

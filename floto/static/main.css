@@ -1,7 +1,13 @@
 :root {
     --primary-color: #2196F3;
     --primary-light-color: #90CAF9;
+    --primary-light-color2: #bce0fd;
 }  
+
+.main {
+    width: 90%;
+    margin: auto;
+}
 
 .main .container .floto-danger {
     background-color: #f8d7da;
@@ -107,4 +113,25 @@ code#command_error {
     position: absolute;
     left: 48%;
     top: 48%;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+}
+
+.btn {
+    border: none;
+    margin: 5px;
+    padding: 5px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: var(--primary-light-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-light-color2);
 }

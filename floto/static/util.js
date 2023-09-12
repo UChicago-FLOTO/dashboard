@@ -28,10 +28,16 @@ function get_headers(){
   return headers  
 }
 
-
 function get_token(){
   return document.cookie
     .split("; ")
     .find((row) => row.startsWith("token="))
     ?.split("=")[1];
+}
+
+function process_created_by(obj){
+  obj.is_owned_by_current_user = obj.created_by == get_user_email()
+  if ("environment" in obj){
+    obj.parsed_env = JSON.parse(obj.environment)
+  }
 }
