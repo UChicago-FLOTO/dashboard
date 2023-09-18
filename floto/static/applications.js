@@ -15,6 +15,7 @@ createApp({
       is_public: false,
       services: [],
     })
+    let step = ref(1)
 
     fetch_with_retry(`/api/applications/`, callback=function(json){
       applications.value = json
@@ -48,6 +49,14 @@ createApp({
       applications, applications_loading, applications_form_disabled, applications_loading_error_message,
       services,
       form_data,
+      step,
+      continueFn(stepper){
+        console.log(this.$refs)
+        if(step.value === 1 && form_data.application){
+          form_data.environment = form_data.application.parsed_env
+        }
+        stepper.next()
+      },
       async submit(e) {
         console.log(JSON.stringify(form_data))
         applications_form_disabled = true

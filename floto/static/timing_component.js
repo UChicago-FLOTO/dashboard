@@ -59,20 +59,27 @@ var TimingComponent = {
   template: `
     <div class="q-pa-sm">
       <h5>Timings</h5>
-      <ul>
-        <li v-for="s in timings">
-          {{ s }} 
-          <q-btn
-            color="negative"
-            icon-right="delete"
-            no-caps
-            flat
-            dense
-            @click="delete_item(s)"
-          />
-        </li>
-        <li v-if="timings.length === 0">This job is never scheduled to run!</li>
-      </ul>
+      <q-field
+        v-model="timings"
+        :rules="[ val => val && val.length >= 1 || 'Please add at least one timing from below.']"
+      >
+        <template v-slot:control>
+          <ul>
+            <li v-for="s in timings">
+              {{ s }} 
+              <q-btn
+                color="negative"
+                icon-right="delete"
+                no-caps
+                flat
+                dense
+                @click="delete_item(s)"
+              />
+            </li>
+            <li v-if="timings.length === 0">This job is never scheduled to run!</li>
+          </ul>
+        </template>
+      </q-field>
       <h6>New timing</h6>
       <q-select
       filled
