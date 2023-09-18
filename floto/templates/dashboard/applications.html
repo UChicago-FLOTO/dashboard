@@ -67,7 +67,7 @@
 <h4>New Application</h4>
 <div>
   <q-banner inline-actions class="text-white bg-red" v-if="applications_loading_error_message">
-    [[ services_loading_error_message ]]
+    [[ applications_loading_error_message ]]
   </q-banner>
 
   <q-form @submit.prevent="submit">
@@ -91,7 +91,7 @@
 
     <div class="q-pa-md">
       <div class="q-gutter-sm">
-        <q-item-label header>Services</q-item-label>
+        <h5>Services</h5>
         <q-list>
           <q-item 
             tag="label"
@@ -109,7 +109,9 @@
         </q-list>
       </div>
     </div>
+
     <environment-component v-model="form_data.environment"></environment-component>
+    
     <div>
       <q-btn primary height="55" type="submit" color="blue">
         Submit

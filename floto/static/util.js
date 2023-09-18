@@ -10,7 +10,7 @@ function fetch_with_retry(url, callback, error_callback=function(r){}, backoff_c
       console.error("failed after 3 backoff attempts")
       error_callback(response)
     } else {
-      backoff_count++
+      backoff_count += 1
       console.log(`retrying number ${backoff_count}`)
       setTimeout(
         fetch_with_retry(url, callback, backoff_count=backoff_count),

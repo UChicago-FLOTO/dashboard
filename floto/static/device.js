@@ -1,7 +1,4 @@
 const { createApp, ref, reactive } = Vue
-const { createVuetify } = Vuetify
-
-const vuetify = createVuetify()
 
 createApp({
   delimiters: ["[[", "]]"],
@@ -11,15 +8,17 @@ createApp({
     const command_text = reactive({"value": ""})
     let device_loading = ref("primary")
     let logs_loading = ref("primary")
-    let tab = ref(null)
+    let tab = ref("overview_tab")
     let command_disabled = ref(false)
     let stdout = ref("")
     let stderr = ref("")
 
     fetch_with_retry(`/api/devices/${window.location.pathname.split("/")[3]}`, callback=function(json){
       device.value = json
-      device.value.memory_percentage = Math.round(device.value["memory_usage"] / device.value["memory_total"], 2) * 100
-      device.value.storage_percentage = Math.round(device.value["storage_usage"] / device.value["storage_total"], 2) * 100
+      device.value.memory_percentage = (device.value["memory_usage"] / device.value["memory_total"]).toFixed(2)
+      device.value.storage_percentage = (device.value["storage_usage"] / device.value["storage_total"]).toFixed(2)
+      device.value.cpu_temp_percentage = (device.value["cpu_temp"] / 100.0)
+      device.value.cpu_usage_percentage = (device.value["cpu_usage"] / 100.0)
       device.value.split_mac = device.value.mac_address.split(/[ ,]+/)
       device.value.split_ip = device.value.ip_address.split(/[ ,]+/)
       device_loading.value = false
@@ -70,4 +69,4 @@ createApp({
         });
       }
     }
-}}).use(vuetify).mount('#app')
+}}).use(Quasar).mount('#app')

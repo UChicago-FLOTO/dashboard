@@ -1,7 +1,4 @@
 const { createApp, ref, reactive } = Vue
-const { createVuetify } = Vuetify
-
-const vuetify = createVuetify()
 
 createApp({
   delimiters: ["[[", "]]"],
@@ -27,28 +24,36 @@ createApp({
         devices, fleets, selected_fleets, devices_loading, fleets_loading,
         headers: [
           {
-              title: "Name",
-              key: "device_name",
+              label: "Name",
+              field: "device_name",
               sortable: true,
+              name: "device_name",
           },
           {
-              title: "UUID",
-              key: "uuid",
+              label: "UUID",
+              field: "uuid",
               sortable: true,
+              name: "uuid",
           },
           {
-              title: "VPN connected",
-              key: "is_connected_to_vpn",
+              label: "VPN connected",
+              field: "is_connected_to_vpn",
               sortable: true,
+              name: "is_connected_to_vpn",
           },
           {
-              title: "API heartbeat",
-              key: "api_heartbeat_state",
+              label: "API heartbeat",
+              field: "api_heartbeat_state",
               sortable: true,
+              name: "api_heartbeat_state",
           },
+          { name: 'action', label: 'Actions', name: "action", field: 'action' },
         ],
-        handleClick: function(event, item){
-          window.location.href = `/dashboard/devices/${item.item.raw.uuid}`
-        }
+        handleClick: function(uuid){
+          window.location.href = `/dashboard/devices/${uuid}`
+        },
+        initialPagination: {
+          rowsPerPage: 0,
+        },
       }
-}}).use(vuetify).mount('#app')
+}}).use(Quasar).mount('#app')
