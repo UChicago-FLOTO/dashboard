@@ -1,0 +1,72 @@
+{% extends 'default.html' %}
+
+{% load static %}
+
+{% block title %} Services {% endblock %}
+
+{% block content %}
+
+
+<div class="q-pa-md">
+  <h3>Services</h3>
+  <q-table
+    :columns="headers"
+    :rows="services.value"
+    :pagination="initialPagination"
+    >
+    <template v-slot:body-cell-action="props">
+      <q-td :props="props">
+        <q-btn
+        v-if="props.row.is_owned_by_current_user"
+        color="negative"
+        icon-right="delete"
+        no-caps
+        flat
+        dense
+        @click="delete_item(services.value.indexOf(props.row))"
+      />
+      </q-td>
+    </template>
+  </q-table>
+</div>
+
+<div v-if="services_loading" class="center_of_screen">
+  <q-circular-progress
+    size="100px"
+    indeterminate
+    rounded
+  ></q-circular-progress>
+</div>
+
+<h4>New Service</h4>
+<div>
+  <q-banner inline-actions class="text-white bg-red" v-if="services_loading_error_message">
+    [[ services_loading_error_message ]]
+  </q-banner>
+
+  <q-form @submit.prevent="submit">
+    <q-input 
+      filled
+      label="Container Reference" 
+      name="container_ref" 
+      v-model="form_data.container_ref"
+      :rules="[ val => val && val.length > 0 || 'Please type something']"
+    ></q-input>
+    <q-toggle 
+      label="Public"
+      name="is_public" v-model="form_data.is_public">
+    </q-toggle>
+
+    <div>
+      <q-btn primary height="55" type="submit" color="blue">
+        Submit
+      </q-btn>
+    </div>
+  </v-form>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'services.js' %}"></script>
+{% endblock %}

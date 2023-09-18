@@ -6,34 +6,50 @@
 
 {% block content %}
 
-<h1>Devices</h1>
+<h3>Devices</h3>
 
-<v-select
-  clearable
-  chips
+<q-select
   label="Select fleets"
-  :items="fleets.value"
-  item-title="app_name"
-  item-value="id"
-  multiple
+  filled
   v-model="selected_fleets.value"
-></v-select>
+  :options="fleets.value"
+  :option-label="(fleet) => fleet.app_name"
+  :option-value="(fleet) => fleet.id"
+  emit-value
+  map-options
+  multiple
+  use-chips
+>
+</q-select>
 
-<v-data-table
-  items-per-page="-1"
-  :headers="headers"
-  :items="devices.value.filter(d => selected_fleets.value.includes(d.belongs_to__application.__id))"
-  item-value="name"
-  @click:row="handleClick"
-  >
-</v-data-table>
+
+<q-table
+    :columns="headers"
+    :rows="devices.value.filter(d => selected_fleets.value.includes(d.belongs_to__application.__id))"
+    :pagination="initialPagination"
+    >
+    <template v-slot:body-cell-action="props">
+      <q-td :props="props">
+        <a :href='`/dashboard/devices/${props.row.uuid}`'>
+          <q-btn
+            icon-right="visibility"
+            no-caps
+            flat
+            dense
+            @click="handleClick(props.row.uuid)"
+          />
+        </a>
+      </q-td>
+    </template>
+  </q-table>
 
 
 <div v-if="devices_loading && fleets_loading" class="center_of_screen">
-  <v-progress-circular
-    :size="100"
+  <q-circular-progress
+    size="100px"
     indeterminate
-  ></v-progress-circular>
+    rounded
+  ></q-circular-progress>
 </div>
 
 {% endblock %}

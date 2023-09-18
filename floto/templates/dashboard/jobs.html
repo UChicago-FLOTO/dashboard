@@ -1,0 +1,159 @@
+{% extends 'default.html' %}
+
+{% load static %}
+
+{% block title %} Jobs {% endblock %}
+
+{% block content %}
+<div class="q-pa-md">
+  <h3>Jobs</h3>
+
+  <q-select
+    label="Select fleets"
+    filled
+    v-model="selected_table_filter"
+    :options="table_filter_options"
+    :option-label="(o) => o.name"
+  >
+  </q-select>
+
+  <q-table 
+    :columns="headers" 
+    :rows="jobs.value.filter(selected_table_filter.value)"
+    :pagination="initialPagination"
+  >
+    <template v-slot:body-cell-devices="props">
+      <q-td :props="props">
+        <ul>
+          <li v-for="wrapper in props.row.devices">
+            <template v-if="wrapper.device_name">
+              [[ wrapper.device_name ]]
+            </template>
+            <template v-else>
+              [[ wrapper.device_uuid ]]
+            </template>
+          </li>
+        </ul>
+      </q-td>
+    </template>
+
+    <template v-slot:body-cell-environment="props">
+      <q-td :props="props">
+        <ul>
+          <li v-if="props.row.parsed_env.length === 0">No environment</li>
+          <li v-for="(value, name, index) in props.row.parsed_env">
+            [[ name ]]: [[ value ]]
+          </li>
+        </ul>
+      </q-td>
+    </template>
+
+    <template v-slot:body-cell-timings="props">
+      <q-td :props="props">
+        <ul>
+          <li v-for="timing in props.row.timings">
+            [[ timing.timing ]]
+          </li>
+        </ul>
+      </q-td>
+    </template>
+
+    <template v-slot:body-cell-timeslots="props">
+      <q-td :props="props">
+        <ul>
+          <li v-for="timeslot in props.row.timeslots">
+            [[ timeslot.start ]] - [[ timeslot.stop ]]
+          </li>
+        </ul>
+      </q-td>
+    </template>
+
+    <template v-slot:body-cell-action="props">
+      <q-td :props="props">
+        <q-btn v-if="props.row.is_owned_by_current_user" color="negative" icon-right="delete" no-caps flat dense
+          @click="delete_item(services.value.indexOf(props.row))" />
+      </q-td>
+    </template>
+  </q-table>
+</div>
+
+<h4>New Job</h4>
+<div class="q-pa-md">
+  <q-stepper v-model="step" ref="stepper" color="primary" animated>
+    <q-step :name="1" title="Metadata" :done="step > 1">
+      <h5>Application</h5>
+      <p>Choose the application this job runs.</p>
+      <q-form @submit.prevent="continueFn($refs.stepper)">
+        <q-select filled v-model="form_data.application" use-input hide-selected fill-input input-debounce="0"
+          :options="applications.options_filter" @filter="appFilterFn" emit-value map-options
+          :rules="[ val => val || 'Select an application']">
+          <template v-slot:no-option>
+            <q-item>
+              <q-item-section class="text-grey">
+                No results
+              </q-item-section>
+            </q-item>
+          </template>
+        </q-select>
+
+        <q-toggle v-model="form_data.is_public" label="Public"></q-toggle>
+
+        <q-stepper-navigation>
+          <q-btn type="submit" color="primary" label="Continue"></q-btn>
+        </q-stepper-navigation>
+      </q-form>
+    </q-step>
+
+    <q-step :name="2" title="Schedule" :done="step > 2">
+      <q-form @submit.prevent="continueFn($refs.stepper)">
+        <timing-component v-model="form_data.timings"></timing-component>
+        <q-stepper-navigation>
+          <q-btn flat color="primary" @click="$refs.stepper.previous()" label="Back" class="q-ml-sm"></q-btn>
+          <q-btn type="submit" color="primary" label="Continue"></q-btn>
+        </q-stepper-navigation>
+      </q-form>
+    </q-step>
+
+    <q-step :name="3" title="Select Devices" :done="step > 3">
+      <div>
+        <h5>Devices</h5>
+        <p>Choose the devices on which your job should run.</p>
+        <q-form @submit.prevent="continueFn($refs.stepper)">
+          <q-field v-model="form_data.devices" :rules="[ val => val.length >= 1 || 'Select at least one device']">
+            <q-list>
+              <q-item tag="label" v-ripple v-for="device in devices.value" :key="device.uuid">
+                <q-item-section avatar>
+                  <q-checkbox v-model="form_data.devices" :val="device.uuid" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>[[ device.device_name ]]</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-field>
+          <q-stepper-navigation>
+            <q-btn flat color="primary" @click="$refs.stepper.previous()" label="Back" class="q-ml-sm"></q-btn>
+            <q-btn type="submit" color="primary" label="Continue"></q-btn>
+          </q-stepper-navigation>
+        </q-form>
+      </div>
+    </q-step>
+
+    <q-step :name="4" title="Add/Override Environment" :done="step > 4">
+      <p>Add or change environment variables for this job.</p>
+      <q-form @submit.prevent="submit">
+        <environment-component v-model="form_data.environment"></environment-component>
+
+        <q-stepper-navigation>
+          <q-btn flat color="primary" @click="$refs.stepper.previous()" label="Back" class="q-ml-sm"></q-btn>
+          <q-btn type="submit" color="primary" label="Submit"></q-btn>
+        </q-stepper-navigation>
+      </q-form>
+    </q-step>
+  </q-stepper>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'jobs.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends 'default.html' %}
+
+{% load static %}
+
+{% block title %} Applications {% endblock %}
+
+{% block content %}
+
+<div class="q-pa-md">
+  <h3>Applications</h3>
+  <q-table
+    :columns="headers"
+    :rows="applications.value"
+    :pagination="initialPagination"
+    >
+
+    <template v-slot:body-cell-services="props">
+      <q-td :props="props">
+        <ul>
+          <li v-for="wrapper in props.row.services">
+            <template v-if="wrapper.container_ref">
+              [[ wrapper.container_ref ]]
+            </template>
+            <template v-else>
+              [[ wrapper.service ]]
+            </template>
+          </li>
+        </ul>
+      </q-td>
+    </template>
+
+    <template v-slot:body-cell-environment="props">
+      <q-td :props="props">
+        <ul>
+          <li v-for="(value, name, index) in props.row.parsed_env">
+            [[ name ]]: [[ value ]]
+          </li>
+        </ul>
+      </q-td>
+    </template>
+
+
+    <template v-slot:body-cell-action="props">
+      <q-td :props="props">
+        <q-btn
+        v-if="props.row.is_owned_by_current_user"
+        color="negative"
+        icon-right="delete"
+        no-caps
+        flat
+        dense
+        @click="delete_item(applications.value.indexOf(props.row))"
+      />
+      </q-td>
+    </template>
+  </q-table>
+</div>
+
+<div v-if="applications_loading" class="center_of_screen">
+  <q-circular-progress
+    size="100px"
+    indeterminate
+    rounded
+  ></1-progress-circular>
+</div>
+
+<h4>New Application</h4>
+<div class="q-pa-md">
+  <q-banner inline-actions class="text-white bg-red" v-if="applications_loading_error_message">
+    [[ applications_loading_error_message ]]
+  </q-banner>
+
+  <q-stepper
+    v-model="step"
+    ref="stepper"
+    color="primary"
+    animated
+  >
+    <q-step
+      :name="1"
+      title="Metadata"
+      :done="step > 1"
+    >
+      <q-form @submit.prevent="continueFn($refs.stepper)">
+        <q-input
+          filled
+          v-model="form_data.name"
+          label="Name"
+          lazy-rules
+          :rules="[ val => val && val.length > 0 || 'Please type something']"
+        ></q-input>
+
+        <q-input
+          filled
+          v-model="form_data.description"
+          label="Description"
+          lazy-rules
+          :rules="[ val => val && val.length > 0 || 'Please type something']"
+        ></q-input>
+
+        <q-toggle v-model="form_data.is_public" label="Public"></q-toggle>
+
+        <q-stepper-navigation>
+          <q-btn type="submit" color="primary" label="Continue"></q-btn>
+        </q-stepper-navigation>  
+      </q-form>
+    </q-step>
+
+    <q-step
+      :name="2"
+      title="Services"
+      :done="step > 2"
+    >
+      <q-form @submit.prevent="continueFn($refs.stepper)">
+        <h5>Services</h5>
+        <p>Define which services (containers) this application comprises.</p>
+        <q-field v-model="form_data.services"
+         :rules="[ val => val.length >= 1 || 'Select at least one service']"
+        >
+          <q-list>
+            <q-item 
+              tag="label"
+              v-ripple
+              v-for="service in services.value"
+              :key="service.uuid"
+            >
+              <q-item-section avatar>
+                <q-checkbox 
+                  v-model="form_data.services" 
+                  :val="service.uuid" 
+                />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>[[ service.container_ref ]]</q-item-label>
+              </q-item-section>  
+            </q-item>
+          </q-list>
+        </q-field>
+        <q-stepper-navigation>
+          <q-btn flat color="primary" @click="$refs.stepper.previous()" label="Back" class="q-ml-sm"></q-btn>
+          <q-btn type="submit" color="primary" label="Continue"></q-btn>
+        </q-stepper-navigation>  
+      </q-form>
+    </q-step>
+
+    <q-step
+      :name="3"
+      title="Environment"
+      :done="step > 3"
+    >
+      <p>Define any environment variables which will be set in this application's containers.</p>
+      <q-form @submit.prevent="submit">
+        <environment-component v-model="form_data.environment"></environment-component>
+
+        <q-stepper-navigation>
+          <q-btn flat color="primary" @click="$refs.stepper.previous()" label="Back" class="q-ml-sm"></q-btn>
+          <q-btn type="submit" color="primary" label="Submit"></q-btn>
+        </q-stepper-navigation>  
+      </q-form>
+    </q-step>
+  </q-stepper>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'applications.js' %}"></script>
+{% endblock %}

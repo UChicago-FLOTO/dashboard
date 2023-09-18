@@ -2,19 +2,21 @@ from django.http import HttpResponse
 from django.template import loader
 
 import datetime
+import logging
 
 from . import util
 
+LOG = logging.getLogger(__name__)
+
 
 def devices(request):
-    template = loader.get_template("dashboard/devices.html")
     context = {}
+    template = loader.get_template("dashboard/devices.html")
     return HttpResponse(template.render(context, request))
 
 
 def device(request, uuid):
-    context = {
-    }
+    context = {}
     template = loader.get_template("dashboard/device.html")
     return HttpResponse(template.render(context, request))
 
@@ -30,7 +32,7 @@ def releases(request, fleet=None):
 
 
 def fleets(request):
-    fleets = util.get(request, "fleet-list", [])
+    fleets = util.getURL(request, "api:fleet-list", [])
     releases_by_id = util.get_releases_by_id(request)
     processed_fleets = []
     for fleet in fleets:
@@ -54,7 +56,7 @@ def fleets(request):
 
 def logs(request, uuid, count=100):
     args = {"pk": uuid, "count": count}
-    logs = util.get(request, "device-logs", request_kwargs=args, default_ret=[])
+    logs = util.getURL(request, "api:device-logs", request_kwargs=args, default_ret=[])
     processed_logs = []
     for entry in logs:
         processed_logs.append({
@@ -83,4 +85,22 @@ def user(request):
         "api_key": request.user.auth_token.key,
     }
     template = loader.get_template("dashboard/user.html")
+    return HttpResponse(template.render(context, request))
+
+
+def services(request):
+    context = {}
+    template = loader.get_template("dashboard/services.html")
+    return HttpResponse(template.render(context, request))
+
+
+def applications(request):
+    context = {}
+    template = loader.get_template("dashboard/applications.html")
+    return HttpResponse(template.render(context, request))
+
+
+def jobs(request):
+    context = {}
+    template = loader.get_template("dashboard/jobs.html")
     return HttpResponse(template.render(context, request))
