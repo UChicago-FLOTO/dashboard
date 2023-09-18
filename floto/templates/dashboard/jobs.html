@@ -7,8 +7,21 @@
 {% block content %}
 <div class="q-pa-md">
   <h3>Jobs</h3>
-  <q-table :columns="headers" :rows="jobs.value" :pagination="initialPagination">
 
+  <q-select
+    label="Select fleets"
+    filled
+    v-model="selected_table_filter"
+    :options="table_filter_options"
+    :option-label="(o) => o.name"
+  >
+  </q-select>
+
+  <q-table 
+    :columns="headers" 
+    :rows="jobs.value.filter(selected_table_filter.value)"
+    :pagination="initialPagination"
+  >
     <template v-slot:body-cell-devices="props">
       <q-td :props="props">
         <ul>

@@ -8,6 +8,10 @@ createApp({
     let jobs_form_disabled = ref(false)
     let jobs_loading_error_message = ref(undefined)
     let step = ref(1)
+    let table_filter_options = [
+      { name: "My Jobs", value: (val) => { return val.is_owned_by_current_user } },
+      { name: "Public Jobs", value: (val) => { return val.is_public } },
+    ]
 
     const applications = reactive({
       "value": [], 
@@ -145,6 +149,8 @@ createApp({
         { label: "Timeslots", field: "timeslots", name: "timeslots", align: "left" },
         { name: 'action', label: 'Action', field: 'action' },
       ],
+      table_filter_options,
+      selected_table_filter: ref(table_filter_options[0]),
       initialPagination: {
         rowsPerPage: 0,
       },
