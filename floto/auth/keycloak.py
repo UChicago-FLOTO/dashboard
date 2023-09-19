@@ -18,19 +18,19 @@ class KeycloakClient:
             user_realm_name="floto",
         )
 
-    def get_user_id(self, username):
-        return self.keycloak_admin.get_user_id(username)
-
-    def get_user_by_username(self, username):
-        user_id = self.get_user_id(username)
-        return self.get_user_by_id(user_id)
+    def get_user_by_email(self, email):
+        users = self.keycloak_admin.get_users({"email": email})
+        if len(users) != 1:
+            LOG.error(f"Error getting user by email {email}. Expected 1, got:")
+            LOG.error(users)
+        return users[0]
 
     def get_user_by_id(self, user_id):
         user = self.keycloak_admin.get_user(user_id)
         return user
 
-    def get_user_groups(self, username):
-        user_id = self.get_user_id(username)
+    def get_user_groups(self, email):
+        user_id = self.get_user_by_email(email)["id"]
         groups = self.keycloak_admin.get_user_groups(
             user_id, brief_representation=False
         )

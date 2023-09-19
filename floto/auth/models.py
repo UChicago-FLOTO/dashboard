@@ -10,6 +10,10 @@ from rest_framework.authtoken import models as token_models
 
 from floto.auth.keycloak import KeycloakClient
 
+import logging
+
+LOG = logging.getLogger(__name__)
+
 
 def new_api_token():
     key_length = token_models.Token._meta.get_field("key").max_length
@@ -23,13 +27,15 @@ class KeycloakUserManager(auth_models.UserManager):
     """
 
     def create_user(self, username, email=None, password=None, **extra_fields):
+        # NOTE We do not use username, it's a random string from keycloak.
+        # Instead, we use email, as keycloak also enforces that is unique.
         try:
             keycloak_client = KeycloakClient()
-            keycloak_user = keycloak_client.get_user_by_username(email)
+            keycloak_user = keycloak_client.get_user_by_email(email)
         except KeycloakError as e:
             raise ValueError(f"Failed to fetch user {email} from Keycloak") from e
         return super().create_user(
-            username, email, password=None, id=keycloak_user.get("id"), **extra_fields
+            email, email, password=None, id=keycloak_user.get("id"), **extra_fields
         )
 
 
