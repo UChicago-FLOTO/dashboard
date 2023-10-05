@@ -6,6 +6,7 @@ createApp({
     const device = reactive({"value": {}})
     const logs = reactive({"value": []})
     const command_text = reactive({"value": ""})
+    const environment = reactive({"value": []})
     let device_loading = ref("primary")
     let logs_loading = ref("primary")
     let tab = ref("overview_tab")
@@ -13,7 +14,8 @@ createApp({
     let stdout = ref("")
     let stderr = ref("")
 
-    fetch_with_retry(`/api/devices/${window.location.pathname.split("/")[3]}`, callback=function(json){
+    let uuid = window.location.pathname.split("/")[3]
+    fetch_with_retry(`/api/devices/${uuid}`, callback=function(json){
       device.value = json
       device.value.memory_percentage = (device.value["memory_usage"] / device.value["memory_total"]).toFixed(2)
       device.value.storage_percentage = (device.value["storage_usage"] / device.value["storage_total"]).toFixed(2)
@@ -28,9 +30,16 @@ createApp({
         logs_loading.value = false
       })
     })
+
+    fetch_with_retry(`/api/devices/${uuid}/environment`, callback=function(json){
+      environment.value = json
+      console.log(environment)
+    })
+
     return {
       device, logs, tab, device_loading, logs_loading,
       command_text, command_disabled, stdout, stderr,
+      environment,
       run_command: function(e){
         // Do not submit form actually
         e.preventDefault()

@@ -140,7 +140,11 @@
     </q-step>
 
     <q-step :name="4" title="Add/Override Environment" :done="step > 4">
-      <p>Add or change environment variables for this job.</p>
+      <p>
+        Add or change environment variables for this job.
+        Variables set on the device level are not included here, but
+        can be overridden.
+      </p>
       <q-form @submit.prevent="submit">
         <environment-component v-model="form_data.environment"></environment-component>
 

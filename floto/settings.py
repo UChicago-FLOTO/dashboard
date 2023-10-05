@@ -246,3 +246,14 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ],
 }
+
+# Kubernetes Variables
+KUBE_CONFIG_FILE = os.environ.get(
+    "KUBE_CONFIG_FILE", "/config/kube/config"
+)
+KUBE_VOLUME_MOUNT_PATH = os.environ.get(
+    "KUBE_VOLUME_MOUNT_PATH", "/share"
+)
+KUBE_VOLUME_SIZE = os.environ.get(
+    "KUBE_VOLUME_SIZE", "2Gi"
+)

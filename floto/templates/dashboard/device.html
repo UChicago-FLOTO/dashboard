@@ -63,60 +63,71 @@
   </q-tabs>
   <q-tab-panels v-model="tab">
     <q-tab-panel name="overview_tab">
-      <table class="table">
-        <tr>
-          <th class="text-left">Heartbeat State</th>
-          <td class="text-left">
-            [[ device.value.api_heartbeat_state ]] since [[ device.value.last_connectivity_event ]]
-          </td>
-        </tr>
-        <tr>
-          <th class="text-left">VPN connected</th>
-          <td class="text-left">
-            [[ device.value.is_online ]] since [[ device.value.last_vpn_event ]]
-          </td>
-        </tr>
-        <tr>
-          <th class="text-left">Status</th>
-          <td class="text-left">[[ device.value.status ]]</td>
-        </tr>
-        <tr>
-          <th class="text-left">Provisioning State</th>
-          <td class="text-left">[[ device.value.provisioning_state ]] </td>
-        </tr>
-        <tr>
-          <th class="text-left">OS Version</th>
-          <td class="text-left">[[ device.value.os_version ]] </td>
-        </tr>
-        <tr>
-          <th class="text-left">Supervisor Version</th>
-          <td class="text-left">[[ device.value.supervisor_version ]] </td>
-        </tr>
-        <tr>
-          <th class="text-left">Release</th>
-          <td class="text-left">[[ device.value.running_release ]]</td>
-        </tr>
-        <tr>
-          <th class="text-left">Fleet</th>
-          <td class="text-left">[[ device.value.fleet ]]</td>
-        </tr>
-        <tr>
-          <th class="text-left">IP address</th>
-          <td>
-            <ul>
-              <li v-for="ip in device.value.split_ip">[[ ip ]]</li>
-            </ul>
-          </td>
-        </tr>
-        <tr>
-          <th class="text-left">MAC address</th>
-          <td>
-            <ul>
-              <li v-for="mac in device.value.split_mac">[[ mac ]]</li>
-            </ul>
-          </td>
-        </tr>
-      </table>
+      <div class="row">
+        <table class="table col-6">
+          <tr>
+            <th class="text-left">Heartbeat State</th>
+            <td class="text-left">
+              [[ device.value.api_heartbeat_state ]] since [[ device.value.last_connectivity_event ]]
+            </td>
+          </tr>
+          <tr>
+            <th class="text-left">VPN connected</th>
+            <td class="text-left">
+              [[ device.value.is_online ]] since [[ device.value.last_vpn_event ]]
+            </td>
+          </tr>
+          <tr>
+            <th class="text-left">Status</th>
+            <td class="text-left">[[ device.value.status ]]</td>
+          </tr>
+          <tr>
+            <th class="text-left">Provisioning State</th>
+            <td class="text-left">[[ device.value.provisioning_state ]] </td>
+          </tr>
+          <tr>
+            <th class="text-left">OS Version</th>
+            <td class="text-left">[[ device.value.os_version ]] </td>
+          </tr>
+          <tr>
+            <th class="text-left">Supervisor Version</th>
+            <td class="text-left">[[ device.value.supervisor_version ]] </td>
+          </tr>
+          <tr>
+            <th class="text-left">Release</th>
+            <td class="text-left">[[ device.value.running_release ]]</td>
+          </tr>
+          <tr>
+            <th class="text-left">Fleet</th>
+            <td class="text-left">[[ device.value.fleet ]]</td>
+          </tr>
+          <tr>
+            <th class="text-left">IP address</th>
+            <td>
+              <ul>
+                <li v-for="ip in device.value.split_ip">[[ ip ]]</li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <th class="text-left">MAC address</th>
+            <td>
+              <ul>
+                <li v-for="mac in device.value.split_mac">[[ mac ]]</li>
+              </ul>
+            </td>
+          </tr>
+        </table>
+        <div class="col-6">
+          <h5>Environment</h5>
+          <table class="table">
+            <tr v-for="env_obj in environment.value">
+              <th class="text-left">[[ env_obj.name ]]</th>
+              <td class="text-left">[[ env_obj.value ]]</td>
+            </tr>
+          </table>
+      </div>
+      </div>
     </q-tab-panel>
     <q-tab-panel name="command_tab">
       <div v-if="device.value.is_online">

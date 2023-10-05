@@ -108,6 +108,11 @@ class DeviceViewSet(viewsets.ViewSet):
                 res["stderr"] = stderr_str
         return Response(res)
 
+    @action(methods=["GET"], detail=True, url_path="environment")
+    def environment_retrieve(self, request, pk):
+        balena = get_balena_client()
+        env = balena.models.device.env_var.get_all_by_device(uuid_or_id=pk)
+        return Response(env, status=status.HTTP_200_OK)
 
 class FleetViewSet(viewsets.ViewSet):
     def list(self, request):
@@ -199,11 +204,6 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
 
 class EnvViewSet(viewsets.ViewSet):
-    def retrieve(self, request, pk):
-        client = get_balena_client()
-        env = client.models.device.env_var.get_all_by_device(uuid_or_id=pk)
-        return Response(env, status=status.HTTP_200_OK)
-
     def destroy(self, request, pk):
         client = get_balena_client()
         env_key = request.query_params.get('env_key')
