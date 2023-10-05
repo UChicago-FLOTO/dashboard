@@ -257,3 +257,9 @@ KUBE_VOLUME_MOUNT_PATH = os.environ.get(
 KUBE_VOLUME_SIZE = os.environ.get(
     "KUBE_VOLUME_SIZE", "2Gi"
 )
+KUBE_SECRET_NAMESPACE = os.environ.get(
+    "KUBE_SECRET_NAMESPACE", "default"
+)
+KUBE_IMAGE_PULL_SECRETS = os.environ.get(
+    "KUBE_IMAGE_PULL_SECRETS", "floto_ghcr"
+).split(",")

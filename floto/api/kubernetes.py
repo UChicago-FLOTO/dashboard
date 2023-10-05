@@ -29,6 +29,19 @@ def create_deployment(devices, job):
         client.V1Namespace(metadata=client.V1ObjectMeta(name=namespace))
     )
 
+    # Copy image pull secrets to newly created namespace
+    for secret_name in settings.KUBE_IMAGE_PULL_SECRETS:
+        secret = core_api.read_namespaced_secret(
+            secret_name, settings.KUBE_SECRET_NAMESPACE)
+        core_api.create_namespaced_secret(namespace, client.V1Secret(
+            data=secret.data,
+            type="kubernetes.io/dockerconfigjson",
+            metadata=client.V1ObjectMeta(
+                namespace=namespace,
+                name=secret_name,
+            ),
+        ))
+
     for device in devices:
         node_uuid = device["device_uuid"].replace("-", "")
         # We need different job names per device, and need length < 64.
