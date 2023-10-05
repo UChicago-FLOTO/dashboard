@@ -35,9 +35,6 @@ def create_deployment(devices, job):
         # hexdigest 6 gives a hash of length 12, which means out job name
         # will be 4 (prefix) + 36 (uuid) + 12 (hash) = 52.
         uuid_hash = hashlib.shake_256(node_uuid.encode()).hexdigest(6)
-        LOG.info(device)
-        LOG.info(node_uuid)
-        LOG.info(uuid_hash)
         job_name = f"job-{job.uuid}-{uuid_hash}"
 
         containers = []
