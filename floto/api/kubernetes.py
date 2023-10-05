@@ -104,6 +104,13 @@ def create_deployment(devices, job):
                                     size_limit=settings.KUBE_VOLUME_SIZE
                                 )
                             )
+                        ],
+                        image_pull_secrets=[
+                            client.V1LocalObjectReference(
+                                secret_name=secret_name
+                            )
+                            for secret_name in 
+                            settings.KUBE_IMAGE_PULL_SECRETS
                         ]
                     ),
                     metadata=client.V1ObjectMeta(
