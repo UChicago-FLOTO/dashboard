@@ -246,3 +246,22 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ],
 }
+
+# Kubernetes Variables
+KUBE_CONFIG_FILE = os.environ.get(
+    "KUBE_CONFIG_FILE", "/config/kube/config"
+)
+KUBE_VOLUME_MOUNT_PATH = os.environ.get(
+    "KUBE_VOLUME_MOUNT_PATH", "/share"
+)
+KUBE_VOLUME_SIZE = os.environ.get(
+    "KUBE_VOLUME_SIZE", "2Gi"
+)
+KUBE_SECRET_NAMESPACE = os.environ.get(
+    "KUBE_SECRET_NAMESPACE", "default"
+)
+if os.environ.get("KUBE_IMAGE_PULL_SECRETS"):
+    KUBE_IMAGE_PULL_SECRETS = os.environ.get(
+        "KUBE_IMAGE_PULL_SECRETS").split(",")
+else:
+    KUBE_IMAGE_PULL_SECRETS = []
