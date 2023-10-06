@@ -53,10 +53,14 @@ def create_deployment(devices, job):
         containers = []
 
         device_environment = {
+            "FLOTO_JOB_UUID": job.uuid,
+            "FLOTO_DEVICE_UUID": device["device_uuid"],
+        }
+        device_environment.update({
             env_obj["name"]: env_obj["value"]
             for env_obj in 
             balena.models.device.env_var.get_all_by_device(uuid_or_id=device["device_uuid"])
-        }
+        })
         # Overwrite any variables with the job's env
         device_environment.update(environment)
 
