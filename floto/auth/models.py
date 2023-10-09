@@ -92,6 +92,8 @@ class KeycloakUser(auth_models.AbstractUser):
         self.auth_token.delete()
         return token_models.Token.objects.create(user=self, key=new_api_token())
 
+    
+
 
 @dispatch.receiver(signals.post_save, sender=KeycloakUser)
 def generate_token(sender, instance, created, **kwargs):

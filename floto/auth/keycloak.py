@@ -35,3 +35,12 @@ class KeycloakClient:
             user_id, brief_representation=False
         )
         return groups
+
+    def add_user_to_group(self, email, group):
+        user_id = self.get_user_by_email(email)["id"]
+        groups = self.keycloak_admin.get_groups({"name": group})
+        if len(groups) != 1:
+            LOG.error(f"Error getting group by name {group}. Expected 1, got:")
+            LOG.error(groups)
+        group_id = groups[0]["id"]
+        self.keycloak_admin.group_user_add(user_id, group_id)
