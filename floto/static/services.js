@@ -41,8 +41,10 @@ createApp({
         }).then( res => {
           process_created_by(res)
           services.value.push(res)
+          notify("Created service ${res.container_ref}.")
         }).catch((response) => {
-          services_loading_error_message = "Could not create service"
+          notify(`Could not create service.`, type="negative")
+          console.error(response)
         }).finally(() => {
           services_form_disabled = false
           services_loading = false
@@ -55,11 +57,12 @@ createApp({
         }).then((response) => {
           if (response.ok) {
             this.services.value.splice(index, 1);
+            notify("Deleted service.")
           } else {
             return Promise.reject(response);
           }
         }).catch((res) => {
-          alert(`Could not delete service: ${res.detail}`)
+          notify(`Could not delete service: ${res.detail}`, type="negative")
         })
       },
       rules: [

@@ -65,6 +65,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'floto.auth.middleware.UserTokenMiddleware',
+    'floto.auth.middleware.UserGroupsMiddleware',
 ]
 
 ROOT_URLCONF = 'floto.urls'
@@ -265,3 +266,7 @@ if os.environ.get("KUBE_IMAGE_PULL_SECRETS"):
         "KUBE_IMAGE_PULL_SECRETS").split(",")
 else:
     KUBE_IMAGE_PULL_SECRETS = []
+
+# FLOTO configuration
+FLOTO_MAP_IFRAME_SRC = os.environ.get("FLOTO_MAP_IFRAME_SRC")
+FLOTO_ENV_PREFIX = os.environ.get("FLOTO_ENV_PREFIX", "FLOTO_")

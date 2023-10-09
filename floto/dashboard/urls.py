@@ -17,14 +17,6 @@ urlpatterns = [
         login_required(views.device),
         name="device"),
     path(
-        "devices/<str:uuid>/logs/",
-        login_required(views.logs),
-        name="logs"),
-    path(
-        "devices/<str:uuid>/logs/<int:count>/",
-        login_required(views.logs),
-        name="logs"),
-    path(
         "releases/",
         login_required(views.releases),
         name="releases"),
@@ -41,4 +33,8 @@ urlpatterns = [
     path("applications",
          login_required(views.applications), name="applications"),
     path("jobs", login_required(views.jobs), name="jobs"),
+    path(
+        "jobs/<str:uuid>/",
+        login_required(views.job),
+        name="job"),
 ]

@@ -33,7 +33,6 @@ createApp({
 
     fetch_with_retry(`/api/devices/${uuid}/environment`, callback=function(json){
       environment.value = json
-      console.log(environment)
     })
 
     return {

@@ -125,11 +125,28 @@ createApp({
         }).then( res => {
           process_created_by(res)
           jobs.value.push(res)
+          notify(`Created job ${res.uuid}`)
         }).catch((response) => {
-          jobs_loading_error_message = "Could not create job"
+          notify("Could not create job!", type="negative")
+          console.error(response)
         }).finally(() => {
           jobs_form_disabled = false
           jobs_loading = false
+        })
+      },
+      delete_item(index){
+        fetch(`/api/jobs/${this.jobs.value[index].uuid}`, {
+          method: "DELETE",
+          headers: get_headers(),
+        }).then((response) => {
+          if (response.ok) {
+            this.jobs.value.splice(index, 1);
+          } else {
+            return Promise.reject(response);
+          }
+          notify("Deleted job.")
+        }).catch((res) => {
+          notify(`Could not delete job: ${res.detail}`, type="negative")
         })
       },
       not_empty: [

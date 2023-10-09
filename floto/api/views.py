@@ -28,6 +28,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 
+from floto.api import kubernetes
+
 LOG = logging.getLogger(__name__)
 
 
@@ -250,3 +252,8 @@ class ApplicationViewSet(ModelWithOwnerViewSet):
 
 class JobViewSet(ModelWithOwnerViewSet):
     serializer_class = JobSerializer
+
+    @action(methods=["GET"], detail=True, url_path="events")
+    def events(self, request, pk):
+        event_list = kubernetes.get_job_events(pk)
+        return Response(event_list, status=status.HTTP_200_OK)

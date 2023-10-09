@@ -9,7 +9,7 @@
   <h3>Jobs</h3>
 
   <q-select
-    label="Select fleets"
+    label="Select view"
     filled
     v-model="selected_table_filter"
     :options="table_filter_options"
@@ -70,8 +70,23 @@
 
     <template v-slot:body-cell-action="props">
       <q-td :props="props">
-        <q-btn v-if="props.row.is_owned_by_current_user" color="negative" icon-right="delete" no-caps flat dense
-          @click="delete_item(services.value.indexOf(props.row))" />
+        <q-btn 
+          v-if="props.row.is_owned_by_current_user" 
+          color="negative" 
+          icon-right="delete" 
+          no-caps 
+          flat 
+          dense
+          @click="delete_item(jobs.value.indexOf(props.row))"
+        ></q-btn>
+        <a :href='`/dashboard/jobs/${props.row.uuid}`'>
+          <q-btn
+            icon-right="visibility"
+            no-caps
+            flat
+            dense
+          ></q-btn>
+        </a>
       </q-td>
     </template>
   </q-table>

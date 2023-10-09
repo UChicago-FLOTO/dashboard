@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import HttpResponse
 from django.template import loader
 
@@ -54,27 +55,12 @@ def fleets(request):
     return HttpResponse(template.render(context, request))
 
 
-def logs(request, uuid, count=100):
-    args = {"pk": uuid, "count": count}
-    logs = util.getURL(request, "api:device-logs", request_kwargs=args, default_ret=[])
-    processed_logs = []
-    for entry in logs:
-        processed_logs.append({
-            "message": entry["message"],
-            "timestamp": datetime.datetime.fromtimestamp(
-                entry["timestamp"]/1000).strftime("%m/%d/%Y %H:%M:%S"),
-        })
-    template = loader.get_template("dashboard/logs.html")
-    context = {
-        "uuid": uuid,
-        "logs": processed_logs,
-        "count": count,
-    }
-    return HttpResponse(template.render(context, request))
-
-
 def overview(request):
-    context = {}
+    context = {
+        "is_admin": any(g for g in request.session.get("groups", []) 
+                        if g["name"] == "admin"),
+        "map_src": settings.FLOTO_MAP_IFRAME_SRC,
+    }
     template = loader.get_template("dashboard/overview.html")
     return HttpResponse(template.render(context, request))
 
@@ -103,4 +89,10 @@ def applications(request):
 def jobs(request):
     context = {}
     template = loader.get_template("dashboard/jobs.html")
+    return HttpResponse(template.render(context, request))
+
+
+def job(request, uuid):
+    context = {}
+    template = loader.get_template("dashboard/job.html")
     return HttpResponse(template.render(context, request))

@@ -5,7 +5,7 @@ function fetch_with_retry(url, callback, error_callback=base_error_callback, bac
     }
     return Promise.reject(response);
   }).then(callback).catch((response) => {
-    console.log("catching error")
+    console.error(response)
     if(response.status < 500){
       // Client error, we can't do anything bout it
       console.log("calling error callback")
@@ -15,11 +15,10 @@ function fetch_with_retry(url, callback, error_callback=base_error_callback, bac
         console.error("failed after 3 backoff attempts")
         error_callback(response)
       } else {
-        backoff_count += 1
-        console.log(`retrying number ${backoff_count}`)
+        new_count = backoff_count + 1
         setTimeout(
-          fetch_with_retry(url, callback, backoff_count=backoff_count),
-          backoff_count * 1000
+          fetch_with_retry(url, callback, error_callback=error_callback, backoff_count=(new_count + 1)),
+          new_count * 1000
         )
       }  
     }
@@ -49,7 +48,6 @@ function process_created_by(obj){
 }
 
 function base_error_callback(response){
-  console.info("ERROR CALLBACK")
   if (response.status == 403){
     Quasar.Notify.create({
       color: 'negative',
@@ -62,4 +60,16 @@ function base_error_callback(response){
       ],
     })
   }
+}
+
+function notify(message, type="positive"){
+  Quasar.Notify.create({
+    type,
+    message,
+    multiLine: message.length > 30,
+    timeout: 0,
+    actions: [
+      { icon: 'close', color: 'white', round: true, handler: () => {} }
+    ],
+  })
 }

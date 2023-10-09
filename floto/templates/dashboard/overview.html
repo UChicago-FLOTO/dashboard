@@ -4,4 +4,17 @@
 
 {% block content %}
 <h1>Overview</h1>
+
+<div>
+    {% if not is_admin %}
+    Welcome to FLOTO. You need permission to view devies and jobs.
+    Please email 
+    <a href="mailto:contact@floto.science">contact@floto.science</a>
+    or contact an administrator
+    {% else %}
+        {% if map_src %}
+        <iframe src="{{ map_src }}" width="640" height="480"></iframe>
+        {% endif %}
+    {% endif %}
+</div>
 {% endblock %}

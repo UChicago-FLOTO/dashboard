@@ -86,8 +86,10 @@ createApp({
         }).then( res => {
           process_created_by(res)
           applications.value.push(res)
+          notify(`Created application ${res.name}`)
         }).catch((response) => {
-          applications_loading_error_message = "Could not create application"
+          notify("Could not create application!", type="negative")
+          console.error(response)
         }).finally(() => {
           applications_form_disabled = false
           applications_loading = false
@@ -103,8 +105,9 @@ createApp({
           } else {
             return Promise.reject(response);
           }
+          notify("Deleted application.")
         }).catch((res) => {
-          alert(`Could not delete application: ${res.detail}`)
+          notify(`Could not delete application: ${res.detail}`, type="negative")
         })
       },
       not_empty: [

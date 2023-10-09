@@ -16,6 +16,22 @@ def get_devices():
     return core_api.list_node(
         label_selector="node-role.kubernetes.io/floto-worker=true")
 
+def get_job_events(uuid):
+    config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
+    namespace = f"job-{uuid}"
+    core_api = client.CoreV1Api()
+    event_list = core_api.list_namespaced_event(namespace)
+    events = [
+        {
+            "message": e.message,
+            "created_at": e.first_timestamp,
+            "updated_at": e.last_timestamp,
+            "type": e.type,
+        }
+        for e in event_list.items
+    ]
+    sorted(events, key=lambda e: e["created_at"])
+    return events
 
 def create_deployment(devices, job):
     config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
@@ -53,13 +69,14 @@ def create_deployment(devices, job):
         containers = []
 
         device_environment = {
-            "FLOTO_JOB_UUID": job.uuid,
+            "FLOTO_JOB_UUID": str(job.uuid),
             "FLOTO_DEVICE_UUID": device["device_uuid"],
         }
         device_environment.update({
             env_obj["name"]: env_obj["value"]
             for env_obj in 
             balena.models.device.env_var.get_all_by_device(uuid_or_id=device["device_uuid"])
+            if env_obj["name"].startswith(settings.FLOTO_ENV_PREFIX)
         })
         # Overwrite any variables with the job's env
         device_environment.update(environment)
