@@ -1,3 +1,4 @@
+from ipaddress import collapse_addresses
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from floto.api import models
@@ -10,18 +11,6 @@ from django.contrib.auth.models import User
 
 
 LOG = logging.getLogger(__name__)
-
-
-class CollectionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Collection
-        fields = "__all__"
-
-
-class CollectionDeviceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.CollectionDevice
-        fields = "__all__"
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -77,6 +66,36 @@ class ApplicationSerializer(CreatedByUserSerializer):
         return application
 
     services = ApplicationServiceSerializer(many=True, required=False)
+
+
+class CollectionDeviceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.CollectionDevice
+        fields = ["device_uuid"]
+        read_only_fields = ["collection"]
+
+    def validate_device_uuid(self, value):
+        # TODO check device uuid
+        return value
+
+
+class CollectionSerializer(CreatedByUserSerializer):
+    class Meta(CreatedByUserMeta):
+        model = models.Collection
+
+    @transaction.atomic
+    def create(self, validated_data):
+        devices_data = validated_data.pop("devices")
+        LOG.info(devices_data)
+        collection = models.Collection.objects.create(**validated_data)
+        for device in devices_data:
+            models.CollectionDevice.objects.create(
+                collection=collection,
+                device_uuid=device["device_uuid"],
+            )
+        return collection
+
+    devices = CollectionDeviceSerializer(many=True)
 
 
 class JobDeviceSerializer(serializers.ModelSerializer):

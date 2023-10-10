@@ -6,8 +6,9 @@ class CollectionDeviceInline(admin.StackedInline):
 
 class CollectonAdmin(admin.ModelAdmin):
     inlines = (CollectionDeviceInline,)
+    list_display = ["name", "created_by", "created_at"]
 
-# admin.site.register(models.Collection, CollectonAdmin)
+admin.site.register(models.Collection, CollectonAdmin)
 
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ["container_ref", "created_by", "created_at"]
@@ -26,6 +27,7 @@ admin.site.register(models.Application, ApplicationAdmin)
 
 
 class JobAdmin(admin.ModelAdmin):
-    pass
+    list_display = ["uuid", "created_by", "created_at"]
+
 
 admin.site.register(models.Job, JobAdmin)

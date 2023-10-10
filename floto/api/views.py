@@ -12,9 +12,6 @@ import paramiko
 from .balena import get_balena_client
 from balena import exceptions
 
-from floto.api.models import (
-    Collection,
-)
 from floto.api import permissions
 from floto.api.serializers import (
     ServiceSerializer,
@@ -116,6 +113,7 @@ class DeviceViewSet(viewsets.ViewSet):
         env = balena.models.device.env_var.get_all_by_device(uuid_or_id=pk)
         return Response(env, status=status.HTTP_200_OK)
 
+
 class FleetViewSet(viewsets.ViewSet):
     def list(self, request):
         balena = get_balena_client()
@@ -136,73 +134,6 @@ class FleetViewSet(viewsets.ViewSet):
         balena = get_balena_client()
         balena.models.release.set_note(release_ref, request.POST["note"])
         return Response({"status": "OK"})
-
-
-class CollectionViewSet(viewsets.ModelViewSet):
-
-    def list(self, request, *args, **kwargs):
-        collections = Collection.objects.all()
-        collections_json = django.core.serializers.serialize('python', collections)
-        data = {
-            'user': request.user.id,
-            'collection': collections_json
-        }
-        return Response(data=data)
-
-    def retrieve(self, request, *args, **kwargs):
-        collection = Collection.objects.get(pk=self.kwargs.get('pk'))
-        collection_json = CollectionSerializer(collection).data
-        return Response(data=collection_json)
-
-    def create(self, request, *args, **kwargs):
-        data = json.loads(request.data)
-        user = request.user
-        if user is None:
-            user_id = ""
-        else:
-            user_id = user.id
-        new_collection = Collection(
-            user=user_id,
-            name=data['name'],
-            description=data['description'],
-            is_public=data['is_public'],
-            created_by=data['name'],
-        )
-        data = serializers.serialize('python', [new_collection])
-
-        # Save the instance to the database
-        new_collection.save()
-        return Response(status=status.HTTP_200_OK, data=data)
-
-    def update(self, request, *args, **kwargs):
-        collection_uuid = self.kwargs.get('pk')
-        try:
-            instance = Collection.objects.get(uuid=collection_uuid)
-        except Collection.DoesNotExist:
-            data = {
-                'message': 'Instance not found with Collection UUID ' + collection_uuid
-            }
-            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
-
-        data = json.loads(request.data)
-        is_public = data.get('is_public', instance.is_public)
-        description = data.get('description', instance.description)
-        name = data.get('name', instance.name)
-        instance.is_public = is_public
-        instance.description = description
-        instance.name = name
-        instance.save()
-        return Response(status=204)
-
-    def destroy(self, request, *args, **kwargs):
-        collection_uuid = self.kwargs.get('pk')
-        try:
-            instance = Collection.objects.get(uuid=collection_uuid)
-        except Collection.DoesNotExist:
-            return Response({'message': f'Instance not found {collection_uuid}.'}, status=status.HTTP_404_NOT_FOUND)
-
-        instance.delete()
-        return Response({'message': 'Collection deleted'}, status=status.HTTP_200_OK)
 
 
 class EnvViewSet(viewsets.ViewSet):
@@ -257,3 +188,7 @@ class JobViewSet(ModelWithOwnerViewSet):
     def events(self, request, pk):
         event_list = kubernetes.get_job_events(pk)
         return Response(event_list, status=status.HTTP_200_OK)
+
+
+class CollectionViewSet(ModelWithOwnerViewSet):
+    serializer_class = CollectionSerializer

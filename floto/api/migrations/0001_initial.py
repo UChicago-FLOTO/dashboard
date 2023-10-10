@@ -33,18 +33,6 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='Collection',
-            fields=[
-                ('user', models.CharField(max_length=300)),
-                ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('name', models.CharField(max_length=200)),
-                ('description', models.CharField(max_length=2000)),
-                ('is_public', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(blank=True, default=datetime.datetime.now)),
-                ('created_by', models.CharField(max_length=200)),
-            ],
-        ),
-        migrations.CreateModel(
             name='Job',
             fields=[
                 ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
@@ -99,13 +87,6 @@ class Migration(migrations.Migration):
                 ('note', models.CharField(max_length=2000)),
                 ('category', models.CharField(choices=[('JOB', 'Job'), ('OTHER', 'Other')], max_length=32)),
                 ('job', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='timeslots', to='floto_api.job')),
-            ],
-        ),
-        migrations.CreateModel(
-            name='CollectionDevice',
-            fields=[
-                ('collection_uuid', models.UUIDField(default=uuid.UUID('31b374cd-515a-4a37-a216-0360a00dd9b0'), editable=False, primary_key=True, serialize=False)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
