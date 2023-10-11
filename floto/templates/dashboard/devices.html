@@ -22,11 +22,19 @@
 >
 </q-select>
 
+<div>
+  [[ device_rows().filter(d => { return d.api_heartbeat_state == "online" } ).length ]] online
+  [[ device_rows().filter(d => { return d.api_heartbeat_state != "online"} ).length ]] offline
+</div>
+
 
 <q-table
     :columns="headers"
-    :rows="devices.value.filter(d => selected_fleets.value.includes(d.belongs_to__application.__id))"
+    :rows="device_rows()"
     :pagination="initialPagination"
+    row-key="uuid"
+    selection="multiple"
+    v-model:selected="selected_devices"
     >
     <template v-slot:body-cell-action="props">
       <q-td :props="props">
@@ -41,8 +49,66 @@
         </a>
       </q-td>
     </template>
+    <template v-slot:bottom>
+      <div>
+        <q-btn 
+          v-if="selected_devices.length > 0"
+          no-caps 
+          flat 
+          dense
+          color="primary" 
+          @click="create_collection_dialog = true"
+          label="Create Collection"
+        ></q-btn>
+      </div>
+    </template>
   </q-table>
 
+<div>
+  <q-dialog v-model="create_collection_dialog" persistent transition-show="scale" transition-hide="scale">
+    <q-card style="width: 600px">
+      <q-card-section>
+        <div class="text-h6">Create Collection</div>
+      </q-card-section>
+
+      <q-card-section class="q-pt-none">
+        <p>
+          Group [[ selected_devices.length ]] selected devices into a collection
+          for later reference.
+        </p>
+
+        <q-form @submit.prevent="submit">
+          <q-input 
+            filled
+            label="Name" 
+            name="name" 
+            v-model="collection_form_data.name"
+            :rules="[ val => val && val.length > 0 || 'Please type something']"
+          ></q-input>
+          <q-input
+            filled
+            v-model="collection_form_data.description"
+            label="Description"
+            lazy-rules
+            :rules="[ val => val && val.length > 0 || 'Please type something']"
+          ></q-input>
+          <q-toggle 
+            label="Public"
+            name="is_public" v-model="collection_form_data.is_public">
+          </q-toggle>
+      
+          <q-card-actions align="right">
+            <q-btn flat label="Cancel" v-close-popup></q-btn>
+            <q-btn primary type="submit" color="blue">
+              Submit
+            </q-btn>  
+          </q-card-actions>    
+        </v-form>      
+      </q-card-section>
+
+    </q-card>
+  </q-dialog>
+</div>
 
 <div v-if="devices_loading && fleets_loading" class="center_of_screen">
   <q-circular-progress
@@ -51,6 +117,39 @@
     rounded
   ></q-circular-progress>
 </div>
+
+
+<h3>Collections</h3>
+
+<q-select
+label="Select view"
+filled
+v-model="selected_table_filter"
+:options="table_filter_options"
+:option-label="(o) => o.name"
+>
+</q-select>
+
+<q-table 
+:columns="collections_headers" 
+:rows="collections.filter(selected_table_filter.value)"
+:pagination="initialPagination"
+>
+<template v-slot:body-cell-action="props">
+  <q-td :props="props">
+    <q-btn 
+      v-if="props.row.is_owned_by_current_user" 
+      color="negative" 
+      icon-right="delete" 
+      no-caps 
+      flat 
+      dense
+      @click="delete_item(collections.indexOf(props.row))"
+    ></q-btn>
+  </q-td>
+  </template>
+</q-table>
+
 
 {% endblock %}
 

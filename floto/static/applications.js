@@ -58,7 +58,6 @@ createApp({
         stepper.next()
       },
       async submit(e) {
-        console.log(JSON.stringify(form_data))
         applications_form_disabled = true
         applications_loading = true
         const request = new Request(

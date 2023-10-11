@@ -131,21 +131,45 @@
 
     <q-step :name="3" title="Select Devices" :done="step > 3">
       <div>
-        <h5>Devices</h5>
-        <p>Choose the devices on which your job should run.</p>
         <q-form @submit.prevent="continueFn($refs.stepper)">
-          <q-field v-model="form_data.devices" :rules="[ val => val.length >= 1 || 'Select at least one device']">
+          <div class="row">
+            <div class="col-6">
+              <h5>Devices</h5>
+              <p>Choose the devices on which your job should run.</p>      
+              <q-field v-model="form_data.devices" :rules="[ val => val.length >= 1 || 'Select at least one device']">
+                <q-list>
+                  <q-item tag="label" v-ripple v-for="device in devices.value" :key="device.uuid">
+                    <q-item-section avatar>
+                      <q-checkbox v-model="form_data.devices" :val="device.uuid" />
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>[[ device.device_name ]]</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-field>
+            </div>
+          <div class="col-6">
+            <h5>Collections</h5>
+            <p>Select devices from collection.</p>
             <q-list>
-              <q-item tag="label" v-ripple v-for="device in devices.value" :key="device.uuid">
+              <q-item 
+                tag="label" 
+                clickable
+                v-ripple 
+                v-for="collection in collections" 
+                @click="select_collection(collection)">
                 <q-item-section avatar>
-                  <q-checkbox v-model="form_data.devices" :val="device.uuid" />
-                </q-item-section>
+                  <q-icon name="arrow_back" />
+                </q-item-section>        
                 <q-item-section>
-                  <q-item-label>[[ device.device_name ]]</q-item-label>
+                  <q-item-label>[[ collection.name ]]</q-item-label>
+                  <q-item-label caption>[[ collection.description ]]</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
-          </q-field>
+          </div>
+        </div>
           <q-stepper-navigation>
             <q-btn flat color="primary" @click="$refs.stepper.previous()" label="Back" class="q-ml-sm"></q-btn>
             <q-btn type="submit" color="primary" label="Continue"></q-btn>

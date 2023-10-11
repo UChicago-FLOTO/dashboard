@@ -41,7 +41,7 @@ createApp({
         }).then( res => {
           process_created_by(res)
           services.value.push(res)
-          notify("Created service ${res.container_ref}.")
+          notify(`Created service ${res.container_ref}.`)
         }).catch((response) => {
           notify(`Could not create service.`, type="negative")
           console.error(response)

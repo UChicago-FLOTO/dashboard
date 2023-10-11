@@ -29,6 +29,8 @@ createApp({
       timings: [],
     })
 
+    let collections = ref([])
+
     fetch_with_retry(`/api/jobs/`, callback=function(json){
       jobs.value = json
       jobs_loading.value = false
@@ -64,6 +66,9 @@ createApp({
       console.log(res)
       // TODO
     })
+    fetch_with_retry(`/api/collections/`, callback=function(json){
+      collections.value = json
+    })
 
     function filterFn(list, val, update){
       update(() => {
@@ -82,6 +87,7 @@ createApp({
       jobs, jobs_loading, jobs_form_disabled, jobs_loading_error_message,
       applications,
       devices,
+      collections,
       appFilterFn (val, update) {
         filterFn(applications, val, update)
       },
@@ -93,6 +99,9 @@ createApp({
           form_data.environment = form_data.application.parsed_env
         }
         stepper.next()
+      },
+      select_collection(collection){
+        form_data.devices = collection.devices.map(dev_obj => dev_obj.device_uuid)
       },
       form_data,
       async submit(e) {

@@ -26,7 +26,7 @@ class Collection(CreatedByUserBase):
 
 class CollectionDevice(models.Model):
     collection = models.ForeignKey(Collection, related_name="devices", on_delete=models.CASCADE)
-    device_uuid = models.UUIDField(max_length=36)
+    device_uuid = models.CharField(max_length=36)
 
 
 class Service(CreatedByUserBase):
