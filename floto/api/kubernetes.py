@@ -128,7 +128,7 @@ def create_deployment(devices, job):
                         ],
                         image_pull_secrets=[
                             client.V1LocalObjectReference(
-                                secret_name=secret_name
+                                name=secret_name
                             )
                             for secret_name in 
                             settings.KUBE_IMAGE_PULL_SECRETS
