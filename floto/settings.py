@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'mozilla_django_oidc',
     'rest_framework',
     'rest_framework.authtoken',
+    'drf_spectacular',
     'floto',
     'floto.api',
     'floto.auth',
@@ -236,7 +237,6 @@ BALENA_TUNNEL_PORT = os.environ.get("BALENA_TUNNEL_PORT")
 BALENA_TUNNEL_HOST = os.environ.get("BALENA_TUNNEL_HOST")
 
 # DRF
-
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         "rest_framework.permissions.IsAuthenticated",
@@ -246,6 +246,15 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
         'rest_framework.authentication.SessionAuthentication',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# API docs settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'FLOTO API',
+    'DESCRIPTION': 'The application for FLOTO',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }
 
 # Kubernetes Variables
