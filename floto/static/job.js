@@ -27,6 +27,10 @@ createApp({
       fetch_with_retry(`/api/jobs/${uuid}/events`, callback=function(json){
         job.value.events = json
       })
+
+      fetch_with_retry(`/api/jobs/${uuid}/logs`, callback=function(json){
+        job.value.logs = json
+      })
     })
     fetch_with_retry(`/api/devices/`, callback=function(json){
       devices.value = json.filter((dev) => {
@@ -38,6 +42,6 @@ createApp({
     })
 
     return {
-      job, application, devices, services
+      job, application, devices, services,
     }
 }}).use(Quasar).mount('#app')

@@ -97,6 +97,29 @@
             </ul>
           </td>
         </tr>
+        <tr>
+          <td>
+            Logs
+          </td>
+          <td>
+            <div 
+              v-for="(logs, device_uuid, index) in job.logs"
+              :set="device = devices.find(d => d.uuid == device_uuid)"
+            >
+              <q-expansion-item
+                expand-separator
+                :label="device.device_name"
+                :caption="device_uuid"
+              >
+                <q-card>
+                  <q-card-section>
+                    <pre>[[ logs ]]</pre>
+                  </q-card-section>
+                </q-card>
+              </q-expansion-item>
+            </div>
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
