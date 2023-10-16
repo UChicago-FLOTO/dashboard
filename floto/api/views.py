@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 
 import django.core.serializers
@@ -18,6 +19,7 @@ from floto.api.serializers import (
     ApplicationSerializer,
     JobSerializer,
     CollectionSerializer,
+    TimeslotSerializer,
 )
 from floto.api import util
 from rest_framework import viewsets
@@ -154,6 +156,7 @@ class EnvViewSet(viewsets.ViewSet):
 
 class ModelWithOwnerViewSet(viewsets.ModelViewSet):
     destroy_permision_classes = [permissions.IsOwnerOfObject]
+    http_method_names = ["get", "post", "delete"]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -192,3 +195,20 @@ class JobViewSet(ModelWithOwnerViewSet):
 
 class CollectionViewSet(ModelWithOwnerViewSet):
     serializer_class = CollectionSerializer
+
+
+class TimeslotViewSet(viewsets.ViewSet):
+    def list(self, request):
+        timeslots_by_devices = defaultdict(list)
+        for obj in TimeslotSerializer.Meta.model.objects.all():
+            ts = TimeslotSerializer(obj)
+            timeslots_by_devices[obj.device_uuid].append(ts.data)
+        return Response(timeslots_by_devices)
+
+    @action(methods=["POST"], detail=False, url_path="check")
+    def check(self, request):
+        return Response(
+            util.parse_timings(
+                request.data["timings"], request.data["devices"]
+            )
+        )

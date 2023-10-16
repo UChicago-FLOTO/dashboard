@@ -127,6 +127,16 @@ class DeviceTimeslotSerializer(serializers.ModelSerializer):
         fields = ["device_uuid", "note", "start", "stop"]
 
 
+class TimeslotSerializer(serializers.ModelSerializer):
+    """
+    This serializer is the "public" form. We do not need
+    to expose the notes to a list, nor the jobs.
+    """
+    class Meta:
+        model = models.DeviceTimeslot
+        fields = ["start", "stop"]
+
+
 class JobSerializer(CreatedByUserSerializer):
     class Meta(CreatedByUserMeta):
         model = models.Job
@@ -147,25 +157,11 @@ class JobSerializer(CreatedByUserSerializer):
                     timing=timing["timing"],
                 )
 
-        timeslots_map = {}
-        for timing in timings_data:
-            timeslots_map[timing["timing"]] = util.parse_timing_string(timing["timing"])
-
-        device_uuids = [d["device_uuid"] for d in devices_data]
-        for timeslots in timeslots_map.values():
-            conflicts = []
-            for timeslot in timeslots:
-                start, end = timeslot
-                # Timeslots collide if either timeslot overlaps at start, end,
-                # or start and end surround
-                conflicts += list(models.DeviceTimeslot.objects.filter(start__range=(start, end), device_uuid__in=device_uuids)) +\
-                    list(models.DeviceTimeslot.objects.filter(stop__range=(start, end), device_uuid__in=device_uuids)) +\
-                    list(models.DeviceTimeslot.objects.filter(start__lt=start, stop__gt=end, device_uuid__in=device_uuids))
-            if conflicts:
-                raise ValidationError("Could not schedule on the following devices: \n" + "\n".join([t.device_uuid for t in conflicts]), code=409)
-
+        res = util.parse_timings(timings_data, devices_data)
+        if res["conflicts"]:
+            raise ValidationError("Could not schedule on the following devices: \n" + "\n".join(res["conflicts"].keys()), code=409)
         for device in devices_data:
-            for label, timeslots in timeslots_map.items():
+            for label, timeslots in res["timeslots"].items():
                 for timeslot in timeslots:
                     start, end = timeslot
 

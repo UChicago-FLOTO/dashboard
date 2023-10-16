@@ -1,7 +1,9 @@
+from collections import defaultdict
 from django.db.models import Q
 from rest_framework.exceptions import ValidationError
 from datetime import datetime, timedelta
 import logging
+from floto.api import models
 
 
 LOG = logging.getLogger(__name__)
@@ -39,3 +41,41 @@ def parse_timing_string(value):
         return [(datetime.now(), datetime.now() + parse_on_demand_args(args))]
     else:
         raise ValidationError(f"Invalid timing string {value}")
+
+
+def parse_timings(timings, devices):
+    """
+    Parse the list of timings and devices into
+    {
+        "conflicts": [],
+        "timeslots": {
+            timing string: [
+                (start, end),
+            ]
+        }
+    }
+    """
+    res = {
+        "conflicts": defaultdict(list),
+        "timeslots": {},
+    }
+    # Generate timeslots
+    for timing in timings:
+        res["timeslots"][timing["timing"]] = parse_timing_string(timing["timing"])
+
+    # Compute conflicts
+    device_uuids = [d["device_uuid"] for d in devices]
+    for timeslots in res["timeslots"].values():
+        for timeslot in timeslots:
+            start, end = timeslot
+            # Timeslots collide if either timeslot overlaps at start, end,
+            # or start and end surround
+            for dts in list(models.DeviceTimeslot.objects.filter(start__range=(start, end), device_uuid__in=device_uuids)) +\
+                list(models.DeviceTimeslot.objects.filter(stop__range=(start, end), device_uuid__in=device_uuids)) +\
+                list(models.DeviceTimeslot.objects.filter(start__lt=start, stop__gt=end, device_uuid__in=device_uuids)):
+
+                res["conflicts"][dts.device_uuid].append({
+                    "start": dts.start,
+                    "stop": dts.stop,
+                })
+    return res

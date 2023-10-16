@@ -12,4 +12,5 @@ router.register("services", views.ServiceViewSet, basename="service")
 router.register(
     "applications", views.ApplicationViewSet, basename="application")
 router.register("jobs", views.JobViewSet, basename="job")
+router.register("timeslots", views.TimeslotViewSet, basename="timeslot")
 urlpatterns = router.urls
