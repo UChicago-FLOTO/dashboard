@@ -6,6 +6,7 @@ import hashlib
 
 from . import util
 from .balena import get_balena_client
+from . import models
 
 LOG = logging.getLogger(__name__)
 
@@ -15,6 +16,7 @@ def get_devices():
     core_api = client.CoreV1Api()
     return core_api.list_node(
         label_selector="node-role.kubernetes.io/floto-worker=true")
+
 
 def get_job_events(uuid):
     config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
@@ -32,6 +34,20 @@ def get_job_events(uuid):
     ]
     sorted(events, key=lambda e: e["created_at"])
     return events
+
+
+def get_job_logs(uuid):
+    config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
+    namespace = f"job-{uuid}"
+    core_api = client.CoreV1Api()
+    logs = {}
+    job = models.Job.objects.get(pk=uuid)
+    pod_list = core_api.list_namespaced_pod(namespace)
+    for pod in pod_list.items:
+        log = core_api.read_namespaced_pod_log(pod.metadata.name, namespace)
+        logs[pod.spec.node_name] = log
+    return logs
+
 
 def create_deployment(devices, job):
     config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)

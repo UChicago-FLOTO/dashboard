@@ -192,6 +192,10 @@ class JobViewSet(ModelWithOwnerViewSet):
         event_list = kubernetes.get_job_events(pk)
         return Response(event_list, status=status.HTTP_200_OK)
 
+    @action(methods=["GET"], detail=True, url_path="logs")
+    def logs(self, request, pk):
+        return Response(kubernetes.get_job_logs(pk))
+
 
 class CollectionViewSet(ModelWithOwnerViewSet):
     serializer_class = CollectionSerializer
