@@ -132,7 +132,11 @@ def create_deployment(devices, job):
                             )
                             for secret_name in 
                             settings.KUBE_IMAGE_PULL_SECRETS
-                        ]
+                        ],
+                        dns_policy="None",
+                        dns_config=client.V1PodDNSConfig(
+                            nameservers=["8.8.8.8"],
+                        )
                     ),
                     metadata=client.V1ObjectMeta(
                         name=pod_name,
