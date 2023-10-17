@@ -1,3 +1,4 @@
+from collections import defaultdict
 import logging
 import json
 from kubernetes import client, config
@@ -37,15 +38,23 @@ def get_job_events(uuid):
 
 
 def get_job_logs(uuid):
+    """
+    Returns a map of 
+    {
+        device: {
+            container: logs
+        }
+    }
+    """
     config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
     namespace = f"job-{uuid}"
     core_api = client.CoreV1Api()
-    logs = {}
-    job = models.Job.objects.get(pk=uuid)
+    logs = defaultdict(dict)
     pod_list = core_api.list_namespaced_pod(namespace)
     for pod in pod_list.items:
-        log = core_api.read_namespaced_pod_log(pod.metadata.name, namespace)
-        logs[pod.spec.node_name] = log
+        for container in pod.spec.containers:
+            logs[pod.spec.node_name][container.image] = core_api.read_namespaced_pod_log(
+                pod.metadata.name, namespace, container=container.name)
     return logs
 
 

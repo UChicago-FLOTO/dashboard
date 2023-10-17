@@ -103,7 +103,7 @@
           </td>
           <td>
             <div 
-              v-for="(logs, device_uuid, index) in job.logs"
+              v-for="(containers, device_uuid, index) in job.logs"
               :set="device = devices.find(d => d.uuid == device_uuid)"
             >
               <q-expansion-item
@@ -111,11 +111,13 @@
                 :label="device.device_name"
                 :caption="device_uuid"
               >
-                <q-card>
-                  <q-card-section>
-                    <pre>[[ logs ]]</pre>
-                  </q-card-section>
-                </q-card>
+                <q-expansion-item
+                  expand-separator
+                  :label="container"
+                  v-for="(logs, container, index) in containers"
+                >
+                  <pre>[[ logs ]]</pre>
+                </q-expansion-item>
               </q-expansion-item>
             </div>
           </td>
