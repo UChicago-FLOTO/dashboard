@@ -38,7 +38,10 @@ def parse_timing_string(value):
     string_parts = value.split(",")
     timing_type, args = string_parts[0], string_parts[1:]
     if timing_type == "type=on_demand":
-        return [(datetime.now(), datetime.now() + parse_on_demand_args(args))]
+        return [{
+            "start": datetime.now(),
+            "stop": datetime.now() + parse_on_demand_args(args),
+        }]
     else:
         raise ValidationError(f"Invalid timing string {value}")
 
@@ -47,10 +50,12 @@ def parse_timings(timings, devices):
     """
     Parse the list of timings and devices into
     {
-        "conflicts": [],
+        "conflicts": [
+            {"start": , "stop"}
+        ],
         "timeslots": {
             timing string: [
-                (start, end),
+                {"start": , "stop"}
             ]
         }
     }
@@ -67,7 +72,8 @@ def parse_timings(timings, devices):
     device_uuids = [d["device_uuid"] for d in devices]
     for timeslots in res["timeslots"].values():
         for timeslot in timeslots:
-            start, end = timeslot
+            start = timeslot["start"]
+            end = timeslot["stop"]
             # Timeslots collide if either timeslot overlaps at start, end,
             # or start and end surround
             for dts in list(models.DeviceTimeslot.objects.filter(start__range=(start, end), device_uuid__in=device_uuids)) +\

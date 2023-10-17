@@ -8,20 +8,11 @@
 <div class="q-pa-md">
   <h3>Jobs</h3>
 
-  <q-select
-    label="Select view"
-    filled
-    v-model="selected_table_filter"
-    :options="table_filter_options"
-    :option-label="(o) => o.name"
-  >
+  <q-select label="Select view" filled v-model="selected_table_filter" :options="table_filter_options"
+    :option-label="(o) => o.name">
   </q-select>
 
-  <q-table 
-    :columns="headers" 
-    :rows="jobs.value.filter(selected_table_filter.value)"
-    :pagination="initialPagination"
-  >
+  <q-table :columns="headers" :rows="jobs.value.filter(selected_table_filter.value)" :pagination="initialPagination">
     <template v-slot:body-cell-devices="props">
       <q-td :props="props">
         <ul>
@@ -70,22 +61,10 @@
 
     <template v-slot:body-cell-action="props">
       <q-td :props="props">
-        <q-btn 
-          v-if="props.row.is_owned_by_current_user" 
-          color="negative" 
-          icon-right="delete" 
-          no-caps 
-          flat 
-          dense
-          @click="delete_item(jobs.value.indexOf(props.row))"
-        ></q-btn>
+        <q-btn v-if="props.row.is_owned_by_current_user" color="negative" icon-right="delete" no-caps flat dense
+          @click="delete_item(jobs.value.indexOf(props.row))"></q-btn>
         <a :href='`/dashboard/jobs/${props.row.uuid}`'>
-          <q-btn
-            icon-right="visibility"
-            no-caps
-            flat
-            dense
-          ></q-btn>
+          <q-btn icon-right="visibility" no-caps flat dense></q-btn>
         </a>
       </q-td>
     </template>
@@ -135,7 +114,7 @@
           <div class="row">
             <div class="col-6">
               <h5>Devices</h5>
-              <p>Choose the devices on which your job should run.</p>      
+              <p>Choose the devices on which your job should run.</p>
               <q-field v-model="form_data.devices" :rules="[ val => val.length >= 1 || 'Select at least one device']">
                 <q-list>
                   <q-item tag="label" v-ripple v-for="device in devices.value" :key="device.uuid">
@@ -149,27 +128,58 @@
                 </q-list>
               </q-field>
             </div>
-          <div class="col-6">
-            <h5>Collections</h5>
-            <p>Select devices from collection.</p>
-            <q-list>
-              <q-item 
-                tag="label" 
-                clickable
-                v-ripple 
-                v-for="collection in collections" 
-                @click="select_collection(collection)">
-                <q-item-section avatar>
-                  <q-icon name="arrow_back" />
-                </q-item-section>        
-                <q-item-section>
-                  <q-item-label>[[ collection.name ]]</q-item-label>
-                  <q-item-label caption>[[ collection.description ]]</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
+            <div class="col-6">
+              <h5>Collections</h5>
+              <p>Select devices from collection.</p>
+              <q-list>
+                <q-item tag="label" clickable v-ripple v-for="collection in collections"
+                  @click="select_collection(collection)">
+                  <q-item-section avatar>
+                    <q-icon name="arrow_back" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>[[ collection.name ]]</q-item-label>
+                    <q-item-label caption>[[ collection.description ]]</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </div>
           </div>
-        </div>
+          <div v-if="Object.keys(pending_timeslots).length != 0">
+            <h5>
+              Timeslots
+            </h5>
+            <p>
+              Your job is scheduled to run on each of the selected devices at the following times.
+            </p>
+            <ul>
+              <li v-for="(tss, timing_string, index) in pending_timeslots">
+                <span>[[ timing_string ]] </span>
+                <ul v-for="ts in tss">
+                  <li>
+                    [[ ts.start ]] until [[ ts.stop ]]
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+          <div v-if="Object.keys(timeslot_conflicts).length != 0">
+            <h5>Conflicts</h5>
+            <p>
+              Your job cannot be created. Please see below for when devices are unavailable.
+            </p>
+            <ul>
+              <li v-for="(tss, device_uuid, index) in timeslot_conflicts"
+                :set="device = devices.value.find(device => device.uuid == device_uuid)">
+                <span>[[ device.device_name ]] </span>
+                <ul v-for="ts in tss">
+                  <li>
+                    [[ ts.start ]] until [[ ts.stop ]]
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
           <q-stepper-navigation>
             <q-btn flat color="primary" @click="$refs.stepper.previous()" label="Back" class="q-ml-sm"></q-btn>
             <q-btn type="submit" color="primary" label="Continue"></q-btn>

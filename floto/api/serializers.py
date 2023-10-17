@@ -163,10 +163,11 @@ class JobSerializer(CreatedByUserSerializer):
         for device in devices_data:
             for label, timeslots in res["timeslots"].items():
                 for timeslot in timeslots:
-                    start, end = timeslot
+                    start = timeslot["start"]
+                    stop = timeslot["stop"]
 
                     models.DeviceTimeslot.objects.create(
-                        start=start, stop=end,
+                        start=start, stop=stop,
                         device_uuid=device["device_uuid"],
                         job=job,
                         note=label,

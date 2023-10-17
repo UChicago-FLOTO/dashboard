@@ -1,4 +1,4 @@
-const { createApp, ref, reactive } = Vue
+const { createApp, ref, reactive, watch } = Vue
 
 createApp({
   delimiters: ["[[", "]]"],
@@ -12,6 +12,8 @@ createApp({
       { name: "My Jobs", value: (val) => { return val.is_owned_by_current_user } },
       { name: "Public Jobs", value: (val) => { return val.is_public } },
     ]
+    let timeslot_conflicts = ref({})
+    let pending_timeslots = ref({})
 
     const applications = reactive({
       "value": [], 
@@ -83,6 +85,40 @@ createApp({
         }
       })
     }
+
+    watch(() => form_data.devices, async function(old_devices, new_devices){
+      const request = new Request(
+        url=`/api/timeslots/check/`,
+        {
+          method: 'POST',
+          mode: 'same-origin',
+          body: JSON.stringify({
+            "devices": form_data.devices.map((uuid) => {
+              return {"device_uuid": uuid}
+            }),
+            "timings": form_data.timings.map((str) => {
+              return {"timing": str}
+            }),
+          }),
+          headers: get_headers(),
+        }
+      );
+      fetch(request).then((res) => {
+        if (res.ok) {
+          return res.json()
+        }
+        return Promise.reject(res);  
+      }).then( res => {
+        timeslot_conflicts.value = res["conflicts"]
+        pending_timeslots.value = res["timeslots"]
+      }).catch((response) => {
+        console.error(response)
+      }).finally(() => {
+        jobs_form_disabled = false
+        jobs_loading = false
+      })
+    })
+
     return {
       jobs, jobs_loading, jobs_form_disabled, jobs_loading_error_message,
       applications,
@@ -181,6 +217,7 @@ createApp({
         rowsPerPage: 0,
       },
       step,
+      timeslot_conflicts, pending_timeslots,
     }
 }}).use(Quasar)
 .component("environment-component", EnvironmentComponent)
