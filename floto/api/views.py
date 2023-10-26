@@ -1,9 +1,7 @@
 from collections import defaultdict
 import json
 
-import django.core.serializers
 from django.conf import settings
-from django.core import serializers
 import base64
 import logging
 import ssl
@@ -195,6 +193,9 @@ class JobViewSet(ModelWithOwnerViewSet):
     @action(methods=["GET"], detail=True, url_path="logs")
     def logs(self, request, pk):
         return Response(kubernetes.get_job_logs(pk))
+
+    def perform_destroy(self, job):
+        kubernetes.destroy_job(job)
 
 
 class CollectionViewSet(ModelWithOwnerViewSet):
