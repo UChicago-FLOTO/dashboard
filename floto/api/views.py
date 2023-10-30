@@ -11,7 +11,7 @@ import paramiko
 from .balena import get_balena_client
 from balena import exceptions
 
-from floto.api import permissions
+from floto.api import filters, permissions
 from floto.api.serializers import (
     ServiceSerializer,
     ApplicationSerializer,
@@ -155,6 +155,7 @@ class EnvViewSet(viewsets.ViewSet):
 class ModelWithOwnerViewSet(viewsets.ModelViewSet):
     destroy_permision_classes = [permissions.IsOwnerOfObject]
     http_method_names = ["get", "post", "delete"]
+    filter_backends = [filters.HasReadAccessFilterBackend]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -162,8 +163,7 @@ class ModelWithOwnerViewSet(viewsets.ModelViewSet):
         return context
 
     def get_queryset(self):
-        return util.filter_by_created_by_or_public(
-            self.serializer_class.Meta.model.objects, self.request)
+        return self.serializer_class.Meta.model.objects.all()
 
     def get_permissions(self):
         action_permissions = []
