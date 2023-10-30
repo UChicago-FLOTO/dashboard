@@ -7,13 +7,59 @@
 {% block content %}
 
 <div>
-  <label for="api-key">API Key</label>
-  <input readonly type="password" id="api-key" class="form-control" value="{{ api_key }}">
-  <button id="toggle-secret" class="btn btn-primary mt-2">View Key</button>
-  <button id="copy-key" class="btn btn-secondary mt-2">Copy Key</button>
+  <h4>
+    {{ user.first_name }} {{ user.last_name }}
+  </h4>
+  <form>
+    <label for="api-key">API Key</label>
+    <input readonly :type="key_visible ? 'text' : 'password'" id="api-key"
+      class="form-control" value="{{ api_key }}">
+    <button @click="key_visible = !key_visible" class="btn btn-primary mt-2">
+      View Key
+    </button>
+    <button @click="copy_key" id="copy-key" class="btn btn-secondary mt-2">
+      Copy Key
+    </button>
+  </form>
+
+  <h4>Projects</h4>
+
+  <p>
+    Please contact <a href="mailto:contact@floto.science">contact@floto.science</a>
+    to create a new project.
+  </p>
+
+  <q-card v-for="project in projects">
+    <q-card-section>
+      <h5>[[ project.name ]]</h5>
+      <div>[[ project.description ]] - [[ project.created_by]] </div>
+    </q-card-section>
+    <q-separator></q-separator>
+    <q-card-section>
+      <ul>
+        <li v-for="member in project.members">
+          [[ member.email ]]
+        </li>
+      </ul>
+      
+      <q-form @submit.prevent="addNewMember(project.uuid)">
+        <div class="row">
+          <q-input
+            class="col-10"
+            filled
+            v-model="new_user_email"
+            label="Email"
+            lazy-rules
+            :rules="[ val => val && val.length > 0 || 'Please type something']"
+          ></q-input>
+          <q-btn class="col-2" type="submit">Add user</q-btn>
+        </div>
+      </q-form>
+    </q-card-section>
+  </q-card>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static 'apikey.js' %}"></script>
+<script src="{% static 'user.js' %}"></script>
 {% endblock %}

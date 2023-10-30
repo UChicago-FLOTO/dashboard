@@ -56,3 +56,9 @@ class JobAdmin(admin.ModelAdmin):
 
 
 admin.site.register(models.Job, JobAdmin)
+
+
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = ["created_at", "uuid", "name"]
+
+admin.site.register(models.Project, ProjectAdmin)

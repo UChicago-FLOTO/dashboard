@@ -16,3 +16,8 @@ class HasReadAccessFilterBackend(filters.BaseFilterBackend):
         return queryset.filter(
             Q(created_by=request.user) | Q(is_public=True)
         )
+
+class DeviceFilter(filters.BaseFilterBackend):
+    def filter_queryset(self, request, devices, view):
+        LOG.info("test")
+        return devices

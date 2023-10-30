@@ -71,3 +71,18 @@ class DeviceTimeslot(models.Model):
         OTHER = "OTHER", "Other"
 
     category = models.CharField(max_length=32, choices=Categories.choices)
+
+
+class Project(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    created_at = models.DateTimeField(default=datetime.now)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="pi"
+    )
+    name = models.CharField(max_length=200)
+    description = models.CharField(max_length=2000)
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL
+    )
