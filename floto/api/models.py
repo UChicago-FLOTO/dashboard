@@ -1,8 +1,11 @@
+import logging
 import uuid
 from datetime import datetime
 
 from django.conf import settings
 from django.db import models
+
+LOG = logging.getLogger(__name__)
 
 
 class CreatedByUserBase(models.Model):
@@ -84,5 +87,64 @@ class Project(models.Model):
     name = models.CharField(max_length=200)
     description = models.CharField(max_length=2000)
     members = models.ManyToManyField(
-        settings.AUTH_USER_MODEL
+        settings.AUTH_USER_MODEL,
+        related_name="projects",
     )
+
+    def __str__(self):
+        return f"{self.name} ({self.uuid})"
+
+
+class DeviceData(models.Model):
+    """
+    Stores our custom data on the device and filter balena API
+    """
+    device_uuid = models.CharField(max_length=36, primary_key=True)
+    # The owner of the device.
+    owner_project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    # Projects which can deploy to the device
+    allow_all_projects = models.BooleanField(default=False)
+    application_projects = models.ManyToManyField(Project, related_name="application_projects")
+    name = models.CharField(max_length=200)
+
+    def public_dict(self, balena_device, kubernetes_node, request):
+        """
+        Combine the openbalena device, kubernetes_node, 
+        and this to get the public version
+        """
+        # TODO this should probably be refactored into a serialzier instead
+        BALENA_KEYS = [
+            "created_at", "modified_at", "api_heartbeat_state",
+            "uuid", "device_name", "note", "is_online", "last_connectivity_event",
+            "is_connected_to_vpn", "last_vpn_event",
+            "memory_usage", "memory_total", "storage_usage", "storage_total",
+            "cpu_usage", "cpu_temp", "is_undervolted", "status", "os_version",
+            "os_variant", "supervisor_version",
+        ]
+        
+        is_ready = False
+        if kubernetes_node:
+            is_ready = next(
+                c for c in kubernetes_node.status.conditions
+                if c.type == "Ready"
+            ).status == "True"
+        ip_address = [] if not balena_device.get("ip_address") else \
+            [ip for ip in balena_device["ip_address"].split(" ")]
+        mac_address = [] if not balena_device.get("mac_address") else \
+            [mac for mac in balena_device["mac_address"].split(" ")]
+        return {
+            "contact": self.owner_project.created_by.email,
+            "management_access": request.user in self.owner_project.members.all(),
+            "application_access": self.has_app_access(request.user),
+            "is_ready": is_ready,
+            "ip_address": ip_address,
+            "mac_address": mac_address,
+        } | { k: balena_device.get(k) for k in BALENA_KEYS }
+
+    def has_app_access(self, user):
+        return self.allow_all_projects or \
+            any(
+                allowed_project in user.projects.all()
+                for allowed_project in self.application_projects.all()
+            ) or \
+            user in self.owner_project.members.all()

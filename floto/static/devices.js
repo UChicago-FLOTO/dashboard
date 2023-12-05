@@ -16,6 +16,9 @@ createApp({
         { name: "My Collections", value: (val) => { return val.is_owned_by_current_user } },
         { name: "Public Collections", value: (val) => { return val.is_public } },
       ]  
+      filter_application_access = ref(true)
+      filter_is_ready = ref(true)
+      filter_management_access = ref(false)
 
       fetch_with_retry("/api/devices", callback=function(json){
         devices.value = json
@@ -45,12 +48,13 @@ createApp({
         collections.value = json
         collections.value.forEach(process_created_by)
       })
-  
 
       return {
-        devices, selected_devices,
+        devices, selected_devices, device_overview_dialog: ref(false),
+        device_overview: ref(null),
         fleets, selected_fleets, devices_loading, fleets_loading,
         collections, create_collection_dialog, collection_form_data,
+        filter_management_access, filter_application_access, filter_is_ready,
         headers: [
           {
               label: "Name",
@@ -65,16 +69,28 @@ createApp({
               name: "uuid",
           },
           {
-              label: "VPN connected",
-              field: "is_connected_to_vpn",
+              label: "Management Access",
+              field: "management_access",
               sortable: true,
-              name: "is_connected_to_vpn",
+              name: "management_access",
           },
           {
-              label: "API heartbeat",
+            label: "Application Access",
+            field: "application_access",
+            sortable: true,
+            name: "application_access",
+          },
+          {
+              label: "Is Online",
               field: "api_heartbeat_state",
               sortable: true,
               name: "api_heartbeat_state",
+          },
+          {
+            label: "Ready for Apps",
+            field: "is_ready",
+            sortable: true,
+            name: "is_ready",
           },
           { name: 'action', label: 'Actions', name: "action", field: 'action' },
         ],
@@ -85,8 +101,15 @@ createApp({
           rowsPerPage: 0,
         },
         device_rows(){
-          return devices.value.filter(
-            d => selected_fleets.value.includes(d.belongs_to__application.__id))
+          return devices.value.filter((d) => {
+            // if a filter is set, ensure device has that filter
+            return (!filter_is_ready.value || d.is_ready) &&
+            (!filter_application_access.value || d.application_access) &&
+            (!filter_management_access.value || d.management_access)
+          })
+        },
+        is_device_manager: function(){
+          return devices.value.some(dev => dev.management_access)
         },
         async submit(e) {
           const request = new Request(
@@ -122,6 +145,11 @@ createApp({
             // jobs_loading = false
           })
         },
+        options: [
+          { label: 'Management Access', value: 'management_access' },
+          { label: 'Application Access', value: 'application_access', },
+          { label: 'Ready', value: 'is_ready' }
+        ],  
         table_filter_options,
         selected_table_filter: ref(table_filter_options[0]),  
         collections_headers: [

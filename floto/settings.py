@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'drf_spectacular',
+    'dry_rest_permissions',
     'floto',
     'floto.api',
     'floto.auth',
@@ -202,6 +203,12 @@ LOGGING = {
             "propagate": True,
         },
         "pipeline": {"handlers": ["console"], "level": "INFO"},
+        "kubernetes": {
+            'handlers': ['console'], 'level': "INFO", "propagate": False,
+        },
+        "urllib3": {
+            'handlers': ['console'], 'level': "INFO", "propagate": False,
+        }
     },
 }
 
@@ -284,6 +291,7 @@ KUBE_JOB_TTL = int(os.environ.get(
 # FLOTO configuration
 FLOTO_MAP_IFRAME_SRC = os.environ.get("FLOTO_MAP_IFRAME_SRC")
 FLOTO_ENV_PREFIX = os.environ.get("FLOTO_ENV_PREFIX", "FLOTO_")
+FLOTO_ADMIN_PROJECT=os.environ.get("FLOTO_ADMIN_PROJECT")
 
 
 # Celery task configuration

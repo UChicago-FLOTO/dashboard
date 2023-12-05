@@ -33,7 +33,7 @@ def get_volume_name():
     return "floto-volume"
 
 
-def get_devices():
+def get_nodes():
     config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
     core_api = client.CoreV1Api()
     return core_api.list_node(

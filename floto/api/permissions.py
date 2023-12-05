@@ -1,6 +1,8 @@
 import logging
 
 from rest_framework import permissions
+from rest_framework.permissions import SAFE_METHODS
+from floto.api.models import DeviceData
 
 LOG = logging.getLogger(__name__)
 
@@ -19,3 +21,34 @@ class IsAdmin(permissions.BasePermission):
 class IsOwnerOfObject(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.created_by == request.user
+
+
+class DevicePermission(permissions.BasePermission):
+    MANAGEMENT_VIEWS = {
+        "device": {
+            "Logs": True,
+            "Environment retrieve": True,
+            "Command": True,
+            "Device action": True
+        }
+    }
+
+    APPLICATION_VIEWS = {}
+
+    def has_permission(self, request, view):
+        # Always check for management permission
+        if DevicePermission.MANAGEMENT_VIEWS.get(
+                view.basename, {}).get(view.name):
+            pk = view.kwargs.get("pk")
+            if pk:
+                device = DeviceData.objects.get(pk=pk)
+                return device.public_dict({}, {}, request)["management_access"]
+        # Check write methods against application views
+        if request.method not in SAFE_METHODS and \
+                DevicePermission.APPLICATION_VIEWS.get(view.basename, {}).get(view.name):
+            pk = view.kwargs.get("pk")
+            if pk:
+                device = DeviceData.objects.get(pk=pk)
+                return device.public_dict({}, {}, request)["application_access"]
+        # Otherwise, view is allowed
+        return True

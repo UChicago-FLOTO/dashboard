@@ -44,6 +44,11 @@ class DeviceViewSet(viewsets.ViewSet):
         filters.DeviceFilter()
     ]
 
+    permission_classes = [
+        permissions.IsAdmin,
+        permissions.DevicePermission,
+    ]
+
     @staticmethod
     def filter(request, devices, view):
         res = devices
@@ -64,14 +69,17 @@ class DeviceViewSet(viewsets.ViewSet):
         res = DeviceViewSet.filter(
             request, [balena.models.device.get(pk)], self
         )
+        # Note we are essentially just checking this device 
+        # was not filtered out entirely
         if res:
-            return Response(next(res))
+            return Response(res[0])
         else:
             raise Http404
 
 
-    @action(detail=True, url_path=r'logs/(?P<count>[^/.]+)')
+    @action(detail=True, url_path=r'logs/(?P<count>[^/.]+)', permission_classes=permission_classes)
     def logs(self, request, pk, count):
+        # raise self
         balena = get_balena_client()
         res = balena.logs.history(pk, count)
         return Response(res)
@@ -205,7 +213,7 @@ class ModelWithOwnerViewSet(viewsets.ModelViewSet):
             action_permissions = self.destroy_permision_classes
         return super(ModelWithOwnerViewSet, self).get_permissions() + [
             permission() for permission in action_permissions
-        ]
+        ] + [ permissions.IsAdmin() ]
 
 
 class ServiceViewSet(ModelWithOwnerViewSet):

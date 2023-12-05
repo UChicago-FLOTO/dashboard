@@ -1,6 +1,8 @@
 from celery.app import shared_task
+from django.conf import settings
+from floto.api.balena import get_balena_client
 from floto.api.kubernetes import get_namespaces_with_no_pods
-from floto.api.models import Job
+from floto.api.models import DeviceData, Job
 
 import logging
 

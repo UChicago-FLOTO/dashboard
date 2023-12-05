@@ -1,5 +1,15 @@
 from django.contrib import admin
+from django.conf import settings
+from django import forms
+from floto.api.balena import get_balena_client
+
+from floto.api.views import DeviceViewSet
 from . import models
+
+import logging
+
+LOG = logging.getLogger(__name__)
+
 
 class CollectionDeviceInline(admin.StackedInline):
     model = models.CollectionDevice
@@ -62,3 +72,42 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ["created_at", "uuid", "name"]
 
 admin.site.register(models.Project, ProjectAdmin)
+
+
+class DeviceDataForm(forms.ModelForm):
+    device_uuid = forms.ChoiceField(required=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        balena = get_balena_client()
+        devices = balena.models.device.get_all()
+        self.fields["device_uuid"].choices = [
+            (d["uuid"], f"{d['device_name']} ({d['uuid']})")
+            for d in devices
+        ]
+
+    class Meta:
+        model = models.DeviceData
+        fields = "__all__"
+
+
+@admin.action(
+    description="Create models for missing device data (doesn't use selected)."
+)
+def init_default_device_data(modeladmin, request, queryset):
+    balena = get_balena_client()
+    devices = balena.models.device.get_all()
+    for device in devices:
+        models.DeviceData(
+            device_uuid=device["uuid"],
+            name=device["device_name"],
+            allow_all_projects=False,
+            owner_project=models.Project.objects.get(pk=settings.FLOTO_ADMIN_PROJECT),
+        ).save()
+
+class DeviceDataAdmin(admin.ModelAdmin):
+    form = DeviceDataForm
+    list_display = ["name", "device_uuid", "owner_project"] 
+    actions = [init_default_device_data]
+
+admin.site.register(models.DeviceData, DeviceDataAdmin)

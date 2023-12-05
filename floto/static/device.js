@@ -21,19 +21,17 @@ createApp({
       device.value.storage_percentage = (device.value["storage_usage"] / device.value["storage_total"]).toFixed(2)
       device.value.cpu_temp_percentage = (device.value["cpu_temp"] / 100.0)
       device.value.cpu_usage_percentage = (device.value["cpu_usage"] / 100.0)
-      device.value.split_mac = device.value.mac_address.split(/[ ,]+/)
-      device.value.split_ip = device.value.ip_address.split(/[ ,]+/)
       device_loading.value = false
 
       fetch_with_retry(`/api/devices/${device.value.uuid}/logs/1000`, callback=function(json){
         logs.value = json
         logs_loading.value = false
       })
+      fetch_with_retry(`/api/devices/${uuid}/environment`, callback=function(json){
+        environment.value = json
+      })  
     })
 
-    fetch_with_retry(`/api/devices/${uuid}/environment`, callback=function(json){
-      environment.value = json
-    })
 
     return {
       device, logs, tab, device_loading, logs_loading,
@@ -42,7 +40,6 @@ createApp({
       run_command: function(e){
         // Do not submit form actually
         e.preventDefault()
-        console.log("running command")
 
         const form_data = new FormData()
         form_data.append("command", command_text.value)

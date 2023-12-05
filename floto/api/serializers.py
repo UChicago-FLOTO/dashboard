@@ -87,7 +87,6 @@ class CollectionSerializer(CreatedByUserSerializer):
     @transaction.atomic
     def create(self, validated_data):
         devices_data = validated_data.pop("devices")
-        LOG.info(devices_data)
         collection = models.Collection.objects.create(**validated_data)
         for device in devices_data:
             models.CollectionDevice.objects.create(
