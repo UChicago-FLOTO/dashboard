@@ -1,11 +1,12 @@
-from ipaddress import collapse_addresses
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from floto.api import models
 from floto.api import util
 from floto.api import kubernetes
+from floto.auth.models import KeycloakUser
 
 import logging
+from django.conf import settings
 from django.db import transaction
 from django.contrib.auth.models import User
 
@@ -86,7 +87,6 @@ class CollectionSerializer(CreatedByUserSerializer):
     @transaction.atomic
     def create(self, validated_data):
         devices_data = validated_data.pop("devices")
-        LOG.info(devices_data)
         collection = models.Collection.objects.create(**validated_data)
         for device in devices_data:
             models.CollectionDevice.objects.create(
@@ -184,3 +184,18 @@ class JobSerializer(CreatedByUserSerializer):
         queryset=models.Application.objects.all()
     )
     timeslots = DeviceTimeslotSerializer(many=True, read_only=True)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta():
+        model = KeycloakUser
+        fields = ["email"]
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    class Meta():
+        model = models.Project
+        fields = "__all__"
+        depth = 1
+    members = UserSerializer(many=True)
+    created_by = CreatedByField(default=serializers.CurrentUserDefault())

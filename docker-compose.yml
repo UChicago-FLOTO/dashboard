@@ -38,5 +38,24 @@ services:
       - ./db:/docker-entrypoint-initdb.d
       - ./data:/var/lib/mysql
 
+  redis: # Used for celery tasks
+    image: redis:alpine
+
+  celery:
+    image: floto-dev:latest
+    restart: on-failure
+    entrypoint: ["celery"]
+    command:
+      ["-A", "floto", "worker", "-l", "INFO", "--concurrency=1", "-B"]
+    env_file:
+      - .env
+    volumes:
+      - .:/project
+      - ./config:/config
+    depends_on:
+      - db
+      - redis
+
+
 volumes:
   static:

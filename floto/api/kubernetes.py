@@ -7,23 +7,54 @@ import hashlib
 
 from . import util
 from .balena import get_balena_client
-from . import models
 
 LOG = logging.getLogger(__name__)
 
 
-def get_devices():
+def get_namespace_name(job_uuid):
+    return f"job-{job_uuid}"
+
+def get_job_name(job_uuid, device_uuid):
+    # We need different job names per device, and need length < 64.
+    # hexdigest 6 gives a hash of length 12, which means out job name
+    # will be 4 (prefix) + 36 (uuid) + 12 (hash) = 52.
+    uuid_hash = hashlib.shake_256(
+        get_node_uuid(device_uuid).encode()).hexdigest(6)
+    return f"job-{job_uuid}-{uuid_hash}"
+
+def get_node_uuid(device_uuid):
+    return device_uuid.replace("-", "")
+
+def get_pod_name(app_uuid, device_uuid):
+    return f"app-{get_node_uuid(device_uuid)[:6]}-{str(app_uuid)[:6]}"
+
+
+def get_volume_name():
+    return "floto-volume"
+
+
+def get_nodes():
     config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
     core_api = client.CoreV1Api()
     return core_api.list_node(
         label_selector="node-role.kubernetes.io/floto-worker=true")
 
 
+def get_namespaces_with_no_pods():
+    config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
+    core_api = client.CoreV1Api()
+    namespaces = [
+        ns for ns in core_api.list_namespace().items
+        if ns.metadata.name.startswith("job-")
+        and core_api.list_namespaced_pod(ns.metadata.name).items.length == 0
+    ]
+    return namespaces
+
+
 def get_job_events(uuid):
     config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
-    namespace = f"job-{uuid}"
     core_api = client.CoreV1Api()
-    event_list = core_api.list_namespaced_event(namespace)
+    event_list = core_api.list_namespaced_event(get_namespace_name(uuid))
     events = [
         {
             "message": e.message,
@@ -37,6 +68,31 @@ def get_job_events(uuid):
     return events
 
 
+def delete_job_namespace_if_exists(job_obj):
+    core_api = client.CoreV1Api()
+    try:
+        core_api.delete_namespace(get_namespace_name(job_obj.uuid))
+    except client.exceptions.ApiException as e:
+        # Ignore not found, meaning namespace was already deleted
+        if e.status != 404:
+            raise e
+
+def destroy_job(job_obj):
+    config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
+    batch_api = client.BatchV1Api()
+    for device in job_obj.devices.all():
+        try:
+            batch_api.delete_namespaced_job(
+                get_namespace_name(job_obj.uuid), 
+                get_job_name(job_obj.uuid, device.device_uuid)
+            )
+        except client.exceptions.ApiException as e:
+            # Ignore not found, meaning pod was deleted by k8s
+            if e.status != 404:
+                raise e
+    delete_job_namespace_if_exists(job_obj)
+
+
 def get_job_logs(uuid):
     """
     Returns a map of 
@@ -47,14 +103,13 @@ def get_job_logs(uuid):
     }
     """
     config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
-    namespace = f"job-{uuid}"
     core_api = client.CoreV1Api()
     logs = defaultdict(dict)
-    pod_list = core_api.list_namespaced_pod(namespace)
+    pod_list = core_api.list_namespaced_pod(get_namespace_name(uuid))
     for pod in pod_list.items:
         for container in pod.spec.containers:
             logs[pod.spec.node_name][container.image] = core_api.read_namespaced_pod_log(
-                pod.metadata.name, namespace, container=container.name)
+                pod.metadata.name, get_namespace_name(uuid), container=container.name)
     return logs
 
 
@@ -64,10 +119,15 @@ def create_deployment(devices, job):
     environment = json.loads(job.environment).items()
     balena = get_balena_client()
 
-    namespace = f"job-{job.uuid}"
+    namespace = get_namespace_name(job.uuid)
     core_api = client.CoreV1Api()
     core_api.create_namespace(
-        client.V1Namespace(metadata=client.V1ObjectMeta(name=namespace))
+        client.V1Namespace(
+            metadata=client.V1ObjectMeta(name=namespace),
+            spec=client.V1NamespaceSpec(
+                finalizers=[]
+            )
+        )
     )
 
     # Copy image pull secrets to newly created namespace
@@ -84,13 +144,6 @@ def create_deployment(devices, job):
         ))
 
     for device in devices:
-        node_uuid = device["device_uuid"].replace("-", "")
-        # We need different job names per device, and need length < 64.
-        # hexdigest 6 gives a hash of length 12, which means out job name
-        # will be 4 (prefix) + 36 (uuid) + 12 (hash) = 52.
-        uuid_hash = hashlib.shake_256(node_uuid.encode()).hexdigest(6)
-        job_name = f"job-{job.uuid}-{uuid_hash}"
-
         containers = []
 
         device_environment = {
@@ -106,8 +159,8 @@ def create_deployment(devices, job):
         # Overwrite any variables with the job's env
         device_environment.update(environment)
 
-        volume_name = "floto-volume"
-        pod_name = f"app-{str(node_uuid)[:6]}-{str(job.application.uuid)[:6]}"
+        volume_name = get_volume_name()
+        pod_name = get_pod_name(job.application.uuid, device["device_uuid"])
 
         for app_service in job.application.services.all():
             service = app_service.service
@@ -133,16 +186,17 @@ def create_deployment(devices, job):
             api_version="batch/v1",
             kind="Job",
             metadata=client.V1ObjectMeta(
-                name=job_name,
-                labels={"job_name": job_name},
+                name=get_job_name(job.uuid, device["device_uuid"]),
+                labels={"job_name": get_job_name(job.uuid, device["device_uuid"])},
             ),
             spec=client.V1JobSpec(
                 backoff_limit=0,
+                ttl_seconds_after_finished=settings.KUBE_JOB_TTL,
                 template=client.V1PodTemplateSpec(
                     spec=client.V1PodSpec(
                         restart_policy="Never",
                         containers=containers,
-                        node_name=node_uuid,
+                        node_name=get_node_uuid(device["device_uuid"]),
                         volumes=[
                             client.V1Volume(
                                 name=volume_name,

@@ -1,5 +1,4 @@
 from collections import defaultdict
-from django.db.models import Q
 from rest_framework.exceptions import ValidationError
 from datetime import datetime, timedelta
 import logging
@@ -7,10 +6,6 @@ from floto.api import models
 
 
 LOG = logging.getLogger(__name__)
-
-
-def filter_by_created_by_or_public(queryset, request):
-    return queryset.filter(Q(created_by=request.user) | Q(is_public=True))
 
 
 def parse_on_demand_args(args):

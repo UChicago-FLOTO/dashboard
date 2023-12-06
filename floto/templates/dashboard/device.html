@@ -82,10 +82,6 @@
             <td class="text-left">[[ device.value.status ]]</td>
           </tr>
           <tr>
-            <th class="text-left">Provisioning State</th>
-            <td class="text-left">[[ device.value.provisioning_state ]] </td>
-          </tr>
-          <tr>
             <th class="text-left">OS Version</th>
             <td class="text-left">[[ device.value.os_version ]] </td>
           </tr>
@@ -94,18 +90,10 @@
             <td class="text-left">[[ device.value.supervisor_version ]] </td>
           </tr>
           <tr>
-            <th class="text-left">Release</th>
-            <td class="text-left">[[ device.value.running_release ]]</td>
-          </tr>
-          <tr>
-            <th class="text-left">Fleet</th>
-            <td class="text-left">[[ device.value.fleet ]]</td>
-          </tr>
-          <tr>
             <th class="text-left">IP address</th>
             <td>
               <ul>
-                <li v-for="ip in device.value.split_ip">[[ ip ]]</li>
+                <li v-for="ip in device.value.ip_address">[[ ip ]]</li>
               </ul>
             </td>
           </tr>
@@ -113,7 +101,7 @@
             <th class="text-left">MAC address</th>
             <td>
               <ul>
-                <li v-for="mac in device.value.split_mac">[[ mac ]]</li>
+                <li v-for="ip in device.value.mac_address">[[ ip ]]</li>
               </ul>
             </td>
           </tr>

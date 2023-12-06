@@ -1,20 +1,24 @@
 from collections import defaultdict
 import json
 
-import django.core.serializers
 from django.conf import settings
-from django.core import serializers
+from django.http import Http404
+from django.db.models import Q
 import base64
 import logging
 import ssl
 import socket
 import paramiko
 
+from floto.api.models import Project
+from floto.auth.models import KeycloakUser
+
 from .balena import get_balena_client
 from balena import exceptions
 
-from floto.api import permissions
+from floto.api import filters, permissions
 from floto.api.serializers import (
+    ProjectSerializer,
     ServiceSerializer,
     ApplicationSerializer,
     JobSerializer,
@@ -24,6 +28,7 @@ from floto.api.serializers import (
 from floto.api import util
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework import filters as drf_filters
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -33,18 +38,48 @@ LOG = logging.getLogger(__name__)
 
 
 class DeviceViewSet(viewsets.ViewSet):
+    # Though this is not a ModelViewSet, we implement a
+    # similar filter concept.
+    device_filters = [
+        filters.DeviceFilter()
+    ]
+
+    permission_classes = [
+        permissions.IsAdmin,
+        permissions.DevicePermission,
+    ]
+
+    @staticmethod
+    def filter(request, devices, view):
+        res = devices
+        for f in DeviceViewSet.device_filters:
+            res = f.filter_queryset(request, res, view)
+        return res
+
+
     def list(self, request):
         balena = get_balena_client()
-        res = balena.models.device.get_all()
+        res = DeviceViewSet.filter(
+            request, balena.models.device.get_all(), self
+        )
         return Response(res)
 
     def retrieve(self, request, pk):
         balena = get_balena_client()
-        res = balena.models.device.get(pk)
-        return Response(res)
+        res = DeviceViewSet.filter(
+            request, [balena.models.device.get(pk)], self
+        )
+        # Note we are essentially just checking this device 
+        # was not filtered out entirely
+        if res:
+            return Response(res[0])
+        else:
+            raise Http404
 
-    @action(detail=True, url_path=r'logs/(?P<count>[^/.]+)')
+
+    @action(detail=True, url_path=r'logs/(?P<count>[^/.]+)', permission_classes=permission_classes)
     def logs(self, request, pk, count):
+        # raise self
         balena = get_balena_client()
         res = balena.logs.history(pk, count)
         return Response(res)
@@ -157,6 +192,12 @@ class EnvViewSet(viewsets.ViewSet):
 class ModelWithOwnerViewSet(viewsets.ModelViewSet):
     destroy_permision_classes = [permissions.IsOwnerOfObject]
     http_method_names = ["get", "post", "delete"]
+    filter_backends = [
+        filters.HasReadAccessFilterBackend,
+        drf_filters.OrderingFilter,
+    ]
+    ordering = ['created_at']
+
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -164,8 +205,7 @@ class ModelWithOwnerViewSet(viewsets.ModelViewSet):
         return context
 
     def get_queryset(self):
-        return util.filter_by_created_by_or_public(
-            self.serializer_class.Meta.model.objects, self.request)
+        return self.serializer_class.Meta.model.objects.all()
 
     def get_permissions(self):
         action_permissions = []
@@ -173,7 +213,7 @@ class ModelWithOwnerViewSet(viewsets.ModelViewSet):
             action_permissions = self.destroy_permision_classes
         return super(ModelWithOwnerViewSet, self).get_permissions() + [
             permission() for permission in action_permissions
-        ]
+        ] + [ permissions.IsAdmin() ]
 
 
 class ServiceViewSet(ModelWithOwnerViewSet):
@@ -196,6 +236,9 @@ class JobViewSet(ModelWithOwnerViewSet):
     def logs(self, request, pk):
         return Response(kubernetes.get_job_logs(pk))
 
+    def perform_destroy(self, job):
+        kubernetes.destroy_job(job)
+
 
 class CollectionViewSet(ModelWithOwnerViewSet):
     serializer_class = CollectionSerializer
@@ -216,3 +259,51 @@ class TimeslotViewSet(viewsets.ViewSet):
                 request.data["timings"], request.data["devices"]
             )
         )
+
+
+class ProjectViewSet(viewsets.ModelViewSet):
+    serializer_class = ProjectSerializer
+    http_method_names = ["get", "post", "patch"]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
+    def get_queryset(self):
+        return Project.objects.filter(
+            Q(created_by=self.request.user) | Q(members=self.request.user)
+        ).distinct()
+
+    def partial_update(self, request, pk, format=None):
+        # TODO this only allows patching members right now. We may want to add
+        # updating name/description/PI
+        errors = []
+        members = set(
+            m["email"] for m in
+            request.data.pop("members")
+        )
+        project = Project.objects.get(pk=pk)
+        existing_members = set(
+            m.email for m in project.members.all()
+        )
+        to_add = members - existing_members
+        to_remove = existing_members - members
+        for email in to_add:
+            user = KeycloakUser.objects.filter(email=email).first()
+            if user:
+                project.members.add(user)
+            else:
+                errors.append(
+                    f"Could not find user '{email}'"
+                )
+        for email in to_remove:
+            # NOTE we don't check if user exists here, since we got it
+            # from the project FK
+            user = KeycloakUser.objects.filter(email=email).first()
+            project.members.remove(user)
+        project.save()
+        return Response({
+            "project": ProjectSerializer(project).data,
+            "errors": errors,
+        })

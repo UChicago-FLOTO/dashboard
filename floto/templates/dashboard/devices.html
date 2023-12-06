@@ -8,7 +8,7 @@
 
 <h3>Devices</h3>
 
-<q-select
+<!-- <q-select
   label="Select fleets"
   filled
   v-model="selected_fleets.value"
@@ -20,12 +20,25 @@
   multiple
   use-chips
 >
-</q-select>
-
-<div>
-  [[ device_rows().filter(d => { return d.api_heartbeat_state == "online" } ).length ]] online
-  [[ device_rows().filter(d => { return d.api_heartbeat_state != "online"} ).length ]] offline
+</q-select> -->
+<div class="q-pa-sm rounded-borders">
+  <q-toggle
+    name="application_access"
+    v-model="filter_application_access"
+    label="Application access"
+  ></q-toggle>
+  <q-toggle
+    name="is_ready"
+    v-model="filter_is_ready"
+    label="Ready"
+  ></q-toggle>
+  <q-toggle v-if="is_device_manager()"
+    name="management_access"
+    v-model="filter_management_access"
+    label="Management access"
+  ></q-toggle>
 </div>
+
 
 
 <q-table
@@ -35,31 +48,47 @@
     row-key="uuid"
     selection="multiple"
     v-model:selected="selected_devices"
+    virtual-scroll
+    style="height: 675px"
     >
     <template v-slot:body-cell-action="props">
       <q-td :props="props">
-        <a :href='`/dashboard/devices/${props.row.uuid}`'>
+        <a :href='`/dashboard/devices/${props.row.uuid}`'
+          v-if="props.row.management_access"
+        >
           <q-btn
-            icon-right="visibility"
+            icon-right="build"
             no-caps
             flat
             dense
-            @click="handleClick(props.row.uuid)"
-          />
+          ></q-btn>
         </a>
+        <q-btn
+          icon-right="visibility"
+          no-caps
+          flat
+          dense
+          @click="device_overview_dialog = true; device_overview = props.row"
+        ></q-btn>
       </q-td>
     </template>
     <template v-slot:bottom>
-      <div>
-        <q-btn 
-          v-if="selected_devices.length > 0"
-          no-caps 
-          flat 
-          dense
-          color="primary" 
-          @click="create_collection_dialog = true"
-          label="Create Collection"
-        ></q-btn>
+      <div class="row justify-between" style="width: 100%">
+        <div class="col-2">
+          <q-btn 
+            v-if="selected_devices.length > 0"
+            no-caps 
+            flat 
+            dense
+            color="primary" 
+            @click="create_collection_dialog = true"
+            label="Create Collection"
+          ></q-btn>
+        </div>
+        <div class="col-1">
+          [[ device_rows().filter(d => { return d.api_heartbeat_state == "online" } ).length ]] online
+          [[ device_rows().filter(d => { return d.api_heartbeat_state != "online"} ).length ]] offline
+        </div>
       </div>
     </template>
   </q-table>
@@ -109,6 +138,111 @@
     </q-card>
   </q-dialog>
 </div>
+
+<div>
+  <q-dialog v-model="device_overview_dialog" persistent transition-show="scale" transition-hide="scale">
+    <q-card style="width: 1000px">
+      <q-card-section>
+        <div class="text-h6">[[ device_overview.device_name ]]</div>
+      </q-card-section>
+
+      <q-card-section class="q-pt-none">
+        <table class="device_summary">
+          <tr>
+            <th>UUID: </th>
+            <td>[[ device_overview.uuid ]]</td>
+          </tr>
+          <tr>
+            <th>Contact: </th>
+            <td>[[ device_overview.contact ]]</td>
+          </tr>
+        </table>
+        
+        <div class="bars">
+          <table>
+            <tr>
+              <td>Temp: [[ device_overview.cpu_temp ]]°C</td>
+              <td>
+                <q-linear-progress :value="(device_overview.cpu_temp / 100.0)" color="blue" :height="12" class="q-mt-md" />     
+              </td>
+            </tr>
+            <tr>
+              <td>CPU: [[ device_overview.cpu_usage ]]%</td>
+              <td>
+                <q-linear-progress :value="(device_overview.cpu_usage / 100.0)" color="blue" :height="12" class="q-mt-md" />     
+              </td>
+            </tr>
+            <tr>
+              <td>Memory: [[ (device_overview.memory_usage / device_overview.memory_total).toFixed(2)*100 ]]%</td>
+              <td>
+                <q-linear-progress :value="(device_overview.memory_usage / device_overview.memory_total).toFixed(2)"  color="blue" :height="12" class="q-mt-md" />     
+              </td>
+            </tr>
+            <tr>
+              <td>Storage: [[ (device_overview.storage_usage / device_overview.storage_total).toFixed(2)*100 ]]%</td>
+              <td>
+                <q-linear-progress :value="(device_overview.storage_usage / device_overview.storage_total).toFixed(2)"  color="blue" :height="12" class="q-mt-md" />     
+              </td>
+            </tr>
+          </table>
+        </div>    
+
+        <table class="table col-6">
+          <tr>
+            <th class="text-left">Heartbeat State</th>
+            <td class="text-left">
+              [[ device_overview.api_heartbeat_state ]] since [[ device_overview.last_connectivity_event ]]
+            </td>
+          </tr>
+          <tr>
+            <th class="text-left">VPN connected</th>
+            <td class="text-left">
+              [[ device_overview.is_online ]] since [[ device_overview.last_vpn_event ]]
+            </td>
+          </tr>
+          <tr>
+            <th class="text-left">Status</th>
+            <td class="text-left">[[ device_overview.status ]]</td>
+          </tr>
+          <tr>
+            <th class="text-left">OS Version</th>
+            <td class="text-left">[[ device_overview.os_version ]] </td>
+          </tr>
+          <tr>
+            <th class="text-left">Supervisor Version</th>
+            <td class="text-left">[[ device_overview.supervisor_version ]] </td>
+          </tr>
+          <tr>
+            <th class="text-left">Ready</th>
+            <td class="text-left">[[ device_overview.is_ready ]]</td>
+          </tr>
+          <tr>
+            <th class="text-left">IP address</th>
+            <td>
+              <ul>
+                <li v-for="ip in device_overview.ip_address">[[ ip ]]</li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <th class="text-left">MAC address</th>
+            <td>
+              <ul>
+                <li v-for="ip in device_overview.mac_address">[[ ip ]]</li>
+              </ul>
+            </td>
+          </tr>
+        </table>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Close" v-close-popup></q-btn>
+        </q-card-actions>    
+      </q-card-section>
+
+    </q-card>
+  </q-dialog>
+</div>
+
 
 <div v-if="devices_loading && fleets_loading" class="center_of_screen">
   <q-circular-progress
