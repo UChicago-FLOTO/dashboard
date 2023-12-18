@@ -1,4 +1,5 @@
 function fetch_with_retry(url, callback, error_callback=base_error_callback, backoff_count=0) {
+  url += "?" + get_query_params()
   fetch(url).then((response) => {
     if (response.ok) {
       return response.json();
@@ -31,6 +32,12 @@ function get_headers(){
   headers.append("Authorization", `Token ${token}`);  
   headers.append("Content-Type", "application/json")
   return headers  
+}
+
+function get_query_params(){
+  return new URLSearchParams({
+    "active_project": get_active_project(),
+  })
 }
 
 function get_token(){
