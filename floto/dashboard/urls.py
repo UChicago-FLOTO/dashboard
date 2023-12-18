@@ -37,4 +37,5 @@ urlpatterns = [
         "jobs/<str:uuid>/",
         login_required(views.job),
         name="job"),
+    path("set_active_project", login_required(views.set_active_project), name="set_active_project"),
 ]
