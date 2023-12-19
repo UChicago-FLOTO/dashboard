@@ -7,7 +7,11 @@ createApp({
     let services_loading = ref("primary")
     let services_form_disabled = ref(false)
     let services_loading_error_message = ref(undefined)
-    let form_data = reactive({"is_public": false, container_ref: ""})
+    let form_data = reactive({
+      "is_public": false, 
+      container_ref: "",
+      created_by_project: get_active_project(),
+    })
 
     fetch_with_retry(`/api/services/`, callback=function(json){
       services.value = json

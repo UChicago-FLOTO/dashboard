@@ -8,6 +8,25 @@ from django.db import models
 LOG = logging.getLogger(__name__)
 
 
+class Project(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    created_at = models.DateTimeField(default=datetime.now)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="pi"
+    )
+    name = models.CharField(max_length=200)
+    description = models.CharField(max_length=2000)
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="projects",
+    )
+
+    def __str__(self):
+        return f"{self.name} ({self.uuid})"
+
+
 class CreatedByUserBase(models.Model):
     """
     Defines a class with common info for something created by a user
@@ -20,6 +39,7 @@ class CreatedByUserBase(models.Model):
     updated_at = models.DateTimeField(default=datetime.now)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     is_public = models.BooleanField(default=False)
+    created_by_project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
 
 
 class Collection(CreatedByUserBase):
@@ -74,25 +94,6 @@ class DeviceTimeslot(models.Model):
         OTHER = "OTHER", "Other"
 
     category = models.CharField(max_length=32, choices=Categories.choices)
-
-
-class Project(models.Model):
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    created_at = models.DateTimeField(default=datetime.now)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="pi"
-    )
-    name = models.CharField(max_length=200)
-    description = models.CharField(max_length=2000)
-    members = models.ManyToManyField(
-        settings.AUTH_USER_MODEL,
-        related_name="projects",
-    )
-
-    def __str__(self):
-        return f"{self.name} ({self.uuid})"
 
 
 class DeviceData(models.Model):

@@ -29,6 +29,7 @@ createApp({
       application: undefined,
       devices: [],
       timings: [],
+      created_by_project: get_active_project(),
     })
 
     let collections = ref([])

@@ -36,6 +36,16 @@ class CreatedByUserMeta:
 
 class CreatedByUserSerializer(serializers.ModelSerializer):
     created_by = CreatedByField(default=serializers.CurrentUserDefault())
+    created_by_project = serializers.PrimaryKeyRelatedField(
+        queryset=models.Project.objects.all()
+    )
+
+    def validate_created_by_project(self, value):
+        if not value in self.context["request"].user.projects.all():
+            raise serializers.ValidationError(
+                "You are not a member of that project"
+            )
+        return value
 
 
 class ServiceSerializer(CreatedByUserSerializer):

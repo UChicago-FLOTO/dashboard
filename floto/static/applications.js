@@ -14,6 +14,7 @@ createApp({
       environment: {},
       is_public: false,
       services: [],
+      created_by_project: get_active_project(),
     })
     let step = ref(1)
 
