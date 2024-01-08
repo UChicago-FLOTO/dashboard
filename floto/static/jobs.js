@@ -29,7 +29,6 @@ createApp({
       application: undefined,
       devices: [],
       timings: [],
-      created_by_project: get_active_project(),
     })
 
     let collections = ref([])
@@ -57,7 +56,7 @@ createApp({
     })
     fetch_with_retry(`/api/devices/`, callback=function(json){
       devices.value = json.filter((dev) => {
-        return dev["belongs_to__application"]["__id"] == 13
+        return dev["is_ready"]
       })
       devices.options = devices.value.map((dev) => {
         return {
@@ -159,6 +158,7 @@ createApp({
               "timings": form_data.timings.map((str) => {
                 return {"timing": str}
               }),
+              created_by_project: get_active_project(),
             }),
             headers: get_headers(),
           }

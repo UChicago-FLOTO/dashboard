@@ -85,7 +85,8 @@
             label="Create Collection"
           ></q-btn>
         </div>
-        <div class="col-1">
+        <div class="col-2">
+          [[ device_rows().filter(d => { return d.is_ready } ).length ]] ready
           [[ device_rows().filter(d => { return d.api_heartbeat_state == "online" } ).length ]] online
           [[ device_rows().filter(d => { return d.api_heartbeat_state != "online"} ).length ]] offline
         </div>

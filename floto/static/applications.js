@@ -14,7 +14,6 @@ createApp({
       environment: {},
       is_public: false,
       services: [],
-      created_by_project: get_active_project(),
     })
     let step = ref(1)
 
@@ -74,6 +73,7 @@ createApp({
               "services": form_data.services.map((uuid) => {
                 return {"service": uuid}
               }),
+              created_by_project: get_active_project(),
             }),
             headers: get_headers(),
           }

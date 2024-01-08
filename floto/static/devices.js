@@ -127,6 +127,7 @@ createApp({
                 "devices": selected_devices.value.map((device) => {
                   return {"device_uuid": device.uuid}
                 }),
+                created_by_project: get_active_project(),
               }),
               headers: get_headers(),
             }
