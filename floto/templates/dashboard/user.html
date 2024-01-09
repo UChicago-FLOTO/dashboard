@@ -31,7 +31,10 @@
 
   <q-card v-for="project in projects">
     <q-card-section>
-      <h5>[[ project.name ]]</h5>
+      <div class="flex justify-between">
+        <h5>[[ project.name ]]</h5>
+        <q-btn @click="set_active_project(project.uuid)">Set Active Project</q-btn>
+      </div>
       <div>[[ project.description ]] - [[ project.created_by]] </div>
     </q-card-section>
     <q-separator></q-separator>

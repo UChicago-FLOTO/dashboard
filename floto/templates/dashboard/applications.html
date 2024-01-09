@@ -81,7 +81,7 @@
       title="Metadata"
       :done="step > 1"
     >
-      <q-form @submit.prevent="continueFn($refs.stepper)">
+      <q-form @submit.prevent="continueFn($refs.stepper)" class="q-gutter-md">
         <q-input
           filled
           v-model="form_data.name"
@@ -98,7 +98,20 @@
           :rules="[ val => val && val.length > 0 || 'Please type something']"
         ></q-input>
 
-        <q-toggle v-model="form_data.is_public" label="Public"></q-toggle>
+        <div>
+          <label>
+            Visibility:
+          </label>
+          <q-btn-toggle
+            name="is_public"
+            v-model="form_data.is_public"
+            toggle-color="primary"
+            :options="[
+              {label: 'Project-only', value: false},
+              {label: 'Public', value: true},
+            ]"
+          ></q-btn-toggle>
+        </div>
 
         <q-stepper-navigation>
           <q-btn type="submit" color="primary" label="Continue"></q-btn>

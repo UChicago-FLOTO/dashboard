@@ -10,7 +10,10 @@ createApp({
       let fleets_loading = ref("primary")
       let selected_devices = ref([])
       let create_collection_dialog = ref(false)
-      let collection_form_data = ref({"is_public": false, name: "", description: ""})
+      let collection_form_data = ref({
+        "is_public": false, name: "", description: "",
+        created_by_project: get_active_project(),
+      })
       let collections = ref([])
       let table_filter_options = [
         { name: "My Collections", value: (val) => { return val.is_owned_by_current_user } },
@@ -124,6 +127,7 @@ createApp({
                 "devices": selected_devices.value.map((device) => {
                   return {"device_uuid": device.uuid}
                 }),
+                created_by_project: get_active_project(),
               }),
               headers: get_headers(),
             }

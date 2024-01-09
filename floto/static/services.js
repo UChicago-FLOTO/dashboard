@@ -7,7 +7,11 @@ createApp({
     let services_loading = ref("primary")
     let services_form_disabled = ref(false)
     let services_loading_error_message = ref(undefined)
-    let form_data = reactive({"is_public": false, container_ref: ""})
+    let form_data = reactive({
+      "is_public": false, 
+      container_ref: "",
+      created_by_project: get_active_project(),
+    })
 
     fetch_with_retry(`/api/services/`, callback=function(json){
       services.value = json
@@ -75,6 +79,7 @@ createApp({
         { label: "UUID", field: "uuid", name: "uuid", sortable: true, align: "left" },
         { label: "Container Ref", field: "container_ref", name: "container_ref", sortable: true, align: "left" },
         { label: "Created By", field: "created_by", name: "created_by", sortable: true, align: "left" },
+        { label: "Project", field: "created_by_project", name: "created_by_project", sortable: true, align: "left" },
         { label: "Created At", field: "created_at", name: "created_at", sortable: true, align: "left" },
         { label: "Public?", field: "is_public", name: "is_public", sortable: true, align: "left" },
         { name: 'action', label: 'Action', field: 'action' },

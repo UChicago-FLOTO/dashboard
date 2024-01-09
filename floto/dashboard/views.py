@@ -3,9 +3,11 @@ from django.http import HttpResponse
 from django.template import loader
 
 import datetime
+import json
 import logging
 
 from . import util
+from .. import util as floto_util
 
 LOG = logging.getLogger(__name__)
 
@@ -96,3 +98,12 @@ def job(request, uuid):
     context = {}
     template = loader.get_template("dashboard/job.html")
     return HttpResponse(template.render(context, request))
+
+
+def set_active_project(request):
+    if request.method == 'POST':
+        project = json.loads(request.body)
+        floto_util.set_active_project(request, project["uuid"])
+        return HttpResponse(status=204)
+    else:
+        return HttpResponse(status=405)

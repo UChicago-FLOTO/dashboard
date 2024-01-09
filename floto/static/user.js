@@ -10,12 +10,39 @@ createApp({
             projects.value = json
         })
 
-        
-
         return {
             key_visible,
             projects,
             new_user_email,
+            set_active_project(uuid){
+              console.log("click!", uuid)
+              const request = new Request(
+                url=`/dashboard/set_active_project`,
+                {
+                  method: 'POST',
+                  mode: 'same-origin',
+                  body: JSON.stringify({
+                    "uuid": uuid,
+                  }),
+                  headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": document.getElementsByName("csrfmiddlewaretoken")[0].value,
+                  },
+                  credentials: 'same-origin',
+                }
+              );
+              fetch(request).then((res) => {
+                if (res.ok) {
+                  notify("Updated active project")
+                } else {
+                  return Promise.reject(res);
+                }
+              }).catch((response) => {
+                console.error(response)
+                // TODO notify
+                notify("Could not update active project", type="negative")
+              });
+            },
             copy_key(){
                 var apiKeyField = document.getElementById('api-key');
                 apiKeyField.select();

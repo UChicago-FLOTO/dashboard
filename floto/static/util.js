@@ -1,4 +1,7 @@
 function fetch_with_retry(url, callback, error_callback=base_error_callback, backoff_count=0) {
+  if(backoff_count == 0){
+    url += "?" + get_query_params()
+  }
   fetch(url).then((response) => {
     if (response.ok) {
       return response.json();
@@ -33,6 +36,12 @@ function get_headers(){
   return headers  
 }
 
+function get_query_params(){
+  return new URLSearchParams({
+    "active_project": get_active_project(),
+  })
+}
+
 function get_token(){
   return document.cookie
     .split("; ")
@@ -41,7 +50,7 @@ function get_token(){
 }
 
 function process_created_by(obj){
-  obj.is_owned_by_current_user = obj.created_by == get_user_email()
+  obj.is_owned_by_current_user = obj.created_by_project == get_active_project()
   if ("environment" in obj){
     obj.parsed_env = JSON.parse(obj.environment)
   }

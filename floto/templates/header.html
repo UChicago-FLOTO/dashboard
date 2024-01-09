@@ -27,8 +27,19 @@
       </div>
       <div>
         {% if user.is_authenticated %}
+        <span class="project_name">
+          <i class="q-icon notranslate material-icons" aria-hidden="true" role="img">groups</i>
+          {{ selected_project.name }}
+        </span>
+        {% endif %}
+      </div>
+      <div>
+        {% if user.is_authenticated %}
           {% csrf_token %}
-            <span>{{ user.email }}</span>
+            <span>
+              <i class="q-icon notranslate material-icons" aria-hidden="true" role="img">account_circle</i>
+              {{ user.email }}
+            </span>
             <a href="{% url 'dashboard:user' %}">
               <button type="button" class="btn btn-primary">
                 Profile

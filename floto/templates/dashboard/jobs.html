@@ -77,7 +77,7 @@
     <q-step :name="1" title="Metadata" :done="step > 1">
       <h5>Application</h5>
       <p>Choose the application this job runs.</p>
-      <q-form @submit.prevent="continueFn($refs.stepper)">
+      <q-form @submit.prevent="continueFn($refs.stepper)" class="q-gutter-md">
         <q-select filled v-model="form_data.application" use-input hide-selected fill-input input-debounce="0"
           :options="applications.options_filter" @filter="appFilterFn" emit-value map-options
           :rules="[ val => val || 'Select an application']">
@@ -90,7 +90,20 @@
           </template>
         </q-select>
 
-        <q-toggle v-model="form_data.is_public" label="Public"></q-toggle>
+        <div>
+          <label>
+            Visibility:
+          </label>
+          <q-btn-toggle
+            name="is_public"
+            v-model="form_data.is_public"
+            toggle-color="primary"
+            :options="[
+              {label: 'Project-only', value: false},
+              {label: 'Public', value: true},
+            ]"
+          ></q-btn-toggle>
+        </div>
 
         <q-stepper-navigation>
           <q-btn type="submit" color="primary" label="Continue"></q-btn>

@@ -16,12 +16,12 @@ class CollectionDeviceInline(admin.StackedInline):
 
 class CollectonAdmin(admin.ModelAdmin):
     inlines = (CollectionDeviceInline,)
-    list_display = ["name", "created_by", "created_at"]
+    list_display = ["name", "created_by", "created_at", "created_by_project"]
 
 admin.site.register(models.Collection, CollectonAdmin)
 
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ["container_ref", "created_by", "created_at"]
+    list_display = ["container_ref", "created_by", "created_at", "created_by_project"]
 
 admin.site.register(models.Service, ServiceAdmin)
 
@@ -31,7 +31,7 @@ class ApplicationServiceInline(admin.StackedInline):
 
 
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ["name", "created_by", "created_at"]
+    list_display = ["name", "created_by", "created_at", "created_by_project"]
     inlines = (ApplicationServiceInline,)
 
 
@@ -60,7 +60,7 @@ class DeviceTimeslotInline(admin.StackedInline):
 
 
 class JobAdmin(admin.ModelAdmin):
-    list_display = ["uuid", "created_by", "created_at"]
+    list_display = ["uuid", "created_by", "created_at", "created_by_project"]
     inlines = (
         JobDeviceInline, JobTimeslotInline, DeviceTimeslotInline,)
 

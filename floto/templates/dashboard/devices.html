@@ -85,7 +85,8 @@
             label="Create Collection"
           ></q-btn>
         </div>
-        <div class="col-1">
+        <div class="col-2">
+          [[ device_rows().filter(d => { return d.is_ready } ).length ]] ready
           [[ device_rows().filter(d => { return d.api_heartbeat_state == "online" } ).length ]] online
           [[ device_rows().filter(d => { return d.api_heartbeat_state != "online"} ).length ]] offline
         </div>
@@ -106,7 +107,7 @@
           for later reference.
         </p>
 
-        <q-form @submit.prevent="submit">
+        <q-form @submit.prevent="submit" class="q-gutter-md">
           <q-input 
             filled
             label="Name" 
@@ -121,10 +122,20 @@
             lazy-rules
             :rules="[ val => val && val.length > 0 || 'Please type something']"
           ></q-input>
-          <q-toggle 
-            label="Public"
-            name="is_public" v-model="collection_form_data.is_public">
-          </q-toggle>
+          <div>
+            <label>
+              Visibility:
+            </label>
+            <q-btn-toggle
+              name="is_public"
+              v-model="collection_form_data.is_public"
+              toggle-color="primary"
+              :options="[
+                {label: 'Project-only', value: false},
+                {label: 'Public', value: true},
+              ]"
+            ></q-btn-toggle>
+          </div>
       
           <q-card-actions align="right">
             <q-btn flat label="Cancel" v-close-popup></q-btn>
