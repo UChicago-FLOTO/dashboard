@@ -33,9 +33,7 @@ createApp({
       })
     })
     fetch_with_retry(`/api/devices/`, callback=function(json){
-      devices.value = json.filter((dev) => {
-        return dev["belongs_to__application"]["__id"] == 13
-      })
+      devices.value = json
     })
     fetch_with_retry(`/api/services`, callback=function(json){
       services.value = json

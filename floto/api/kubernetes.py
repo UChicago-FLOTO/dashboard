@@ -108,8 +108,12 @@ def get_job_logs(uuid):
     pod_list = core_api.list_namespaced_pod(get_namespace_name(uuid))
     for pod in pod_list.items:
         for container in pod.spec.containers:
-            logs[pod.spec.node_name][container.image] = core_api.read_namespaced_pod_log(
-                pod.metadata.name, get_namespace_name(uuid), container=container.name)
+            try:
+                logs[pod.spec.node_name][container.image] = core_api.read_namespaced_pod_log(
+                    pod.metadata.name, get_namespace_name(uuid), container=container.name)
+            except :
+                # Device probably went down
+                logs[pod.spec.node_name][container.image] = "Error getting logs for this container."
     return logs
 
 
