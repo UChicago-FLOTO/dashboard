@@ -33,11 +33,26 @@ def get_volume_name():
     return "floto-volume"
 
 
-def get_nodes():
+def get_nodes(label_selector="node-role.kubernetes.io/floto-worker=true"):
     config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
     core_api = client.CoreV1Api()
     return core_api.list_node(
-        label_selector="node-role.kubernetes.io/floto-worker=true")
+        label_selector=label_selector)
+
+
+def label_node(node_name, label_selector="node-role.kubernetes.io/floto-worker=true"):
+    config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
+    core_api = client.CoreV1Api()
+    core_api.patch_node(
+        node_name,
+        {
+            "metadata": {
+                "labels": {
+                    "node-role.kubernetes.io/floto-worker": "true",
+                }
+            }
+        }
+    )
 
 
 def get_namespaces_with_no_pods():
