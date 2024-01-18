@@ -1,7 +1,7 @@
 from celery.app import shared_task
 from django.conf import settings
 from floto.api.balena import get_balena_client
-from floto.api.kubernetes import get_nodes, label_node
+from floto.api.kubernetes import get_nodes, label_node, get_namespaces_with_no_pods, delete_namespace_if_exists
 from floto.api.models import DeviceData, Job
 
 import logging
@@ -26,3 +26,14 @@ def label_nodes():
         except:
             # Node is unknown, do not do anything
             pass
+
+
+@shared_task(name='cleanup_namespaces')
+def cleanup_namespaces():
+    """
+    Cleanup all namespaces with no pods.
+    """
+    namespaces = get_namespaces_with_no_pods()
+    for ns in namespaces:
+        LOG.info(f"Deleting empty job namespace {ns.metadata.name}")
+        delete_namespace_if_exists(ns.metadata.name)

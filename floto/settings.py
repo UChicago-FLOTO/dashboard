@@ -305,6 +305,10 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_BEAT_SCHEDULE = {
     "label_nodes": {
         "task": "label_nodes",
-        "schedule": crontab(minute="*/5"), # every hour
-    }
+        "schedule": crontab(minute="*/5"),
+    },
+    "cleanup_namespaces": {
+        "task": "cleanup_namespaces",
+        "schedule": crontab(minute="*/30"),
+    },
 }
