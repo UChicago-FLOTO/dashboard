@@ -10,7 +10,7 @@ import ssl
 import socket
 import paramiko
 
-from floto.api.models import Project
+from floto.api.models import Project, Collection
 from floto.auth.models import KeycloakUser
 
 from .balena import get_balena_client
@@ -26,6 +26,7 @@ from floto.api.serializers import (
     TimeslotSerializer,
 )
 from floto.api import util
+from floto.api.models import CollectionDevice
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework import filters as drf_filters
@@ -242,6 +243,32 @@ class JobViewSet(ModelWithOwnerViewSet):
 
 class CollectionViewSet(ModelWithOwnerViewSet):
     serializer_class = CollectionSerializer
+    http_method_names = ["get", "post", "patch"]
+
+    def partial_update(self, request, pk, format=None):
+        devices = set(
+            m["device_uuid"] for m in
+            request.data.pop("devices")
+        )
+        collection = Collection.objects.get(pk=pk)
+        existing_devices = set(
+            m.device_uuid for m in collection.devices.all()
+        )
+        to_add = devices - existing_devices
+        to_remove = existing_devices - devices
+        for uuid in to_add:
+            CollectionDevice.objects.create(
+                collection=collection,
+                device_uuid=uuid,
+            )
+        for uuid in to_remove:
+            CollectionDevice.objects.filter(
+                collection=collection,
+                device_uuid=uuid,
+            ).all().delete()
+        collection.save()
+        return Response(CollectionSerializer(collection).data)
+
 
 
 class TimeslotViewSet(viewsets.ViewSet):

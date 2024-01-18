@@ -10,6 +10,8 @@ createApp({
       let fleets_loading = ref("primary")
       let selected_devices = ref([])
       let create_collection_dialog = ref(false)
+      let overwrite_collection_dialog = ref(false)
+      let selected_overwrite_collection = ref(null)
       let collection_form_data = ref({
         "is_public": false, name: "", description: "",
         created_by_project: get_active_project(),
@@ -56,7 +58,8 @@ createApp({
         devices, selected_devices, device_overview_dialog: ref(false),
         device_overview: ref(null),
         fleets, selected_fleets, devices_loading, fleets_loading,
-        collections, create_collection_dialog, collection_form_data,
+        collections, create_collection_dialog, collection_form_data, overwrite_collection_dialog,
+        selected_overwrite_collection,
         filter_management_access, filter_application_access, filter_is_ready,
         headers: [
           {
@@ -149,6 +152,37 @@ createApp({
             // jobs_loading = false
           })
         },
+        async overwrite_collection_submit(){
+          const request = new Request(
+            url=`/api/collections/${selected_overwrite_collection.value.uuid}/`,
+            {
+              method: 'PATCH',
+              mode: 'same-origin',
+              body: JSON.stringify({
+                "devices": selected_devices.value.map((device) => {
+                  return {"device_uuid": device.uuid}
+                }),
+              }),
+              headers: get_headers(),
+            }
+          );
+          fetch(request).then((res) => {
+            if (res.ok) {
+              return res.json()
+            }
+            return Promise.reject(res);  
+          }).then( res => {
+            process_created_by(res)
+            notify(`Updated collection ${res.name}`)
+          }).catch((response) => {
+            notify("Could not updated collection!", type="negative")
+            console.error(response)
+          }).finally(() => {
+            create_collection_dialog = false
+            // jobs_form_disabled = false
+            // jobs_loading = false
+          })
+        },
         options: [
           { label: 'Management Access', value: 'management_access' },
           { label: 'Application Access', value: 'application_access', },
@@ -175,6 +209,13 @@ createApp({
             sortable: true,
             name: "description",
           },
+          {
+            label: "Number of Devices",
+            field: "number_of_devices",
+            sortable: true,
+            name: "number_of_devices",
+          },
+
           { name: 'action', label: 'Action', field: 'action' },
         ],
         delete_item(index){
@@ -192,5 +233,16 @@ createApp({
             notify(`Could not delete collections: ${res.detail}`, type="negative")
           })
         },
+        select_collection(c){
+          c.devices.forEach( d => {
+            found_d = devices.value.find(dev => {
+              return dev.uuid == d.device_uuid
+            })
+            if(selected_devices.value.indexOf(found_d) < 0){
+              selected_devices.value.push(found_d)
+            }
+          })
+          notify(`Selected ${selected_devices.value.length} devices`)
+        }
       }
 }}).use(Quasar).mount('#app')
