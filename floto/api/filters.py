@@ -33,10 +33,13 @@ class HasReadAccessFilterBackend(filters.BaseFilterBackend):
 class DeviceFilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, devices, view):
         filtered_devices = []
-        nodes = kubernetes.get_nodes()
+        try:
+            nodes = kubernetes.get_nodes().items
+        except:
+            nodes = []
         nodes_by_id = {
             node.metadata.name: node
-            for node in nodes.items
+            for node in nodes
         }
 
         active_project = None
