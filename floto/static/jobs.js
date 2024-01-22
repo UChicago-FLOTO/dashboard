@@ -170,7 +170,7 @@ createApp({
           return Promise.reject(res);  
         }).then( res => {
           process_created_by(res)
-          jobs.value.push(res)
+          jobs.value.unshift(res)
           notify(`Created job ${res.uuid}`)
         }).catch((response) => {
           notify("Could not create job!", type="negative")
@@ -203,19 +203,20 @@ createApp({
       ],
       headers: [
         { label: "Created By", field: "created_by", name: "created_by", sortable: true, align: "left" },
-        { label: "Created At", field: "created_at", name: "created_at", sortable: true, align: "left" },
+        { label: "Created At", field: "created_at", name: "created_at", sortable: true, align: "left"},
         { label: "Public?", field: "is_public", name: "is_public", sortable: true, align: "left" },
         { label: "Application", field: "application", name: "application", align: "left" },
         { label: "Devices", field: "Devices", name: "devices", align: "left" },
         { label: "Environment", field: "environment", name: "environment", align: "left" },
         { label: "Timings", field: "timings", name: "timings", align: "left" },
-        { label: "Timeslots", field: "timeslots", name: "timeslots", align: "left" },
         { name: 'action', label: 'Action', field: 'action' },
       ],
       table_filter_options,
       selected_table_filter: ref(table_filter_options[0]),
       initialPagination: {
         rowsPerPage: 0,
+        descending: true,
+        sortBy: 'created_at',
       },
       step,
       timeslot_conflicts, pending_timeslots,

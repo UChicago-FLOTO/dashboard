@@ -15,16 +15,7 @@
   <q-table :columns="headers" :rows="jobs.value.filter(selected_table_filter.value)" :pagination="initialPagination">
     <template v-slot:body-cell-devices="props">
       <q-td :props="props">
-        <ul>
-          <li v-for="wrapper in props.row.devices">
-            <template v-if="wrapper.device_name">
-              [[ wrapper.device_name ]]
-            </template>
-            <template v-else>
-              [[ wrapper.device_uuid ]]
-            </template>
-          </li>
-        </ul>
+        [[ props.row.devices.length ]] devices
       </q-td>
     </template>
 
@@ -44,16 +35,6 @@
         <ul>
           <li v-for="timing in props.row.timings">
             [[ timing.timing ]]
-          </li>
-        </ul>
-      </q-td>
-    </template>
-
-    <template v-slot:body-cell-timeslots="props">
-      <q-td :props="props">
-        <ul>
-          <li v-for="timeslot in props.row.timeslots">
-            [[ timeslot.start ]] - [[ timeslot.stop ]]
           </li>
         </ul>
       </q-td>
