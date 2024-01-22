@@ -33,11 +33,26 @@ def get_volume_name():
     return "floto-volume"
 
 
-def get_nodes():
+def get_nodes(label_selector="node-role.kubernetes.io/floto-worker=true"):
     config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
     core_api = client.CoreV1Api()
     return core_api.list_node(
-        label_selector="node-role.kubernetes.io/floto-worker=true")
+        label_selector=label_selector)
+
+
+def label_node(node_name, label="node-role.kubernetes.io/floto-worker", value="true"):
+    config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
+    core_api = client.CoreV1Api()
+    core_api.patch_node(
+        node_name,
+        {
+            "metadata": {
+                "labels": {
+                    label: value,
+                }
+            }
+        }
+    )
 
 
 def get_namespaces_with_no_pods():
@@ -46,7 +61,7 @@ def get_namespaces_with_no_pods():
     namespaces = [
         ns for ns in core_api.list_namespace().items
         if ns.metadata.name.startswith("job-")
-        and core_api.list_namespaced_pod(ns.metadata.name).items.length == 0
+        and len(core_api.list_namespaced_pod(ns.metadata.name).items) == 0
     ]
     return namespaces
 
@@ -68,10 +83,10 @@ def get_job_events(uuid):
     return events
 
 
-def delete_job_namespace_if_exists(job_obj):
+def delete_namespace_if_exists(namespace_name):
     core_api = client.CoreV1Api()
     try:
-        core_api.delete_namespace(get_namespace_name(job_obj.uuid))
+        core_api.delete_namespace(namespace_name)
     except client.exceptions.ApiException as e:
         # Ignore not found, meaning namespace was already deleted
         if e.status != 404:
@@ -90,7 +105,7 @@ def destroy_job(job_obj):
             # Ignore not found, meaning pod was deleted by k8s
             if e.status != 404:
                 raise e
-    delete_job_namespace_if_exists(job_obj)
+    delete_namespace_if_exists(get_namespace_name(job_obj.uuid))
 
 
 def get_job_logs(uuid):

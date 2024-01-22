@@ -29,6 +29,7 @@ SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_ENV", "DEBUG") == "DEBUG"
+LOG_LEVEL_STR = "DEBUG" if DEBUG else "INFO"
 logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO)
 
 if DEBUG:
@@ -196,8 +197,8 @@ LOGGING = {
         },
     },
     "loggers": {
-        "default": {"handlers": ["console"], "level": "DEBUG"},
-        "console": {"handlers": ["console"], "level": "DEBUG"},
+        "default": {"handlers": ["console"], "level": LOG_LEVEL_STR},
+        "console": {"handlers": ["console"], "level": LOG_LEVEL_STR},
         "django": {"handlers": ["console"], "level": "INFO"},
         "py.warnings": {
             "handlers": ["console"],
@@ -206,7 +207,7 @@ LOGGING = {
         },
         "pipeline": {"handlers": ["console"], "level": "INFO"},
         "kubernetes": {
-            'handlers': ['console'], 'level': "INFO", "propagate": False,
+            'handlers': ['console'], 'level': LOG_LEVEL_STR, "propagate": False,
         },
         "urllib3": {
             'handlers': ['console'], 'level': "INFO", "propagate": False,
@@ -303,8 +304,12 @@ CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TASK_SERIALIZER = "json"
 CELERY_BEAT_SCHEDULE = {
+    "label_nodes": {
+        "task": "label_nodes",
+        "schedule": crontab(minute="*/5"),
+    },
     "cleanup_namespaces": {
         "task": "cleanup_namespaces",
-        "schedule": crontab(minute="0"), # every hour
-    }
+        "schedule": crontab(minute="*/30"),
+    },
 }
