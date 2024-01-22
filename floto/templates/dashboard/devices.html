@@ -51,6 +51,16 @@
     virtual-scroll
     style="height: 675px"
     >
+    <template v-slot:body-cell-api_heartbeat_state="props">
+      <q-td :props="props">
+        <template v-if="props.row.api_heartbeat_state == 'online'">
+          [[ props.row.api_heartbeat_state ]]
+        </template>
+        <template v-else>
+          [[ props.row.api_heartbeat_state ]] since [[ props.row.last_connectivity_event ]]
+        </template>
+      </q-td>
+    </template>
     <template v-slot:body-cell-action="props">
       <q-td :props="props">
         <a :href='`/dashboard/devices/${props.row.uuid}`'
