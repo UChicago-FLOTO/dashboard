@@ -40,7 +40,7 @@ def get_nodes(label_selector="node-role.kubernetes.io/floto-worker=true"):
         label_selector=label_selector)
 
 
-def label_node(node_name, label_selector="node-role.kubernetes.io/floto-worker=true"):
+def label_node(node_name, label="node-role.kubernetes.io/floto-worker", value="true"):
     config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
     core_api = client.CoreV1Api()
     core_api.patch_node(
@@ -48,7 +48,7 @@ def label_node(node_name, label_selector="node-role.kubernetes.io/floto-worker=t
         {
             "metadata": {
                 "labels": {
-                    "node-role.kubernetes.io/floto-worker": "true",
+                    label: value,
                 }
             }
         }
