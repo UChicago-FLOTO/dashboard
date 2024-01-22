@@ -1,5 +1,9 @@
 # FLOTO Dashboard
 
+The dashboard and API.
+
+For documentation on using the dashboard, see our [docs](https://github.com/UChicago-FLOTO/docs/blob/master/README.md)
+
 ## Dependencies
 
 To run, you must install docker, docker-compose, and make.
