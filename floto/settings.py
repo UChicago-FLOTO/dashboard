@@ -312,4 +312,8 @@ CELERY_BEAT_SCHEDULE = {
         "task": "cleanup_namespaces",
         "schedule": crontab(minute="*/30"),
     },
+    "rename_devices": {
+        "task": "rename_devices",
+        "schedule": crontab(minute="*/3"),
+    }
 }
