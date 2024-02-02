@@ -1,10 +1,11 @@
 from celery.app import shared_task
-from django.conf import settings
 from floto.api.balena import get_balena_client
 from floto.api.kubernetes import get_nodes, label_node, get_namespaces_with_no_pods, delete_namespace_if_exists
 from floto.api.models import DeviceData, Fleet, Project
 
 import logging
+import os
+import csv
 
 LOG = logging.getLogger(__name__)
 
@@ -72,3 +73,27 @@ def sync_balena_device_to_db():
             obj.save()
             if created:
                 LOG.info(f"New device '${obj.name}'")
+
+
+@shared_task(name="rename_devices")
+def rename_devices():
+    """
+    Renames devices based on UUID
+    """
+    label_filepath = "/config/device_labels.csv"
+    if os.path.isfile(label_filepath):
+        labels = {}
+        with open(label_filepath) as f:
+            labelreader=csv.DictReader(f)
+            for l in labelreader:
+                uuid = l.get("uuid")
+                name = l.get("labelname")
+                labels[uuid]=name
+        balena = get_balena_client()
+        for d in balena.models.device.get_all():
+            device_name = d.get("device_name")
+            device_uuid = d.get("uuid")
+            labelname = labels.get(device_uuid)
+            if labelname and labelname != device_name:
+                LOG.info(f"setting device name from {device_name} to {labelname}")
+                balena.models.device.rename(device_uuid,labelname)

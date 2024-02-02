@@ -316,4 +316,8 @@ CELERY_BEAT_SCHEDULE = {
         "task": "sync_balena_device_to_db",
         "schedule": crontab(minute="*/5"),
     },
+    "rename_devices": {
+        "task": "rename_devices",
+        "schedule": crontab(minute="*/3"),
+    },
 }
