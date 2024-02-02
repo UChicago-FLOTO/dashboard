@@ -1,4 +1,5 @@
 import logging
+from tkinter import CASCADE
 import uuid
 from datetime import datetime
 
@@ -96,6 +97,15 @@ class DeviceTimeslot(models.Model):
     category = models.CharField(max_length=32, choices=Categories.choices)
 
 
+class Fleet(models.Model):
+    id = models.IntegerField(primary_key=True)
+    app_name = models.CharField(max_length=512)
+    is_app_fleet = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{'*' if self.is_app_fleet else ''}{self.app_name} ({self.id})"
+
+
 class DeviceData(models.Model):
     """
     Stores our custom data on the device and filter balena API
@@ -107,6 +117,9 @@ class DeviceData(models.Model):
     allow_all_projects = models.BooleanField(default=False)
     application_projects = models.ManyToManyField(Project, related_name="application_projects")
     name = models.CharField(max_length=200)
+    # Used to cache the fleet from balena.
+    fleet = models.ForeignKey(Fleet, on_delete=models.CASCADE, null=True)
+    created_at = models.DateTimeField(default=datetime.now)
 
     def public_dict(self, balena_device, kubernetes_node, request, active_project=None):
         """
