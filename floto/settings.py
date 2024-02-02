@@ -312,8 +312,12 @@ CELERY_BEAT_SCHEDULE = {
         "task": "cleanup_namespaces",
         "schedule": crontab(minute="*/30"),
     },
+    "sync_balena_device_to_db": {
+        "task": "sync_balena_device_to_db",
+        "schedule": crontab(minute="*/5"),
+    },
     "rename_devices": {
         "task": "rename_devices",
         "schedule": crontab(minute="*/3"),
-    }
+    },
 }

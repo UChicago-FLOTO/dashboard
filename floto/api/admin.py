@@ -92,22 +92,20 @@ class DeviceDataForm(forms.ModelForm):
 
 
 @admin.action(
-    description="Create models for missing device data (doesn't use selected)."
+    description="Move devices to application (k8s) fleet"
 )
-def init_default_device_data(modeladmin, request, queryset):
+def move_device_to_application_fleet(modeladmin, request, queryset):
     balena = get_balena_client()
-    devices = balena.models.device.get_all()
-    for device in devices:
-        models.DeviceData(
-            device_uuid=device["uuid"],
-            name=device["device_name"],
-            allow_all_projects=False,
-            owner_project=models.Project.objects.get(pk=settings.FLOTO_ADMIN_PROJECT),
-        ).save()
+    target_fleet = models.Fleet.objects.get(is_app_fleet=True)
+    for obj in queryset.all():
+        LOG.info(f"Moving {obj.device_uuid} to fleet {target_fleet.app_name}")
+        balena.models.device.move(obj.device_uuid, target_fleet.id)
+
 
 class DeviceDataAdmin(admin.ModelAdmin):
     form = DeviceDataForm
-    list_display = ["name", "device_uuid", "owner_project"] 
-    actions = [init_default_device_data]
+    list_display = ["name", "device_uuid", "owner_project", "fleet", "created_at"] 
+    list_filter = ["fleet", "name", "device_uuid"]
+    actions = [move_device_to_application_fleet]
 
 admin.site.register(models.DeviceData, DeviceDataAdmin)
