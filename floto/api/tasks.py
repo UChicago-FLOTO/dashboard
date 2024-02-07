@@ -3,6 +3,8 @@ from floto.api.balena import get_balena_client
 from floto.api.kubernetes import get_nodes, label_node, get_namespaces_with_no_pods, delete_namespace_if_exists
 from floto.api.models import DeviceData, Fleet, Project
 
+from django.conf import settings
+
 import logging
 import os
 import csv
