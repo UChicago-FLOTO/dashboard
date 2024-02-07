@@ -70,7 +70,7 @@ class DeviceViewSet(viewsets.ViewSet):
         res = DeviceViewSet.filter(
             request, [balena.models.device.get(pk)], self
         )
-        # Note we are essentially just checking this device 
+        # Note we are essentially just checking this device
         # was not filtered out entirely
         if res:
             return Response(res[0])
@@ -243,7 +243,7 @@ class JobViewSet(ModelWithOwnerViewSet):
 
 class CollectionViewSet(ModelWithOwnerViewSet):
     serializer_class = CollectionSerializer
-    http_method_names = ["get", "post", "patch"]
+    http_method_names = ["get", "post", "patch", "delete"]
 
     def partial_update(self, request, pk, format=None):
         devices = set(
