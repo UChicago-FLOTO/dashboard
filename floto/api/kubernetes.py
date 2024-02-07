@@ -187,7 +187,7 @@ def create_deployment(devices, job):
                 client.V1Container(
                     image=service.container_ref,
                     name=f"container-{service.uuid}",
-                    image_pull_policy="IfNotPresent",
+                    image_pull_policy="Always",
                     env=[
                         client.V1EnvVar(name=n, value=v)
                         for n, v in device_environment.items()
