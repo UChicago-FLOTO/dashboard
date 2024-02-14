@@ -61,6 +61,14 @@
         </template>
       </q-td>
     </template>
+    <template v-slot:body-cell-peripherals="props">
+      <q-td :props="props">
+        <template v-if="props.row.peripherals.length > 0">
+          [[ props.row.peripherals.length ]]
+        </template>
+      </q-td>
+    </template>
+
     <template v-slot:body-cell-action="props">
       <q-td :props="props">
         <a :href='`/dashboard/devices/${props.row.uuid}`'
@@ -293,6 +301,31 @@
               <ul>
                 <li v-for="ip in device_overview.mac_address">[[ ip ]]</li>
               </ul>
+            </td>
+          </tr>
+          <tr>
+            <th class="text-left">Peripherals</th>
+            <td>
+              <table class="table">
+                <tr>
+                  <th class="text-left">Name</th>
+                  <th class="text-left">Type</th>
+                  <th class="text-left">Docs</th>
+                  <th class="text-left">Configuration</th>
+                </tr>
+                <tr v-for="p in device_overview.peripherals">
+                  <td class="text-left">[[ p.peripheral.name ]]</td>
+                  <td class="text-left">[[ p.peripheral.schema.type ]]</td>
+                  <td class="text-left"><a target="_blank" :href="[[p.peripheral.documentation_url]]">Link</a></td>
+                  <td class="text-left">
+                    <ul>
+                      <li v-for="ci in p.peripheral.schema.configuration_items">
+                        [[ ci.label ]] = [[ p.configuration.find(c => c.label == ci.id).value ]]
+                      </li>
+                    </ul>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
         </table>

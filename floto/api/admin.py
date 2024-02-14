@@ -20,8 +20,15 @@ class CollectonAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Collection, CollectonAdmin)
 
+
+class ServicePeripheralInline(admin.StackedInline):
+    model = models.ServicePeripheral
+
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ["container_ref", "created_by", "created_at", "created_by_project"]
+    inlines = (
+        ServicePeripheralInline,
+    )
 
 admin.site.register(models.Service, ServiceAdmin)
 
@@ -109,3 +116,41 @@ class DeviceDataAdmin(admin.ModelAdmin):
     actions = [move_device_to_application_fleet]
 
 admin.site.register(models.DeviceData, DeviceDataAdmin)
+
+
+class PeripheralSchemaResourceInline(admin.TabularInline):
+    model = models.PeripheralSchemaResource
+
+
+class PeripheralSchemaConfigItemInline(admin.TabularInline):
+    model = models.PeripheralSchemaConfigItem
+
+
+class PeripheralSchemaAdmin(admin.ModelAdmin):
+    list_display = ["type"]
+    inlines = (
+        PeripheralSchemaResourceInline,
+        PeripheralSchemaConfigItemInline,
+    )
+
+
+admin.site.register(models.PeripheralSchema, PeripheralSchemaAdmin)
+
+
+class PeripheralAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(models.Peripheral, PeripheralAdmin)
+
+
+class PeripheralConfigItemInline(admin.TabularInline):
+    model = models.PeripheralConfigurationItem
+
+
+class PeripheralInstanceAdmin(admin.ModelAdmin):
+    inlines = (
+        PeripheralConfigItemInline,
+    )
+
+admin.site.register(models.PeripheralInstance, PeripheralInstanceAdmin)

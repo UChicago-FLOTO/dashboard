@@ -183,6 +183,12 @@ def create_deployment(devices, job):
 
         for app_service in job.application.services.all():
             service = app_service.service
+
+            resources = defaultdict(int)
+            for ps in service.peripheral_schemas.all():
+                for resource in ps.peripheral_schema.resources.all():
+                    resources[resource.label] += resource.count
+
             containers.append(
                 client.V1Container(
                     image=service.container_ref,
@@ -197,7 +203,10 @@ def create_deployment(devices, job):
                             mount_path=settings.KUBE_VOLUME_MOUNT_PATH,
                             name=volume_name
                         )
-                    ]
+                    ],
+                    resources=client.V1ResourceRequirements(
+                        limits={ k: str(v) for k, v in resources.items() },
+                    )
                 )
             )
 

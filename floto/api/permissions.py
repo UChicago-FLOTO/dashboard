@@ -3,6 +3,7 @@ import logging
 from rest_framework import permissions
 from rest_framework.permissions import SAFE_METHODS
 from floto.api.models import DeviceData
+from floto.api.serializers import DeviceSerializer
 
 LOG = logging.getLogger(__name__)
 
@@ -29,7 +30,9 @@ class DevicePermission(permissions.BasePermission):
             "Logs": True,
             "Environment retrieve": True,
             "Command": True,
-            "Device action": True
+            "Device action": True,
+            "Device peripherals": True,
+            "Device peripheral delete": True,
         }
     }
 
@@ -42,13 +45,25 @@ class DevicePermission(permissions.BasePermission):
             pk = view.kwargs.get("pk")
             if pk:
                 device = DeviceData.objects.get(pk=pk)
-                return device.public_dict({}, {}, request)["management_access"]
+                return DeviceSerializer(
+                    device, context={
+                        "balena_device": {},
+                        "kubernetes_node": {},
+                        "request": request,
+                    }
+                ).data["management_access"]
         # Check write methods against application views
         if request.method not in SAFE_METHODS and \
                 DevicePermission.APPLICATION_VIEWS.get(view.basename, {}).get(view.name):
             pk = view.kwargs.get("pk")
             if pk:
                 device = DeviceData.objects.get(pk=pk)
-                return device.public_dict({}, {}, request)["application_access"]
+                return DeviceSerializer(
+                    device, context={
+                        "balena_device": {},
+                        "kubernetes_node": {},
+                        "request": request,
+                    }
+                ).data["application_access"]
         # Otherwise, view is allowed
         return True

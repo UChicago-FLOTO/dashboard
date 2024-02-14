@@ -114,7 +114,54 @@
               <td class="text-left">[[ env_obj.value ]]</td>
             </tr>
           </table>
-      </div>
+          <h5>Peripherals</h5>
+          <table class="table">
+            <tr>
+              <th class="text-left">Name</th>
+              <th class="text-left">Type</th>
+              <th class="text-left">Docs</th>
+              <th class="text-left">Configuration</th>
+            </tr>
+            <tr v-for="p in device.value.peripherals">
+              <td class="text-left">[[ p.peripheral.name ]]</td>
+              <td class="text-left">[[ p.peripheral.schema.type ]]</td>
+              <td class="text-left"><a target="_blank" :href="[[p.peripheral.documentation_url]]">Link</a></td>
+              <td class="text-left">
+                <ul>
+                  <li v-for="ci in p.peripheral.schema.configuration_items">
+                    [[ ci.label ]] = [[ p.configuration.find(c => c.label == ci.id).value ]]
+                  </li>
+                </ul>
+              </td>
+              <td>
+                <q-btn 
+                  color="negative" 
+                  icon-right="delete" 
+                  no-caps 
+                  flat
+                  dense
+                  @click="delete_peripheral(p.id)"
+                ></q-btn>
+              </td>
+            </tr>
+          </table>
+          <q-btn 
+            icon-right="add" no-caps flat dense color="primary"
+            @click="add_peripheral_dialog = true"
+          >Add new peripheral</q-btn>
+          <div v-if="device.value.peripheral_resources">
+            <h6>Detected Peripherals</h6>
+            <p>
+              We have detected that the following peripheral types might be
+              set up on your device.
+            </p>
+            <ul>
+              <li v-for="p in device.value.peripheral_resources">
+                [[ p ]]
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
     </q-tab-panel>
     <q-tab-panel name="command_tab">
@@ -159,6 +206,68 @@
     </q-tab-panel>
   </q-tab-panels>
 </q-card>
+
+<q-dialog v-model="add_peripheral_dialog" persistent transition-show="scale" transition-hide="scale">
+  <q-card style="width: 600px">
+    <q-card-section>
+      <div class="text-h6">Add new peripheral</div>
+    </q-card-section>
+
+    <q-card-section class="q-pt-none">
+      <q-form @submit.prevent="add_peripheral" class="q-gutter-md">
+        <div>
+        <q-select
+          label="Select existing peripheral"
+          filled
+          v-model="peripheral_form_data.peripheral"
+          :options="peripherals"
+          :option-label="(p) => p.name"
+          clearable
+          >
+        </q-select>
+        <p>or configure new</p>
+        <q-select
+          label="Select peripheral type"
+          filled
+          v-model="peripheral_form_data.peripheral_schema"
+          :options="peripheral_schemas"
+          :option-label="(p) => p.type"
+          clearable
+          >
+        </q-select>
+
+        <template v-if="peripheral_form_data.peripheral_schema">
+          <q-input
+            label="Name:"
+            v-model="peripheral_form_data.name"
+          ></q-input>
+          <q-input
+            label="Documentation URL:"
+            v-model="peripheral_form_data.documentation_url"
+          ></q-input>
+        </template>
+        <template v-if="required_config_items != null">
+          <div class="text-h7">Configuration options</div>
+          <div v-for="ci in required_config_items">
+            <q-input
+              :label="ci.label"
+              v-model="peripheral_form_data.config_items[ci.id]"
+            ></q-input>
+          </div>
+        </template>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" v-close-popup></q-btn>
+          <q-btn primary type="submit" color="blue">
+            Submit
+          </q-btn>  
+        </q-card-actions>    
+      </v-form>      
+    </q-card-section>
+
+  </q-card>
+</q-dialog>
+
 
 <div v-if="device_loading" class="center_of_screen">
   <q-circular-progress

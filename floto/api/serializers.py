@@ -6,7 +6,6 @@ from floto.api import kubernetes
 from floto.auth.models import KeycloakUser
 
 import logging
-from django.conf import settings
 from django.db import transaction
 from django.contrib.auth.models import User
 
@@ -48,10 +47,27 @@ class CreatedByUserSerializer(serializers.ModelSerializer):
         return value
 
 
+class ServicePeripheralSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ServicePeripheral
+        fields = ["peripheral_schema"]
+
 class ServiceSerializer(CreatedByUserSerializer):
     class Meta(CreatedByUserMeta):
         model = models.Service
         depth = 1
+    peripheral_schemas = ServicePeripheralSerializer(many=True)
+
+    @transaction.atomic
+    def create(self, validated_data):
+        peripheral_schema_data = validated_data.pop("peripheral_schemas", [])
+        service = models.Service.objects.create(**validated_data)
+        for ps in peripheral_schema_data:
+            models.ServicePeripheral.objects.create(
+                peripheral_schema=models.PeripheralSchema.objects.get(pk=ps["peripheral_schema"]),
+                service=service,
+            )
+        return service
 
 
 class ApplicationServiceSerializer(serializers.ModelSerializer):
@@ -151,6 +167,7 @@ class JobSerializer(CreatedByUserSerializer):
     class Meta(CreatedByUserMeta):
         model = models.Job
 
+    @transaction.atomic
     def create(self, validated_data):
         devices_data = validated_data.pop("devices")
         timings_data = validated_data.pop("timings")
@@ -209,3 +226,128 @@ class ProjectSerializer(serializers.ModelSerializer):
         depth = 1
     members = UserSerializer(many=True)
     created_by = CreatedByField(default=serializers.CurrentUserDefault())
+
+
+class PeripheralSchemaResourceSerializer(serializers.ModelSerializer):
+    class Meta():
+        model = models.PeripheralSchemaResource
+        fields = ["label", "count"]
+        depth = 1
+
+
+class PeripheralSchemaConfigItemSerializer(serializers.ModelSerializer):
+    class Meta():
+        model = models.PeripheralSchemaConfigItem
+        fields = ["id", "label"]
+        depth = 1
+
+
+class PeripheralSchemaSerializer(serializers.ModelSerializer):
+    class Meta():
+        model = models.PeripheralSchema
+        fields = "__all__"
+        depth = 1
+    resources = PeripheralSchemaResourceSerializer(many=True)
+    configuration_items = PeripheralSchemaConfigItemSerializer(many=True)
+
+
+class PeripheralSerializer(serializers.ModelSerializer):
+    class Meta():
+        model = models.Peripheral
+        fields = "__all__"
+        depth = 1
+    schema = PeripheralSchemaSerializer()
+
+
+class DeviceSerializer(serializers.ModelSerializer):
+    class Meta():
+        model = models.DeviceData
+        fields = [] # No fields by default
+
+    def _device_supports_schema(self, ps, node_status_capacity):
+        # For each resource in the schema, it exists on the device
+        for resource in ps.resources.all():
+            if resource.label not in node_status_capacity:
+                return False
+        return True
+
+    def to_representation(self, instance):
+        """
+        Combine the openbalena device, kubernetes_node, 
+        and this to get the public version
+
+        If active_project is passed, compute management/app access based on only that
+        project's access. Otherwise consider any of this user's projects for access.
+        """
+
+        balena_device = self.context["balena_device"]
+        kubernetes_node = self.context["kubernetes_node"]
+        request = self.context["request"]
+
+        peripheral_schemas = self.context.get(
+            "peripheral_schemas",
+            models.PeripheralSchema.objects.all()
+        ) 
+
+        active_project = self.context.get("active_project", None)
+
+        BALENA_KEYS = [
+            "created_at", "modified_at", "api_heartbeat_state",
+            "uuid", "device_name", "note", "is_online", "last_connectivity_event",
+            "is_connected_to_vpn", "last_vpn_event",
+            "memory_usage", "memory_total", "storage_usage", "storage_total",
+            "cpu_usage", "cpu_temp", "is_undervolted", "status", "os_version",
+            "os_variant", "supervisor_version",
+        ]
+        
+        is_ready = False
+        peripheral_resources = []
+        if kubernetes_node:
+            is_ready = next(
+                c for c in kubernetes_node.status.conditions
+                if c.type == "Ready"
+            ).status == "True"
+
+            peripheral_resources = [
+                ps.type for ps in peripheral_schemas
+                if self._device_supports_schema(ps, kubernetes_node.status.capacity.keys())
+            ]
+        ip_address = [] if not balena_device.get("ip_address") else \
+            [ip for ip in balena_device["ip_address"].split(" ")]
+        mac_address = [] if not balena_device.get("mac_address") else \
+            [mac for mac in balena_device["mac_address"].split(" ")]
+        management_access = active_project == instance.owner_project \
+            if active_project else request.user in instance.owner_project.members.all()
+        return {
+            "contact": instance.owner_project.created_by.email,
+            "management_access": management_access,
+            "application_access": management_access or instance.has_app_access(request.user, active_project),
+            "is_ready": is_ready,
+            "ip_address": ip_address,
+            "mac_address": mac_address,
+            "peripherals": [
+                PeripheralInstaceSerializer(p).data 
+                for p in instance.peripherals.all()
+            ],
+            "peripheral_resources": peripheral_resources,
+        } | { 
+            k: balena_device.get(k) for k in BALENA_KEYS 
+        } |  super().to_representation(instance)
+    
+
+class PeripheralConfigurationItemSerializer(serializers.ModelSerializer):
+    class Meta():
+        model = models.PeripheralConfigurationItem
+        fields = [
+            "value", "label"
+        ]
+
+
+class PeripheralInstaceSerializer(serializers.ModelSerializer):
+    class Meta():
+        model = models.PeripheralInstance
+        fields = [
+            "peripheral", "configuration", "id"
+        ]
+    peripheral = PeripheralSerializer()
+    configuration = PeripheralConfigurationItemSerializer(many=True)

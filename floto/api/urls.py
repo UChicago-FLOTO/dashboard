@@ -14,4 +14,6 @@ router.register(
 router.register("jobs", views.JobViewSet, basename="job")
 router.register("timeslots", views.TimeslotViewSet, basename="timeslot")
 router.register("projects", views.ProjectViewSet, basename="project")
+router.register("peripheral_schema", views.PeripheralSchemaViewSet, basename="peripheral_schema")
+router.register("peripheral", views.PeripheralViewSet, basename="peripheral")
 urlpatterns = router.urls

@@ -10,7 +10,7 @@ import ssl
 import socket
 import paramiko
 
-from floto.api.models import Project, Collection
+from floto.api.models import DeviceData, Peripheral, PeripheralConfigurationItem, PeripheralInstance, PeripheralSchema, PeripheralSchemaConfigItem, Project, Collection
 from floto.auth.models import KeycloakUser
 
 from .balena import get_balena_client
@@ -18,12 +18,15 @@ from balena import exceptions
 
 from floto.api import filters, permissions
 from floto.api.serializers import (
+    PeripheralSchemaSerializer,
+    PeripheralSerializer,
     ProjectSerializer,
     ServiceSerializer,
     ApplicationSerializer,
     JobSerializer,
     CollectionSerializer,
     TimeslotSerializer,
+    PeripheralInstaceSerializer
 )
 from floto.api import util
 from floto.api.models import CollectionDevice
@@ -98,6 +101,42 @@ class DeviceViewSet(viewsets.ViewSet):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         return Response(status=status.HTTP_200_OK)
+
+    @action(methods=["DELETE"], detail=True, url_path=r'peripherals/(?P<p_id>[^/.]+)')
+    def device_peripheral_delete(self, request, pk, p_id):
+        PeripheralInstance.objects.get(pk=p_id).delete()
+        return Response(status=204)
+
+
+    @action(methods=["PATCH"], detail=True, url_path="peripherals")
+    def device_peripherals(self, request, pk):
+        data = request.data
+        peripheral_instance = None
+        if data.get("peripheral_id"):
+            peripheral_instance = PeripheralInstance.objects.create(
+                peripheral=Peripheral.objects.get(pk=data["peripheral_id"]),
+                device=DeviceData.objects.get(pk=pk),
+            )
+        else:
+            peripheral = Peripheral.objects.create(
+                name=data["peripheral"]["name"],
+                documentation_url=data["peripheral"]["documentation_url"],
+                schema=PeripheralSchema.objects.get(pk=data["peripheral"]["schema"]["type"]),
+            )
+            peripheral_instance = PeripheralInstance.objects.create(
+                peripheral=peripheral,
+                device=DeviceData.objects.get(pk=pk),
+            )
+        for item in data["configuration"]:
+            PeripheralConfigurationItem.objects.create(
+                peripheral=peripheral_instance,
+                label=PeripheralSchemaConfigItem.objects.get(pk=item["label"]),
+                value=item["value"],
+            )
+        return Response(
+            PeripheralInstaceSerializer(peripheral_instance).data
+        )
+
 
     @action(methods=["POST"], detail=True, url_path="command")
     def command(self, request, pk):
@@ -240,6 +279,20 @@ class JobViewSet(ModelWithOwnerViewSet):
     def perform_destroy(self, job):
         kubernetes.destroy_job(job)
 
+    @action(methods=["POST"], detail=False, url_path="check")
+    def check(self, request):
+        """
+        Check if a job with the given devices and timings can be created without issues.
+        Returns 200 if check is successful. 
+        """
+        # TODO check peripherals for request.data["application"]?
+        return Response(
+            util.parse_timings(
+                request.data["timings"], request.data["devices"]
+            )
+        )
+
+
 
 class CollectionViewSet(ModelWithOwnerViewSet):
     serializer_class = CollectionSerializer
@@ -270,7 +323,6 @@ class CollectionViewSet(ModelWithOwnerViewSet):
         return Response(CollectionSerializer(collection).data)
 
 
-
 class TimeslotViewSet(viewsets.ViewSet):
     def list(self, request):
         timeslots_by_devices = defaultdict(list)
@@ -278,14 +330,6 @@ class TimeslotViewSet(viewsets.ViewSet):
             ts = TimeslotSerializer(obj)
             timeslots_by_devices[obj.device_uuid].append(ts.data)
         return Response(timeslots_by_devices)
-
-    @action(methods=["POST"], detail=False, url_path="check")
-    def check(self, request):
-        return Response(
-            util.parse_timings(
-                request.data["timings"], request.data["devices"]
-            )
-        )
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -334,3 +378,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
             "project": ProjectSerializer(project).data,
             "errors": errors,
         })
+
+class PeripheralSchemaViewSet(viewsets.ModelViewSet):
+    serializer_class = PeripheralSchemaSerializer
+    http_method_names = ["get"]
+
+    def get_queryset(self):
+        return self.serializer_class.Meta.model.objects.all()
+
+class PeripheralViewSet(viewsets.ModelViewSet):
+    serializer_class = PeripheralSerializer
+    http_method_names = ["get"]
+
+    def get_queryset(self):
+        return self.serializer_class.Meta.model.objects.all()
