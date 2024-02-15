@@ -216,3 +216,14 @@ class ServicePeripheral(models.Model):
         PeripheralSchema, 
         on_delete=models.CASCADE
     )
+
+
+class ServicePort(models.Model):
+    service = models.ForeignKey(
+        Service, 
+        related_name="ports", 
+        on_delete=models.CASCADE
+    )
+    protocol = models.CharField(max_length=64)
+    node_port = models.IntegerField()
+    target_port = models.IntegerField()

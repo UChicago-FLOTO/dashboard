@@ -52,19 +52,35 @@ class ServicePeripheralSerializer(serializers.ModelSerializer):
         model = models.ServicePeripheral
         fields = ["peripheral_schema"]
 
+
+class ServicePortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ServicePort
+        fields = ["protocol", "node_port", "target_port"]
+
+
 class ServiceSerializer(CreatedByUserSerializer):
     class Meta(CreatedByUserMeta):
         model = models.Service
         depth = 1
     peripheral_schemas = ServicePeripheralSerializer(many=True)
+    ports = ServicePortSerializer(many=True)
 
     @transaction.atomic
     def create(self, validated_data):
         peripheral_schema_data = validated_data.pop("peripheral_schemas", [])
+        port_data = validated_data.pop("ports", [])
         service = models.Service.objects.create(**validated_data)
         for ps in peripheral_schema_data:
             models.ServicePeripheral.objects.create(
                 peripheral_schema=models.PeripheralSchema.objects.get(pk=ps["peripheral_schema"]),
+                service=service,
+            )
+        for port in port_data:
+            models.ServicePort.objects.create(
+                protocol=port["protocol"],
+                node_port=port["node_port"],
+                target_port=port["target_port"],
                 service=service,
             )
         return service
