@@ -278,6 +278,7 @@ KUBE_VOLUME_MOUNT_PATH = os.environ.get(
 KUBE_VOLUME_SIZE = os.environ.get(
     "KUBE_VOLUME_SIZE", "2Gi"
 )
+KUBE_PERIPHERAL_VOLUME_MOUNT_PATH = "/config"
 KUBE_SECRET_NAMESPACE = os.environ.get(
     "KUBE_SECRET_NAMESPACE", "default"
 )
