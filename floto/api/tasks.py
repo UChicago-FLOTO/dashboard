@@ -17,10 +17,6 @@ def label_nodes():
     Label all kubernetes nodes that match to balena devices
     """
     nodes = get_nodes(label_selector="!node-role.kubernetes.io/floto-worker")
-    nodes_by_id = [
-        node.metadata.name
-        for node in nodes.items
-    ]
     for node in nodes.items:
         try:
             DeviceData.objects.get(device_uuid=node.metadata.name)

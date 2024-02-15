@@ -98,6 +98,7 @@ createApp({
             sortable: true,
             name: "is_ready",
           },
+          { name: 'peripherals', label: 'Peripherals', field: 'peripherals', sortable: true },
           { name: 'action', label: 'Actions', name: "action", field: 'action' },
         ],
         handleClick: function(uuid){
@@ -215,7 +216,6 @@ createApp({
             sortable: true,
             name: "number_of_devices",
           },
-
           { name: 'action', label: 'Action', field: 'action' },
         ],
         delete_item(index){

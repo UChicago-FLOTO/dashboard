@@ -72,6 +72,11 @@ createApp({
       collections.value = json
     })
 
+    let services = ref([])
+    fetch_with_retry(`/api/services/`, callback=function(json){
+      services.value = json
+    })
+
     function filterFn(list, val, update){
       update(() => {
         if (val === "") {
@@ -88,7 +93,7 @@ createApp({
 
     watch(() => form_data.devices, async function(old_devices, new_devices){
       const request = new Request(
-        url=`/api/timeslots/check/`,
+        url=`/api/jobs/check/`,
         {
           method: 'POST',
           mode: 'same-origin',
@@ -99,6 +104,7 @@ createApp({
             "timings": form_data.timings.map((str) => {
               return {"timing": str}
             }),
+            "application": form_data.application,
           }),
           headers: get_headers(),
         }
@@ -118,6 +124,26 @@ createApp({
         jobs_loading = false
       })
     })
+    function deviceFilterFn (val, update) {
+      required_periph = []
+      form_data.application.services.forEach(s => {
+        let app_serv = services.value.find(serv => s.service == serv.uuid)
+        app_serv.peripheral_schemas.forEach(ps => {
+          required_periph.push(ps.peripheral_schema)
+        })
+      })
+      return devices.value.filter(dev => {
+        if(required_periph.length == 0){
+          return true
+        } else {
+          return required_periph.every(rp => {
+            return dev.peripherals.some(p => {
+              return p.peripheral.schema.type == rp
+            })
+          })
+        }
+      })
+    }
 
     return {
       jobs, jobs_loading, jobs_form_disabled, jobs_loading_error_message,
@@ -127,9 +153,7 @@ createApp({
       appFilterFn (val, update) {
         filterFn(applications, val, update)
       },
-      deviceFilterFn (val, update) {
-        filterFn(devices, val, update)
-      },
+      deviceFilterFn,
       continueFn(stepper){
         if(step.value === 1 && form_data.application){
           form_data.environment = form_data.application.parsed_env
@@ -137,7 +161,13 @@ createApp({
         stepper.next()
       },
       select_collection(collection){
+        let filtered_devices = deviceFilterFn()
         form_data.devices = collection.devices.map(dev_obj => dev_obj.device_uuid)
+          .filter(uuid => {
+            return filtered_devices.some(fd => {
+              return fd.device_uuid == uuid
+            })
+          })
       },
       form_data,
       async submit(e) {

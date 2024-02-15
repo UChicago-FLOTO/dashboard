@@ -1,7 +1,8 @@
 import logging
-from tkinter import CASCADE
 import uuid
 from datetime import datetime
+
+from rest_framework import serializers
 
 from django.conf import settings
 from django.db import models
@@ -121,44 +122,9 @@ class DeviceData(models.Model):
     fleet = models.ForeignKey(Fleet, on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(default=datetime.now)
 
-    def public_dict(self, balena_device, kubernetes_node, request, active_project=None):
-        """
-        Combine the openbalena device, kubernetes_node, 
-        and this to get the public version
+    def __str__(self):
+        return f"{self.name} ({self.device_uuid})"
 
-        If active_project is passed, compute management/app access based on only that
-        project's access. Otherwise consider any of this user's projects for access.
-        """
-        # TODO this should probably be refactored into a serialzier instead
-        BALENA_KEYS = [
-            "created_at", "modified_at", "api_heartbeat_state",
-            "uuid", "device_name", "note", "is_online", "last_connectivity_event",
-            "is_connected_to_vpn", "last_vpn_event",
-            "memory_usage", "memory_total", "storage_usage", "storage_total",
-            "cpu_usage", "cpu_temp", "is_undervolted", "status", "os_version",
-            "os_variant", "supervisor_version",
-        ]
-        
-        is_ready = False
-        if kubernetes_node:
-            is_ready = next(
-                c for c in kubernetes_node.status.conditions
-                if c.type == "Ready"
-            ).status == "True"
-        ip_address = [] if not balena_device.get("ip_address") else \
-            [ip for ip in balena_device["ip_address"].split(" ")]
-        mac_address = [] if not balena_device.get("mac_address") else \
-            [mac for mac in balena_device["mac_address"].split(" ")]
-        management_access = active_project == self.owner_project \
-            if active_project else request.user in self.owner_project.members.all()
-        return {
-            "contact": self.owner_project.created_by.email,
-            "management_access": management_access,
-            "application_access": management_access or self.has_app_access(request.user, active_project),
-            "is_ready": is_ready,
-            "ip_address": ip_address,
-            "mac_address": mac_address,
-        } | { k: balena_device.get(k) for k in BALENA_KEYS }
 
     def has_app_access(self, user, active_project=None):
         if active_project:
@@ -169,3 +135,84 @@ class DeviceData(models.Model):
                 allowed_project in user.projects.all()
                 for allowed_project in self.application_projects.all()
             )
+
+
+class PeripheralSchema(models.Model):
+    type = models.CharField(max_length=512, primary_key=True)
+
+    def __str__(self):
+        return f"{self.type}"
+
+
+class PeripheralSchemaResource(models.Model):
+    label = models.CharField(max_length=512)
+    count = models.IntegerField()
+    schema = models.ForeignKey(
+        PeripheralSchema,
+        on_delete=models.CASCADE,
+        related_name="resources"
+    )
+
+
+class PeripheralSchemaConfigItem(models.Model):
+    label = models.CharField(max_length=512)
+    schema = models.ForeignKey(
+        PeripheralSchema,
+        on_delete=models.CASCADE,
+        related_name="configuration_items"
+    )
+
+    def __str__(self):
+        return f"{self.schema}: {self.label}"
+
+
+class Peripheral(models.Model):
+    schema = models.ForeignKey(
+        PeripheralSchema,
+        on_delete=models.CASCADE,
+    )
+    name = models.CharField(max_length=512)
+    documentation_url = models.CharField(max_length=1024)
+
+    def __str__(self):
+        return f"{self.schema}: {self.name}"
+
+
+class PeripheralInstance(models.Model):
+    peripheral = models.ForeignKey(
+        Peripheral,
+        on_delete=models.CASCADE,
+    )
+    device = models.ForeignKey(
+        DeviceData,
+        on_delete=models.CASCADE,
+        related_name="peripherals",
+    )
+
+    def __str__(self):
+        return f"{self.device} - {self.peripheral} ({self.id})"
+
+
+class PeripheralConfigurationItem(models.Model):
+    label = models.ForeignKey(
+        PeripheralSchemaConfigItem,
+        on_delete=models.CASCADE,
+    )
+    peripheral = models.ForeignKey(
+        PeripheralInstance,
+        on_delete=models.CASCADE,
+        related_name="configuration"
+    )
+    value = models.CharField(max_length=2048)
+    
+
+class ServicePeripheral(models.Model):
+    service = models.ForeignKey(
+        Service, 
+        related_name="peripheral_schemas", 
+        on_delete=models.CASCADE
+    )
+    peripheral_schema = models.ForeignKey(
+        PeripheralSchema, 
+        on_delete=models.CASCADE
+    )

@@ -4,7 +4,8 @@ from django.db.models import Q
 from rest_framework import filters
 from floto.api import kubernetes
 
-from floto.api.models import DeviceData
+from floto.api.models import DeviceData, PeripheralSchema
+from floto.api.serializers import DeviceSerializer
 
 LOG = logging.getLogger(__name__)
 
@@ -52,7 +53,16 @@ class DeviceFilter(filters.BaseFilterBackend):
                 device_data = DeviceData.objects.get(
                     device_uuid=device["uuid"])
                 node_data = nodes_by_id.get(device["uuid"])
-                json = device_data.public_dict(device, node_data, request, active_project)
+
+                json = DeviceSerializer(
+                    device_data, context={
+                        "balena_device": device,
+                        "kubernetes_node": node_data,
+                        "request": request,
+                        "active_project": active_project,
+                        "peripheral_schemas": PeripheralSchema.objects.all(),
+                    }
+                ).data
                 
                 if (
                     json["management_access"] or 

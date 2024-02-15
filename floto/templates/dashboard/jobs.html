@@ -111,7 +111,7 @@
               <p>Choose the devices on which your job should run.</p>
               <q-field v-model="form_data.devices" :rules="[ val => val.length >= 1 || 'Select at least one device']">
                 <q-list>
-                  <q-item tag="label" v-ripple v-for="device in devices.value" :key="device.uuid">
+                  <q-item tag="label" v-ripple v-for="device in deviceFilterFn()" :key="device.uuid">
                     <q-item-section avatar>
                       <q-checkbox v-model="form_data.devices" :val="device.uuid" />
                     </q-item-section>
@@ -144,7 +144,7 @@
               Timeslots
             </h5>
             <p>
-              Your job is scheduled to run on each of the selected devices at the following times.
+              Your job is scheduled to run on each of the [[ form_data.devices.length ]] selected devices at the following times.
             </p>
             <ul>
               <li v-for="(tss, timing_string, index) in pending_timeslots">

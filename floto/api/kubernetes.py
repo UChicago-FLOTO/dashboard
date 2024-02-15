@@ -5,6 +5,8 @@ from kubernetes import client, config
 from django.conf import settings
 import hashlib
 
+from floto.api import models
+
 from . import util
 from .balena import get_balena_client
 
@@ -21,6 +23,9 @@ def get_job_name(job_uuid, device_uuid):
     uuid_hash = hashlib.shake_256(
         get_node_uuid(device_uuid).encode()).hexdigest(6)
     return f"job-{job_uuid}-{uuid_hash}"
+
+def get_config_map_name(device_uuid):
+    return f"config-{device_uuid}"
 
 def get_node_uuid(device_uuid):
     return device_uuid.replace("-", "")
@@ -181,8 +186,31 @@ def create_deployment(devices, job):
         volume_name = get_volume_name()
         pod_name = get_pod_name(job.application.uuid, device["device_uuid"])
 
+        config_data = {}
+        config_name = get_config_map_name(device["device_uuid"])
+        device_model = models.DeviceData.objects.get(pk=device["device_uuid"])
+        for p in device_model.peripherals.all():
+            for item in p.peripheral.schema.configuration_items.all():
+                value = ""
+                try:
+                    value = p.configuration.get(label=item).value
+                except:
+                    # Device is not configured witih this option for some reason
+                    pass
+                config_data[item.label] = value
+        core_api.create_namespaced_config_map(namespace, client.V1ConfigMap(
+            data=config_data,
+            metadata=client.V1ObjectMeta(name=config_name)
+        ))
+
         for app_service in job.application.services.all():
             service = app_service.service
+
+            resources = defaultdict(int)
+            for ps in service.peripheral_schemas.all():
+                for resource in ps.peripheral_schema.resources.all():
+                    resources[resource.label] += resource.count
+
             containers.append(
                 client.V1Container(
                     image=service.container_ref,
@@ -196,8 +224,15 @@ def create_deployment(devices, job):
                         client.V1VolumeMount(
                             mount_path=settings.KUBE_VOLUME_MOUNT_PATH,
                             name=volume_name
+                        ),
+                        client.V1VolumeMount(
+                            mount_path=settings.KUBE_PERIPHERAL_VOLUME_MOUNT_PATH,
+                            name="peripheral-config"
                         )
-                    ]
+                    ],
+                    resources=client.V1ResourceRequirements(
+                        limits={ k: str(v) for k, v in resources.items() },
+                    )
                 )
             )
 
@@ -221,6 +256,12 @@ def create_deployment(devices, job):
                                 name=volume_name,
                                 empty_dir=client.V1EmptyDirVolumeSource(
                                     size_limit=settings.KUBE_VOLUME_SIZE
+                                )
+                            ),
+                            client.V1Volume(
+                                name="peripheral-config",
+                                config_map=client.V1ConfigMapVolumeSource(
+                                    name=config_name,
                                 )
                             )
                         ],
