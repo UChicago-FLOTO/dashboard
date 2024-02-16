@@ -33,6 +33,8 @@ def get_node_uuid(device_uuid):
 def get_pod_name(app_uuid, device_uuid):
     return f"app-{get_node_uuid(device_uuid)[:6]}-{str(app_uuid)[:6]}"
 
+def get_service_name(device_uuid, service_uuid):
+    return f"service-{get_node_uuid(device_uuid)[:6]}-{str(service_uuid)[:6]}"
 
 def get_volume_name():
     return "floto-volume"
@@ -168,128 +170,178 @@ def create_deployment(devices, job):
         ))
 
     for device in devices:
-        containers = []
+        _create_job_for_device(job, device, environment, balena, namespace)
 
-        device_environment = {
-            "FLOTO_JOB_UUID": str(job.uuid),
-            "FLOTO_DEVICE_UUID": device["device_uuid"],
-        }
-        device_environment.update({
-            env_obj["name"]: env_obj["value"]
-            for env_obj in 
-            balena.models.device.env_var.get_all_by_device(uuid_or_id=device["device_uuid"])
-            if env_obj["name"].startswith(settings.FLOTO_ENV_PREFIX)
-        })
-        # Overwrite any variables with the job's env
-        device_environment.update(environment)
+def _port_name(service_port):
+    """Must conform to https://www.rfc-editor.org/rfc/rfc6335.txt
+    - alphanumeric (a-z, and 0-9) string
+    - with a maximum length of 15 characters
+    - with the '-' character allowed anywhere except the first or the last character or adjacent to another '-' character 
+    - it must contain at least a (a-z) character.
+    """
+    # This implementation should be fine, provided we limit protocol to TCP/UDP
+    return f"{service_port.protocol}-{service_port.target_port}"
+    
 
-        volume_name = get_volume_name()
-        pod_name = get_pod_name(job.application.uuid, device["device_uuid"])
+def _create_job_for_device(job, device, job_environment, balena, namespace):
+    core_api = client.CoreV1Api()
+    containers = []
 
-        config_data = {}
-        config_name = get_config_map_name(device["device_uuid"])
-        device_model = models.DeviceData.objects.get(pk=device["device_uuid"])
-        for p in device_model.peripherals.all():
-            for item in p.peripheral.schema.configuration_items.all():
-                value = ""
-                try:
-                    value = p.configuration.get(label=item).value
-                except:
-                    # Device is not configured witih this option for some reason
-                    pass
-                config_data[item.label] = value
-        core_api.create_namespaced_config_map(namespace, client.V1ConfigMap(
-            data=config_data,
-            metadata=client.V1ObjectMeta(name=config_name)
-        ))
+    device_environment = {
+        "FLOTO_JOB_UUID": str(job.uuid),
+        "FLOTO_DEVICE_UUID": device["device_uuid"],
+    }
+    device_environment.update({
+        env_obj["name"]: env_obj["value"]
+        for env_obj in 
+        balena.models.device.env_var.get_all_by_device(uuid_or_id=device["device_uuid"])
+        if env_obj["name"].startswith(settings.FLOTO_ENV_PREFIX)
+    })
+    # Overwrite any variables with the job's env
+    device_environment.update(job_environment)
 
-        for app_service in job.application.services.all():
-            service = app_service.service
+    volume_name = get_volume_name()
+    pod_name = get_pod_name(job.application.uuid, device["device_uuid"])
 
-            resources = defaultdict(int)
-            for ps in service.peripheral_schemas.all():
-                for resource in ps.peripheral_schema.resources.all():
-                    resources[resource.label] += resource.count
+    config_data = {}
+    config_name = get_config_map_name(device["device_uuid"])
+    device_model = models.DeviceData.objects.get(pk=device["device_uuid"])
+    for p in device_model.peripherals.all():
+        for item in p.peripheral.schema.configuration_items.all():
+            value = ""
+            try:
+                value = p.configuration.get(label=item).value
+            except:
+                # Device is not configured witih this option for some reason
+                pass
+            config_data[item.label] = value
+    core_api.create_namespaced_config_map(namespace, client.V1ConfigMap(
+        data=config_data,
+        metadata=client.V1ObjectMeta(name=config_name)
+    ))
 
-            containers.append(
-                client.V1Container(
-                    image=service.container_ref,
-                    name=f"container-{service.uuid}",
-                    image_pull_policy="Always",
-                    env=[
-                        client.V1EnvVar(name=n, value=v)
-                        for n, v in device_environment.items()
-                    ],
-                    volume_mounts=[
-                        client.V1VolumeMount(
-                            mount_path=settings.KUBE_VOLUME_MOUNT_PATH,
-                            name=volume_name
-                        ),
-                        client.V1VolumeMount(
-                            mount_path=settings.KUBE_PERIPHERAL_VOLUME_MOUNT_PATH,
-                            name="peripheral-config"
-                        )
-                    ],
-                    resources=client.V1ResourceRequirements(
-                        limits={ k: str(v) for k, v in resources.items() },
+    k8s_services = []
+    for app_service in job.application.services.all():
+        service = app_service.service
+
+        resources = defaultdict(int)
+        for ps in service.peripheral_schemas.all():
+            for resource in ps.peripheral_schema.resources.all():
+                resources[resource.label] += resource.count
+
+        service_ports = list(service.ports.all())
+        containers.append(
+            client.V1Container(
+                image=service.container_ref,
+                name=f"container-{service.uuid}",
+                image_pull_policy="Always",
+                env=[
+                    client.V1EnvVar(name=n, value=v)
+                    for n, v in device_environment.items()
+                ],
+                volume_mounts=[
+                    client.V1VolumeMount(
+                        mount_path=settings.KUBE_VOLUME_MOUNT_PATH,
+                        name=volume_name
+                    ),
+                    client.V1VolumeMount(
+                        mount_path=settings.KUBE_PERIPHERAL_VOLUME_MOUNT_PATH,
+                        name="peripheral-config"
+                    )
+                ],
+                resources=client.V1ResourceRequirements(
+                    limits={ k: str(v) for k, v in resources.items() },
+                ),
+                ports=[
+                    # We should specify this so the service can identify the container
+                    client.V1ContainerPort(
+                        name=_port_name(p),
+                        target_port=p.target_port,
+                    )
+                    for p in service.ports.all()
+                ]
+            )
+        )
+
+        if service_ports:
+            k8s_services.append(
+                client.V1Service(
+                    metadata=client.V1ObjectMeta(
+                        name=get_service_name(device["device_uuid"], service.uuid),
+                    ),
+                    spec=client.V1ServiceSpec(
+                        type="NodePort",
+                        selector={
+                            "app.kubernetes.io/name": pod_name,
+                        },
+                        ports=[
+                            client.V1ServicePort(
+                                target_port=_port_name(p),
+                                node_port=p.node_port,
+                                protocol=p.protocol,
+                            ) for p in service_ports
+                        ]
                     )
                 )
             )
 
-        v1_job = client.V1Job(
-            api_version="batch/v1",
-            kind="Job",
-            metadata=client.V1ObjectMeta(
-                name=get_job_name(job.uuid, device["device_uuid"]),
-                labels={"job_name": get_job_name(job.uuid, device["device_uuid"])},
-            ),
-            spec=client.V1JobSpec(
-                backoff_limit=0,
-                ttl_seconds_after_finished=settings.KUBE_JOB_TTL,
-                template=client.V1PodTemplateSpec(
-                    spec=client.V1PodSpec(
-                        restart_policy="Never",
-                        containers=containers,
-                        node_name=get_node_uuid(device["device_uuid"]),
-                        volumes=[
-                            client.V1Volume(
-                                name=volume_name,
-                                empty_dir=client.V1EmptyDirVolumeSource(
-                                    size_limit=settings.KUBE_VOLUME_SIZE
-                                )
-                            ),
-                            client.V1Volume(
-                                name="peripheral-config",
-                                config_map=client.V1ConfigMapVolumeSource(
-                                    name=config_name,
-                                )
+    v1_job = client.V1Job(
+        api_version="batch/v1",
+        kind="Job",
+        metadata=client.V1ObjectMeta(
+            name=get_job_name(job.uuid, device["device_uuid"]),
+            labels={"job_name": get_job_name(job.uuid, device["device_uuid"])},
+        ),
+        spec=client.V1JobSpec(
+            backoff_limit=0,
+            ttl_seconds_after_finished=settings.KUBE_JOB_TTL,
+            template=client.V1PodTemplateSpec(
+                spec=client.V1PodSpec(
+                    restart_policy="Never",
+                    containers=containers,
+                    node_name=get_node_uuid(device["device_uuid"]),
+                    volumes=[
+                        client.V1Volume(
+                            name=volume_name,
+                            empty_dir=client.V1EmptyDirVolumeSource(
+                                size_limit=settings.KUBE_VOLUME_SIZE
                             )
-                        ],
-                        image_pull_secrets=[
-                            client.V1LocalObjectReference(
-                                name=secret_name
+                        ),
+                        client.V1Volume(
+                            name="peripheral-config",
+                            config_map=client.V1ConfigMapVolumeSource(
+                                name=config_name,
                             )
-                            for secret_name in 
-                            settings.KUBE_IMAGE_PULL_SECRETS
-                        ],
-                        dns_policy="None",
-                        dns_config=client.V1PodDNSConfig(
-                            nameservers=["8.8.8.8"],
                         )
-                    ),
-                    metadata=client.V1ObjectMeta(
-                        name=pod_name,
-                        labels={"pod_name": pod_name}
-                    ),
-                )
-            ),
-        )
-        for job_timing in job.timings.all():
-            string_parts = job_timing.timing.split(",")
-            timing_type, args = string_parts[0], string_parts[1:]
-            if timing_type == "type=on_demand":
-                td = util.parse_on_demand_args(args)
-                v1_job.spec.active_deadline_seconds = int(td.total_seconds())
+                    ],
+                    image_pull_secrets=[
+                        client.V1LocalObjectReference(
+                            name=secret_name
+                        )
+                        for secret_name in 
+                        settings.KUBE_IMAGE_PULL_SECRETS
+                    ],
+                    dns_policy="None",
+                    dns_config=client.V1PodDNSConfig(
+                        nameservers=["8.8.8.8"],
+                    )
+                ),
+                metadata=client.V1ObjectMeta(
+                    name=pod_name,
+                    labels={"pod_name": pod_name}
+                ),
+            )
+        ),
+    )
+    for job_timing in job.timings.all():
+        string_parts = job_timing.timing.split(",")
+        timing_type, args = string_parts[0], string_parts[1:]
+        if timing_type == "type=on_demand":
+            td = util.parse_on_demand_args(args)
+            v1_job.spec.active_deadline_seconds = int(td.total_seconds())
 
-        batch_api = client.BatchV1Api()
-        batch_api.create_namespaced_job(namespace, v1_job)
+    batch_api = client.BatchV1Api()
+    batch_api.create_namespaced_job(namespace, v1_job)
+
+    for service in k8s_services:
+        core_api.create_namespaced_service(namespace, service)
