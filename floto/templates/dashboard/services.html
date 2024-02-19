@@ -104,7 +104,7 @@
       <div class="row">
         <q-select filled v-model="new_port_data.protocol" :options="protocol_options" label="Protocol"></q-select>
         <q-input 
-          filled label="Device port" name="node_port" 
+          filled label="Device port (30000-32768)" name="node_port" 
           v-model="new_port_data.node_port"
         ></q-input>
         <q-input 

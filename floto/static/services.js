@@ -40,8 +40,8 @@ createApp({
       add_port(){
         form_data.value.ports.push({
           "protocol": new_port_data.value.protocol,
-          "node_port": new_port_data.value.target_port,
-          "target_port": new_port_data.value.node_port,
+          "target_port": new_port_data.value.target_port,
+          "node_port": new_port_data.value.node_port,
         })
         new_port_data.value.target_port = ""
         new_port_data.value.node_port = ""

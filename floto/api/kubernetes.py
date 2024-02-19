@@ -180,7 +180,7 @@ def _port_name(service_port):
     - it must contain at least a (a-z) character.
     """
     # This implementation should be fine, provided we limit protocol to TCP/UDP
-    return f"{service_port.protocol}-{service_port.target_port}"
+    return f"{service_port.protocol.lower()}-{service_port.target_port}"
     
 
 def _create_job_for_device(job, device, job_environment, balena, namespace):
@@ -256,7 +256,7 @@ def _create_job_for_device(job, device, job_environment, balena, namespace):
                     # We should specify this so the service can identify the container
                     client.V1ContainerPort(
                         name=_port_name(p),
-                        target_port=p.target_port,
+                        container_port=p.target_port,
                     )
                     for p in service.ports.all()
                 ]
@@ -272,10 +272,11 @@ def _create_job_for_device(job, device, job_environment, balena, namespace):
                     spec=client.V1ServiceSpec(
                         type="NodePort",
                         selector={
-                            "app.kubernetes.io/name": pod_name,
+                            "pod_name": pod_name,
                         },
                         ports=[
                             client.V1ServicePort(
+                                port=p.target_port,
                                 target_port=_port_name(p),
                                 node_port=p.node_port,
                                 protocol=p.protocol,
