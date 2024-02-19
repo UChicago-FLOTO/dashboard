@@ -6,23 +6,48 @@ createApp({
         const devices = reactive({"value": []})
         let devices_loading = ref("primary")
         fetch_with_retry("/api/devices", callback=function(json){
-        devices.value = json
-        devices_loading.value = false
+            devices.value = json
         })
         onMounted(() => {
-            var map = L.map('map').setView([38.178318, -101.0093573], 4);
+            var map = L.map('map').setView([0,0], 1);
+            // Initialize a feature group
+            var markers = new L.featureGroup().addTo(map);
             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
-            // watchEffect to reactively add markers once the data is available.
+
+            // Use watchEffect to reactively add markers once the data is available
             watchEffect(() => {
+                // Clear existing markers to avoid duplicates
+                markers.clearLayers();
+                // Track if any markers are added
+                let addedMarkers = false;
                 devices.value.forEach(device => {
-                    if (device.latitude && device.longitude && device.latitude !== 0.0 && device.longitude !== 0.0) {
-                    L.marker([device.latitude, device.longitude]).addTo(map)
-                        .bindPopup(`<b>${device.device_name}</b>`);
+                    if (device.latitude && device.longitude) {
+                        let iconColor = device.is_online ? 'green' : 'red';
+                        let iconSize = device.is_online ? '35px' : '25px';
+                        let iconName = 'place';
+                        let iconHtml = `<div style="color: ${iconColor}; font-size: ${iconSize};" class="q-icon material-icons">${iconName}</div>`;
+                        var customIcon = L.divIcon({
+                            html: iconHtml,
+                            className: 'my-custom-icon',
+                        });
+                        var marker = L.marker(
+                            [device.latitude, device.longitude],
+                            {icon: customIcon}
+                        ).bindPopup(
+                            `<b>${device.device_name}</b>`
+                        );
+                        markers.addLayer(marker);
+                        addedMarkers = true;
                     }
                 });
+                // Only adjust bounds if at least one marker was added
+                if (addedMarkers) {
+                    map.fitBounds(markers.getBounds(), {padding: [1, 1]});
+                }
             });
-    });
-}}).use(Quasar).mount('#app')
+        });
+    }
+}).use(Quasar).mount('#app');

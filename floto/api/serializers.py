@@ -325,8 +325,8 @@ class DeviceSerializer(serializers.ModelSerializer):
             "is_ready": is_ready,
             "ip_address": ip_address,
             "mac_address": mac_address,
-            "latitude": self.latitude,
-            "longitude": self.longitude,
+            "latitude": instance.latitude,
+            "longitude": instance.longitude,
             "peripherals": [
                 PeripheralInstaceSerializer(p).data 
                 for p in instance.peripherals.all()

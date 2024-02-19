@@ -121,14 +121,14 @@ class DeviceData(models.Model):
     # Used to cache the fleet from balena.
     fleet = models.ForeignKey(Fleet, on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(default=datetime.now)
-    deployment_name = models.CharField(max_length=200, blank=True)
-    address_1 = models.CharField(max_length=128, blank=True)
-    address_2 = models.CharField(max_length=128, blank=True)
-    city = models.CharField(max_length=64, blank=True)
-    state = models.CharField(max_length=64, blank=True)
-    zip_code = models.CharField(max_length=6, blank=True)
-    latitude = models.DecimalField(max_digits=9, decimal_places=3, default=0)
-    longitude = models.DecimalField(max_digits=9, decimal_places=3, default=0)
+    deployment_name = models.CharField(max_length=200, null=True, blank=True)
+    address_1 = models.CharField(max_length=128, null=True, blank=True)
+    address_2 = models.CharField(max_length=128, null=True, blank=True)
+    city = models.CharField(max_length=64, null=True, blank=True)
+    state = models.CharField(max_length=64, null=True, blank=True)
+    zip_code = models.CharField(max_length=6, null=True, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=3, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=3, null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.device_uuid})"
