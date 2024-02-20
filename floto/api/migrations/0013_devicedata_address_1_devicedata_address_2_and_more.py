@@ -47,6 +47,11 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='devicedata',
+            name='country',
+            field=models.CharField(blank=True, max_length=64, null=True),
+        ),
+        migrations.AddField(
+            model_name='devicedata',
             name='zip_code',
             field=models.CharField(blank=True, max_length=6, null=True),
         )

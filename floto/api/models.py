@@ -126,6 +126,7 @@ class DeviceData(models.Model):
     address_2 = models.CharField(max_length=128, null=True, blank=True)
     city = models.CharField(max_length=64, null=True, blank=True)
     state = models.CharField(max_length=64, null=True, blank=True)
+    country = models.CharField(max_length=64, null=True, blank=True)
     zip_code = models.CharField(max_length=6, null=True, blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=3, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=3, null=True, blank=True)
@@ -145,8 +146,26 @@ class DeviceData(models.Model):
             )
 
     def save(self, *args, **kwargs):
-        # TODO: on save, using google geocode api
-        # get the geocode for the address and save lat long values
+        def get_lat_long(address):
+            import requests
+            params = {'q': address, 'format': 'json'}
+            headers = {'User-Agent': 'flotowebapp'}
+            url = 'https://nominatim.openstreetmap.org/search'
+            try:
+                response = requests.get(url, headers=headers, params=params)
+                response.raise_for_status()
+                data = response.json()
+                if data:
+                    return data[0]['lat'], data[0]['lon']
+            except requests.RequestException as e:
+                LOG.error(f"Geocoding error for address {address} - {e}")
+            return None, None
+        if self.address_1:
+            lat, long = get_lat_long(
+                f"{self.address_1}, {self.city}, {self.state}, {self.country}, {self.zip_code}"
+            )
+            if lat and long:
+                self.latitude, self.longitude = lat, long
         super(DeviceData, self).save(*args, **kwargs)
 
 
