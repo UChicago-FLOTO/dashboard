@@ -303,6 +303,9 @@ CELERY_RESULT_BACKEND = "redis://redis:6379"
 CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TASK_SERIALIZER = "json"
+CELERY_IMPORTS = [
+    "floto.api.tasks",
+]
 CELERY_BEAT_SCHEDULE = {
     "label_nodes": {
         "task": "label_nodes",

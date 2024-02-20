@@ -1,15 +1,19 @@
-from celery.app import shared_task
-from floto.api.balena import get_balena_client
-from floto.api.kubernetes import get_nodes, label_node, get_namespaces_with_no_pods, delete_namespace_if_exists
-from floto.api.models import DeviceData, Fleet, Project
-
-from django.conf import settings
-
+import csv
 import logging
 import os
-import csv
+import time
+
+from celery.app import shared_task
+from django.conf import settings
+
+from floto.api.balena import get_balena_client
+from floto.api.kubernetes import (delete_namespace_if_exists,
+                                  get_namespaces_with_no_pods, get_nodes,
+                                  label_node)
+from floto.api.models import DeviceData, Fleet, Project
 
 LOG = logging.getLogger(__name__)
+
 
 @shared_task(name='label_nodes')
 def label_nodes():
@@ -95,3 +99,24 @@ def rename_devices():
             if labelname and labelname != device_name:
                 LOG.info(f"setting device name from {device_name} to {labelname}")
                 balena.models.device.rename(device_uuid,labelname)
+
+
+@shared_task(name="bulk_device_update_CSV")
+def bulk_device_update_CSV(file):
+    reader = csv.DictReader(file)
+    for row in reader:
+        device = DeviceData.objects.get(device_uuid=row["device_uuid"])
+        device.device_uuid = row["device_uuid"]
+        device.deployment_name = row["deployment_name"]
+        device.contact = row["contact"]
+        device.address_1 = row["address_1"]
+        device.address_2 = row["address_2"]
+        device.city = row["city"]
+        device.state = row["state"]
+        device.country = row["country"]
+        device.zip_code = row["zip_code"]
+        if row["latitude"] and row["longitude"]:
+            device.latitude = float(row["latitude"])
+            device.longitude = float(row["longitude"])
+        device.save()
+        time.sleep(1)
