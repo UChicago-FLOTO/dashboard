@@ -130,10 +130,17 @@ class DeviceData(models.Model):
     zip_code = models.CharField(max_length=6, null=True, blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=3, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=3, null=True, blank=True)
+    __original_address = ""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__original_address = self.address()
 
     def __str__(self):
         return f"{self.name} ({self.device_uuid})"
 
+    def address(self):
+        return f"{self.address_1}, {self.city}, {self.state}, {self.zip_code}"
 
     def has_app_access(self, user, active_project=None):
         if active_project:
@@ -151,21 +158,25 @@ class DeviceData(models.Model):
             params = {'q': address, 'format': 'json'}
             headers = {'User-Agent': 'flotowebapp'}
             url = 'https://nominatim.openstreetmap.org/search'
+            LOG.info(f"Making the Nominatim Geocode API request for {address}")
             try:
                 response = requests.get(url, headers=headers, params=params)
                 response.raise_for_status()
                 data = response.json()
                 if data:
-                    return data[0]['lat'], data[0]['lon']
+                    return float(data[0]['lat']), float(data[0]['lon'])
             except requests.RequestException as e:
                 LOG.error(f"Geocoding error for address {address} - {e}")
             return None, None
-        if self.address_1:
-            lat, long = get_lat_long(
-                f"{self.address_1}, {self.city}, {self.state}, {self.country}, {self.zip_code}"
-            )
+        # update lat, long only if address changed
+        if self.__original_address != self.address():
+            lat, long = get_lat_long(self.address())
             if lat and long:
+                import random
+                lat += random.uniform(-0.005, 0.005)
+                long += random.uniform(-0.005, 0.005)
                 self.latitude, self.longitude = lat, long
+        self.__original_address = self.address()
         super(DeviceData, self).save(*args, **kwargs)
 
 

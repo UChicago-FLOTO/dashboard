@@ -4,7 +4,6 @@ createApp({
     delimiters: ["[[", "]]"],
     setup() {
         const devices = reactive({"value": []})
-        let devices_loading = ref("primary")
         fetch_with_retry("/api/devices", callback=function(json){
             devices.value = json
         })
