@@ -121,10 +121,26 @@ class DeviceData(models.Model):
     # Used to cache the fleet from balena.
     fleet = models.ForeignKey(Fleet, on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(default=datetime.now)
+    deployment_name = models.CharField(max_length=200, null=True, blank=True)
+    address_1 = models.CharField(max_length=128, null=True, blank=True)
+    address_2 = models.CharField(max_length=128, null=True, blank=True)
+    city = models.CharField(max_length=64, null=True, blank=True)
+    state = models.CharField(max_length=64, null=True, blank=True)
+    country = models.CharField(max_length=64, null=True, blank=True)
+    zip_code = models.CharField(max_length=6, null=True, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=3, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=3, null=True, blank=True)
+    __original_address = ""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__original_address = self.address()
 
     def __str__(self):
         return f"{self.name} ({self.device_uuid})"
 
+    def address(self):
+        return f"{self.address_1}, {self.city}, {self.state}, {self.zip_code}"
 
     def has_app_access(self, user, active_project=None):
         if active_project:
@@ -135,6 +151,33 @@ class DeviceData(models.Model):
                 allowed_project in user.projects.all()
                 for allowed_project in self.application_projects.all()
             )
+
+    def save(self, *args, **kwargs):
+        def get_lat_long(address):
+            import requests
+            params = {'q': address, 'format': 'json'}
+            headers = {'User-Agent': 'flotowebapp'}
+            url = 'https://nominatim.openstreetmap.org/search'
+            LOG.info(f"Making the Nominatim Geocode API request for {address}")
+            try:
+                response = requests.get(url, headers=headers, params=params)
+                response.raise_for_status()
+                data = response.json()
+                if data:
+                    return float(data[0]['lat']), float(data[0]['lon'])
+            except requests.RequestException as e:
+                LOG.error(f"Geocoding error for address {address} - {e}")
+            return None, None
+        # update lat, long only if address changed
+        if self.__original_address != self.address():
+            lat, long = get_lat_long(self.address())
+            if lat and long:
+                import random
+                lat += random.uniform(-0.005, 0.005)
+                long += random.uniform(-0.005, 0.005)
+                self.latitude, self.longitude = lat, long
+        self.__original_address = self.address()
+        super(DeviceData, self).save(*args, **kwargs)
 
 
 class PeripheralSchema(models.Model):

@@ -61,7 +61,6 @@ def overview(request):
     context = {
         "is_admin": any(g for g in request.session.get("groups", []) 
                         if g["name"] == "admin"),
-        "map_src": settings.FLOTO_MAP_IFRAME_SRC,
     }
     template = loader.get_template("dashboard/overview.html")
     return HttpResponse(template.render(context, request))

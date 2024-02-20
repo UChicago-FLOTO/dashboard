@@ -293,7 +293,6 @@ KUBE_JOB_TTL = int(os.environ.get(
 ))
 
 # FLOTO configuration
-FLOTO_MAP_IFRAME_SRC = os.environ.get("FLOTO_MAP_IFRAME_SRC")
 FLOTO_ENV_PREFIX = os.environ.get("FLOTO_ENV_PREFIX", "FLOTO_")
 FLOTO_ADMIN_PROJECT=os.environ.get("FLOTO_ADMIN_PROJECT")
 
