@@ -119,4 +119,5 @@ def bulk_device_update_CSV(file):
             device.latitude = float(row["latitude"])
             device.longitude = float(row["longitude"])
         device.save()
+        # sleep to honor the rate limit for geocode API
         time.sleep(1)

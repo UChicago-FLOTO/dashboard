@@ -123,7 +123,7 @@ class DeviceDataAdmin(admin.ModelAdmin):
     form = DeviceDataForm
     # overrides the change_list.html template to show import and download csv links
     change_list_template = "admin/devices_change_list_admin.html"
-    list_display = ["name", "device_uuid", "owner_project", "fleet", "created_at"]
+    list_display = ["name", "device_uuid", "owner_project", "fleet", "created_at", "address"]
     list_filter = ["fleet", "name", "device_uuid"]
     actions = [move_device_to_application_fleet]
 
@@ -143,6 +143,7 @@ class DeviceDataAdmin(admin.ModelAdmin):
         writer = csv.writer(response)
         device_update_columns = [
             "device_uuid",
+            "name",
             "deployment_name",
             "contact",
             "address_1",
