@@ -2,10 +2,9 @@ import logging
 import uuid
 from datetime import datetime
 
-from rest_framework import serializers
-
 from django.conf import settings
 from django.db import models
+from rest_framework import serializers
 
 LOG = logging.getLogger(__name__)
 
@@ -122,12 +121,13 @@ class DeviceData(models.Model):
     fleet = models.ForeignKey(Fleet, on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(default=datetime.now)
     deployment_name = models.CharField(max_length=200, null=True, blank=True)
-    address_1 = models.CharField(max_length=128, null=True, blank=True)
-    address_2 = models.CharField(max_length=128, null=True, blank=True)
-    city = models.CharField(max_length=64, null=True, blank=True)
-    state = models.CharField(max_length=64, null=True, blank=True)
-    country = models.CharField(max_length=64, null=True, blank=True)
-    zip_code = models.CharField(max_length=6, null=True, blank=True)
+    contact = models.EmailField(max_length=254, null=True, blank=True)
+    address_1 = models.CharField(max_length=128, default="", blank=True)
+    address_2 = models.CharField(max_length=128, default="", blank=True)
+    city = models.CharField(max_length=64, default="", blank=True)
+    state = models.CharField(max_length=64, default="", blank=True)
+    country = models.CharField(max_length=64, default="", blank=True)
+    zip_code = models.CharField(max_length=6, default="", blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=3, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=3, null=True, blank=True)
     __original_address = ""
