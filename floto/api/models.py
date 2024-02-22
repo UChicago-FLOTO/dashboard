@@ -131,6 +131,20 @@ class DeviceData(models.Model):
     latitude = models.DecimalField(max_digits=9, decimal_places=3, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=3, null=True, blank=True)
     __original_address = ""
+    device_update_columns = [
+        "device_uuid",
+        "name",
+        "deployment_name",
+        "contact",
+        "address_1",
+        "address_2",
+        "city",
+        "state",
+        "country",
+        "zip_code",
+        "latitude",
+        "longitude",
+    ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
