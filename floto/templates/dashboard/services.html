@@ -21,6 +21,13 @@
         </ul>
       </q-td>
     </template>
+    <template v-slot:body-cell-ports="props">
+      <q-td :props="props">
+        <ul v-for="port in props.row.ports">
+          <li>[[ port.protocol ]]: ([[ port.node_port ]], [[ port.target_port ]])</li>
+        </ul>
+      </q-td>
+    </template>
 
     <template v-slot:body-cell-action="props">
       <q-td :props="props">
@@ -78,7 +85,6 @@
     <div>
       <h5>Peripherals</h5>
       <p>Choose periphals your service requires.</p>
-      [[ peripheral_schemas.value ]]
       <q-list>
         <q-item tag="label" v-ripple v-for="ps in peripheral_schemas">
           <q-item-section avatar>
@@ -92,6 +98,33 @@
       </q-list>
     </div>
 
+    <div>
+      <h5>Ports</h5>
+      <p>Expose ports on the device's local network.</p>
+      <div class="row">
+        <q-select filled v-model="new_port_data.protocol" :options="protocol_options" label="Protocol"></q-select>
+        <q-input 
+          filled label="Device port (30000-32768)" name="node_port" 
+          v-model="new_port_data.node_port"
+        ></q-input>
+        <q-input 
+          filled label="Target port" name="target_port" 
+          v-model="new_port_data.target_port"
+        ></q-input>
+        <q-btn @click="add_port()">Add port</q-btn>
+      </div>
+      <q-list>
+        <q-item tag="label" v-ripple v-for="port in form_data.ports">
+          <q-item-section>
+            <q-item-label>
+              [[ port.protocol ]]: [[ port.node_port ]]
+              <q-icon name="arrow_forward"></q-icon>
+              [[ port.target_port ]]
+            </q-item-label>
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </div>
 
     <div>
       <q-btn primary height="55" type="submit" color="blue">
