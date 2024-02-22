@@ -1,0 +1,14 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+    <div>
+        <form action="." method="POST" enctype="multipart/form-data">
+            {{ form.as_p }}
+            {% csrf_token %}
+                <p>If you intend to update certain devices' values, update the downloaded all devices CSV with values corrresponsing to the device and delete other devices</p>
+                <button type="submit" class="default">Upload CSV</button>
+        </form>
+    </div>
+    <br />
+
+{% endblock %}

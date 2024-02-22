@@ -293,7 +293,6 @@ KUBE_JOB_TTL = int(os.environ.get(
 ))
 
 # FLOTO configuration
-FLOTO_MAP_IFRAME_SRC = os.environ.get("FLOTO_MAP_IFRAME_SRC")
 FLOTO_ENV_PREFIX = os.environ.get("FLOTO_ENV_PREFIX", "FLOTO_")
 FLOTO_ADMIN_PROJECT=os.environ.get("FLOTO_ADMIN_PROJECT")
 
@@ -304,6 +303,9 @@ CELERY_RESULT_BACKEND = "redis://redis:6379"
 CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TASK_SERIALIZER = "json"
+CELERY_IMPORTS = [
+    "floto.api.tasks",
+]
 CELERY_BEAT_SCHEDULE = {
     "label_nodes": {
         "task": "label_nodes",

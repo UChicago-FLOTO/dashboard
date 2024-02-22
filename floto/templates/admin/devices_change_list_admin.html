@@ -1,0 +1,10 @@
+{% extends 'admin/change_list.html' %}
+
+{% block object-tools %}
+
+    <a href="download-device-details/">Download devices details in CSV</a>
+    <p>This CSV contains all the devices and their current metadata in the portal</p>
+    <a href="import-device-update-csv">Import device update CSV</a>
+    <br />
+    {{ block.super }}
+{% endblock %}
