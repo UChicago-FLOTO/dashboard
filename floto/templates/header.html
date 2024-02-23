@@ -4,6 +4,12 @@
   <div class="container">
     <nav class="navbar">
       <div>
+        <a href="{% url 'dashboard:overview' %}">
+          <button type="button" class="btn btn-primary">
+            Overview
+          </button>
+        </a>
+
         <a href="{% url 'dashboard:devices' %}">
           <button type="button" class="btn btn-primary">
             Devices
