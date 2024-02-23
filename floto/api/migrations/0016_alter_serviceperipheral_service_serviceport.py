@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('floto_api', '0012_alter_peripheralconfigurationitem_peripheral_and_more'),
+        ('floto_api', '0015_devicedata_contact_alter_devicedata_address_1_and_more'),
     ]
 
     operations = [

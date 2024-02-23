@@ -278,6 +278,7 @@ class JobViewSet(ModelWithOwnerViewSet):
 
     def perform_destroy(self, job):
         kubernetes.destroy_job(job)
+        super().perform_destroy(job)
 
     @action(methods=["POST"], detail=False, url_path="check")
     def check(self, request):
