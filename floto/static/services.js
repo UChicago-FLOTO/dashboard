@@ -31,13 +31,13 @@ createApp({
     let new_port_data = ref({
       node_port: "",
       target_port: "",
+      protocol: "TCP",
     })
-    return {
-      services, services_loading, services_form_disabled, services_loading_error_message,
-      peripheral_schemas, new_port_data,
-      form_data,
-      protocol_options: ['TCP', 'UDP'],
-      add_port(){
+    let add_port = function(){
+      if(new_port_data.value.target_port.length > 0 
+        && new_port_data.value.node_port .length > 0
+        && new_port_data.value.protocol.length > 0
+      ){
         form_data.value.ports.push({
           "protocol": new_port_data.value.protocol,
           "target_port": new_port_data.value.target_port,
@@ -45,8 +45,18 @@ createApp({
         })
         new_port_data.value.target_port = ""
         new_port_data.value.node_port = ""
-      },
+      }
+    }
+    return {
+      services, services_loading, services_form_disabled, services_loading_error_message,
+      peripheral_schemas, new_port_data,
+      form_data,
+      protocol_options: ['TCP', 'UDP'],
+      add_port,
       async submit(e) {
+        // We call add_port() to check if someone has a completed entry that
+        // might've been missed (easy mistake).
+        add_port()
         services_form_disabled = true
         services_loading = true
         const request = new Request(
