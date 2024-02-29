@@ -29,14 +29,21 @@ createApp({
 
             let from = Quasar.date.addToDate(new Date(), {"days": -7}).toISOString()
             let to = Quasar.date.addToDate(new Date(), {"days": 7}).toISOString()
-            fetch_with_retry(`/api/timeslots?from=${from}&to=${to}`, callback = function (timeslot_json) {
-                create_chart(timeslot_json, devices.value)
-            })
+
+            let div = document.querySelector("#chart")
+            if(div){
+                fetch_with_retry(`/api/timeslots?from=${from}&to=${to}`, callback = function (timeslot_json) {
+                    create_chart(div, timeslot_json, devices.value)
+                })
+            }
         }, query_params = "")
         onMounted(() => {
-            var map = L.map('map').setView([0, 0], 1);
+            var map = L.map('map', {"maxZoom": 18}).setView([0,0], 1);
             // Initialize a feature group
-            var markers = new L.featureGroup().addTo(map);
+            var markers = new L.MarkerClusterGroup({
+                maxClusterRadius: 30,
+            })
+            map.addLayer(markers)
             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
                 attribution: '© OpenStreetMap contributors'
@@ -86,7 +93,7 @@ createApp({
 }).use(Quasar).mount('#app');
 
 
-function create_chart(timeslot_json, devices) {
+function create_chart(div, timeslot_json, devices) {
     let tasks = []
     Object.keys(timeslot_json).forEach(uuid => {
         timeslot_json[uuid].forEach(ts => {
@@ -117,6 +124,5 @@ function create_chart(timeslot_json, devices) {
         x: { grid: true},
         style: "font-size: 16px;",
     })
-    const div = document.querySelector("#chart");
     div.append(plot);
 }
