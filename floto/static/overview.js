@@ -8,9 +8,12 @@ createApp({
             devices.value = json
         })
         onMounted(() => {
-            var map = L.map('map').setView([0,0], 1);
+            var map = L.map('map', {"maxZoom": 18}).setView([0,0], 1);
             // Initialize a feature group
-            var markers = new L.featureGroup().addTo(map);
+            var markers = new L.MarkerClusterGroup({
+                maxClusterRadius: 30,
+            })
+            map.addLayer(markers)
             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
                 attribution: '© OpenStreetMap contributors'
