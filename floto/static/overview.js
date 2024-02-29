@@ -24,7 +24,12 @@ createApp({
                 let addedMarkers = false;
                 devices.value.forEach(device => {
                     if (device.latitude && device.longitude) {
-                        let iconColor = device.is_online ? 'green' : 'red';
+                        let iconColor = device.is_online ? 'green' : 'red'
+                        let iconExtraHtml = ''
+                        if (device.status == 'retired') {
+                            iconColor = 'black'
+                            iconExtraHtml = '<p>This device is retired, and no longer can be used.</p>'
+                        }
                         let iconSize = device.is_online ? '35px' : '25px';
                         let iconName = 'place';
                         let iconHtml = `<div style="color: ${iconColor}; font-size: ${iconSize};" class="q-icon material-icons">${iconName}</div>`;
@@ -36,7 +41,7 @@ createApp({
                             [device.latitude, device.longitude],
                             {icon: customIcon}
                         ).bindPopup(
-                            `<b>${device.device_name}</b>`
+                            `<b>${device.device_name}</b>${iconExtraHtml}`
                         );
                         markers.addLayer(marker);
                         addedMarkers = true;

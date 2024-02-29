@@ -110,6 +110,11 @@ class DeviceData(models.Model):
     """
     Stores our custom data on the device and filter balena API
     """
+    STATUS_CHOICES = {
+        ("", "--will use balena status--"),
+        ("retired", "retired"),
+    }
+
     device_uuid = models.CharField(max_length=36, primary_key=True)
     # The owner of the device.
     owner_project = models.ForeignKey(Project, on_delete=models.CASCADE)
@@ -130,7 +135,12 @@ class DeviceData(models.Model):
     zip_code = models.CharField(max_length=6, default="", blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=3, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=3, null=True, blank=True)
+    status = models.CharField(max_length=512, blank=True, choices=STATUS_CHOICES)
+
+    # Used for update geolocation on address update
     __original_address = ""
+
+    # Used for device CSV import
     device_update_columns = [
         "device_uuid",
         "name",

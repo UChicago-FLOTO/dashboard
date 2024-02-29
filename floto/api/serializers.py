@@ -312,7 +312,7 @@ class DeviceSerializer(serializers.ModelSerializer):
             "uuid", "device_name", "note", "is_online", "last_connectivity_event",
             "is_connected_to_vpn", "last_vpn_event",
             "memory_usage", "memory_total", "storage_usage", "storage_total",
-            "cpu_usage", "cpu_temp", "is_undervolted", "status", "os_version",
+            "cpu_usage", "cpu_temp", "is_undervolted", "os_version",
             "os_variant", "supervisor_version",
         ]
         
@@ -334,6 +334,13 @@ class DeviceSerializer(serializers.ModelSerializer):
             [mac for mac in balena_device["mac_address"].split(" ")]
         management_access = active_project == instance.owner_project \
             if active_project else request.user in instance.owner_project.members.all()
+
+        # Get status, use balena status if none set in DB
+        # TODO we should filter balena status, as it isn't very useful
+        status = balena_device.get("status")
+        if len(instance.status) > 0:
+            status = instance.status
+
         return {
             "contact": instance.owner_project.created_by.email,
             "management_access": management_access,
@@ -341,6 +348,7 @@ class DeviceSerializer(serializers.ModelSerializer):
             "is_ready": is_ready,
             "ip_address": ip_address,
             "mac_address": mac_address,
+            "status": status,
             "latitude": instance.latitude,
             "longitude": instance.longitude,
             "peripherals": [

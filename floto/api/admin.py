@@ -4,6 +4,7 @@ import logging
 from django import forms
 from django.conf import settings
 from django.contrib import admin
+from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -117,6 +118,16 @@ def move_device_to_application_fleet(modeladmin, request, queryset):
         balena.models.device.move(obj.device_uuid, target_fleet.id)
 
 
+@admin.action(
+    description="Retire devices"
+)
+def retire_devices(modeladmin, request, queryset):
+    with transaction.atomic():
+        for obj in queryset.all():
+            obj.status = 'retired'
+            obj.save()
+
+
 class GeocodeListFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
     # right admin sidebar just above the filter options.
@@ -166,9 +177,9 @@ class DeviceDataAdmin(admin.ModelAdmin):
     form = DeviceDataForm
     # overrides the change_list.html template to show import and download csv links
     change_list_template = "admin/devices_change_list_admin.html"
-    list_display = ["name", "device_uuid", "owner_project", "fleet", "created_at", "address"]
+    list_display = ["name", "device_uuid", "owner_project", "fleet", "created_at", "address", "contact"]
     list_filter = [GeocodeListFilter, "fleet", "name"]
-    actions = [move_device_to_application_fleet]
+    actions = [move_device_to_application_fleet, retire_devices]
 
     def get_urls(self):
         urls = super().get_urls()
