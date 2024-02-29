@@ -11,7 +11,7 @@ createApp({
     let form_data = reactive({
       name: "",
       description: "",
-      environment: {},
+      environment_component_obj: {},
       is_public: false,
       services: [],
     })
@@ -53,11 +53,15 @@ createApp({
       continueFn(stepper){
         console.log(this.$refs)
         if(step.value === 1 && form_data.application){
-          form_data.environment = form_data.application.parsed_env
+          form_data.environment_component_obj.environment = form_data.application.parsed_env
         }
         stepper.next()
       },
       async submit(e) {
+        // automatically get a partially filled in env
+        if(form_data.environment_component_obj.new_key){
+          form_data.environment_component_obj.environment[form_data.environment_component_obj.new_key] = form_data.environment_component_obj.new_value
+        }
         applications_form_disabled = true
         applications_loading = true
         const request = new Request(
@@ -68,7 +72,7 @@ createApp({
             body: JSON.stringify({
               "name": form_data.name,
               "description": form_data.description,
-              "environment": JSON.stringify(form_data.environment),
+              "environment": JSON.stringify(form_data.environment_component_obj.environment),
               "is_public": form_data.is_public,
               "services": form_data.services.map((uuid) => {
                 return {"service": uuid}

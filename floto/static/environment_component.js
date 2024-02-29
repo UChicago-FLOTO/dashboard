@@ -1,21 +1,19 @@
 var EnvironmentComponent = {
   props: ["modelValue"],
   setup(props, ctx) {
-    const new_key = ref("")
-    const new_value = ref("")
+    props.modelValue.environment = {}
     return { 
-      environment: props.modelValue,
-      new_key, new_value,
+      environment_component_obj: props.modelValue,
       delete_item(name){
-        console.log(name)
-        delete props.modelValue[name]
+        delete props.modelValue.environment[name]
         ctx.emit('update:modelValue', props.modelValue)
       },
       add_item(){
-        if(new_key.value){
-          props.modelValue[new_key.value] = new_value.value
-          new_key.value = ""
-          new_value.value = ""
+        let env_com_obj = props.modelValue
+        if(env_com_obj.new_key){
+          env_com_obj.environment[env_com_obj.new_key] = env_com_obj.new_value
+          env_com_obj.new_key = ""
+          env_com_obj.new_value = ""
           ctx.emit('update:modelValue', props.modelValue)
         }
       }
@@ -34,7 +32,7 @@ var EnvironmentComponent = {
         </thead>
         <tbody>
           <tr
-            v-for="(value, name, index) in environment">
+            v-for="(value, name, index) in environment_component_obj.environment">
             <td>{{name}}</td>
             <td>{{value}}</td>
             <td>
@@ -51,12 +49,12 @@ var EnvironmentComponent = {
           <tr>
               <td>
                 <q-input 
-                  v-model="new_key" label="Key"
+                  v-model="environment_component_obj.new_key" label="Key"
                 />
               </td>
               <td>
                 <q-input 
-                  v-model="new_value" label="Value" 
+                  v-model="environment_component_obj.new_value" label="Value" 
                 />
               </td>
               <td>

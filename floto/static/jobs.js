@@ -24,7 +24,7 @@ createApp({
     const devices = reactive({"value": []})
 
     let form_data = reactive({
-      environment: {},
+      environment_component_obj: {},
       is_public: false,
       application: undefined,
       devices: [],
@@ -156,7 +156,7 @@ createApp({
       deviceFilterFn,
       continueFn(stepper){
         if(step.value === 1 && form_data.application){
-          form_data.environment = form_data.application.parsed_env
+          form_data.environment_component_obj.environment = form_data.application.parsed_env
         }
         stepper.next()
       },
@@ -171,6 +171,10 @@ createApp({
       },
       form_data,
       async submit(e) {
+        // automatically get a partially filled in env
+        if(form_data.environment_component_obj.new_key){
+          form_data.environment_component_obj.environment[form_data.environment_component_obj.new_key] = form_data.environment_component_obj.new_value
+        }
         jobs_form_disabled = true
         jobs_loading = true
         const request = new Request(
@@ -181,7 +185,7 @@ createApp({
             body: JSON.stringify({
               "is_public": form_data.is_public,
               "application": form_data.application.uuid,
-              "environment": JSON.stringify(form_data.environment),
+              "environment": JSON.stringify(form_data.environment_component_obj.environment),
               "devices": form_data.devices.map((uuid) => {
                 return {"device_uuid": uuid}
               }),

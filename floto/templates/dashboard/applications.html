@@ -163,8 +163,7 @@
     >
       <p>Define any environment variables which will be set in this application's containers.</p>
       <q-form @submit.prevent="submit">
-        <environment-component v-model="form_data.environment"></environment-component>
-
+        <environment-component v-model="form_data.environment_component_obj"></environment-component>
         <q-stepper-navigation>
           <q-btn flat color="primary" @click="$refs.stepper.previous()" label="Back" class="q-ml-sm"></q-btn>
           <q-btn type="submit" color="primary" label="Submit"></q-btn>
