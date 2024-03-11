@@ -5,6 +5,7 @@ from django.template import loader
 import datetime
 import json
 import logging
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 from . import util
 from .. import util as floto_util
@@ -61,6 +62,12 @@ def overview(request):
     context = {}
     template = loader.get_template("dashboard/overview.html")
     return HttpResponse(template.render(context, request))
+
+
+@xframe_options_exempt
+def map(request):
+    template = loader.get_template("dashboard/map.html")
+    return HttpResponse(template.render({}, request))
 
 
 def user(request):

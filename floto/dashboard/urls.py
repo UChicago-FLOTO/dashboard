@@ -4,10 +4,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path(
-        "",
-        views.overview,
-        name="overview"),
+    path("", views.overview, name="overview"),
+    path("map", views.map, name="map"),
     path(
         "devices",
         views.devices,
