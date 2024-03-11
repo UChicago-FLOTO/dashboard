@@ -3,17 +3,10 @@
 {% load static %}
 {% block content %}
 <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet" type="text/css">
-<h1>Overview</h1>
+<h3>Overview</h3>
 
 <div>
-    {% if not is_admin %}
-    Welcome to FLOTO. You need permission to view devies and jobs.
-    Please email
-    <a href="mailto:contact@floto.science">contact@floto.science</a>
-    or contact an administrator
-    {% else %}
-        <div id="map" style = "width:900px; height:580px;"></div>
-    {% endif %}
+    <div id="map" style = "width:900px; height:580px;"></div>
 </div>
 {% endblock %}
 {% block scripts %}

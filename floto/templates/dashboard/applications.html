@@ -64,6 +64,7 @@
   ></1-progress-circular>
 </div>
 
+{% if user.is_authenticated %}
 <h4>New Application</h4>
 <div class="q-pa-md">
   <q-banner inline-actions class="text-white bg-red" v-if="applications_loading_error_message">
@@ -172,6 +173,7 @@
     </q-step>
   </q-stepper>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}

@@ -250,8 +250,7 @@ BALENA_TUNNEL_HOST = os.environ.get("BALENA_TUNNEL_HOST")
 # DRF
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        "rest_framework.permissions.IsAuthenticated",
-        "floto.api.permissions.IsAdmin",
+        "floto.api.permissions.MethodAllowed",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",

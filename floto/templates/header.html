@@ -58,7 +58,11 @@
               </button>
             </form>
         {% else %}
-          <a href="{% url 'oidc_authentication_init' %}">Login</a>
+          <a href="{% url 'oidc_authentication_init' %}">
+            <button type="submit" class="btn btn-primary">
+              Log in
+            </button>
+          </a>
         {% endif %}
       </div>
     </nav>

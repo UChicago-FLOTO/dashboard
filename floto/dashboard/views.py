@@ -58,10 +58,7 @@ def fleets(request):
 
 
 def overview(request):
-    context = {
-        "is_admin": any(g for g in request.session.get("groups", []) 
-                        if g["name"] == "admin"),
-    }
+    context = {}
     template = loader.get_template("dashboard/overview.html")
     return HttpResponse(template.render(context, request))
 

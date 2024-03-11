@@ -342,7 +342,6 @@ class DeviceSerializer(serializers.ModelSerializer):
             status = instance.status
 
         return {
-            "contact": instance.owner_project.created_by.email,
             "management_access": management_access,
             "application_access": management_access or instance.has_app_access(request.user, active_project),
             "is_ready": is_ready,

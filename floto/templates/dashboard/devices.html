@@ -8,19 +8,6 @@
 
 <h3>Devices</h3>
 
-<!-- <q-select
-  label="Select fleets"
-  filled
-  v-model="selected_fleets.value"
-  :options="fleets.value"
-  :option-label="(fleet) => fleet.app_name"
-  :option-value="(fleet) => fleet.id"
-  emit-value
-  map-options
-  multiple
-  use-chips
->
-</q-select> -->
 <div class="q-pa-sm rounded-borders">
   <q-toggle
     name="application_access"
@@ -46,7 +33,7 @@
     :rows="device_rows()"
     :pagination="initialPagination"
     row-key="uuid"
-    selection="multiple"
+    {% if user.is_authenticated %}selection="multiple"{% endif %}
     v-model:selected="selected_devices"
     virtual-scroll
     style="height: 675px"

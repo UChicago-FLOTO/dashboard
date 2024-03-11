@@ -6,7 +6,7 @@ createApp({
         const devices = reactive({"value": []})
         fetch_with_retry("/api/devices", callback=function(json){
             devices.value = json
-        })
+        }, query_params="")
         onMounted(() => {
             var map = L.map('map').setView([0,0], 1);
             // Initialize a feature group
