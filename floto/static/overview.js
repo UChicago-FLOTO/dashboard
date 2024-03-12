@@ -18,7 +18,7 @@ createApp({
             stats.value.retired = devices.value.filter(d => {
                 return d.status == "retired" } ).length        
             stats.value.offline = devices.value.length - stats.value.online - stats.value.retired
-            stats.value.is_ready = devices.value.filter(d => {
+            stats.value.ready = devices.value.filter(d => {
                 return d.is_ready } ).length
             stats.value.app_access = devices.value.filter(d => {
                 return d.application_access } ).length            
