@@ -17,13 +17,18 @@
     max-width: 96%;
 }
 
-.site-header {
+.site-header, .site-footer {
     border-bottom: 1px solid black;
     background-color: var(--primary-color);
     color: white;
 }
 
-.site-header a {
+.site-footer {
+    padding: 1rem;
+    margin-top: 2rem;
+}
+
+.site-header a, .site-footer a {
     color: white;
     text-decoration: none;
 }

@@ -8,8 +8,10 @@ from floto.api.serializers import DeviceSerializer
 LOG = logging.getLogger(__name__)
 
 
-class IsAdmin(permissions.BasePermission):
+class MethodAllowed(permissions.BasePermission):
     def has_permission(self, request, view):
+        if request.method in ["GET"]:
+            return True
         if not request.user.is_authenticated:
             return False
         groups = request.session.get("groups", [])

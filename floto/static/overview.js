@@ -1,12 +1,28 @@
-const { createApp, ref, reactive, watch, onMounted, watchEffect } = Vue
+const { createApp, ref, watch, onMounted, watchEffect } = Vue
 
 createApp({
     delimiters: ["[[", "]]"],
     setup() {
-        const devices = reactive({"value": []})
+        const devices = ref([])
+        const stats = ref({
+            "online": 0,
+            "offline": 0,
+            "ready": 0,
+            "app_access": 0,
+            "retired": 0,
+        })
         fetch_with_retry("/api/devices", callback=function(json){
             devices.value = json
-        })
+            stats.value.online = devices.value.filter(d => {
+                return d.api_heartbeat_state == "online" } ).length
+            stats.value.retired = devices.value.filter(d => {
+                return d.status == "retired" } ).length        
+            stats.value.offline = devices.value.length - stats.value.online - stats.value.retired
+            stats.value.is_ready = devices.value.filter(d => {
+                return d.is_ready } ).length
+            stats.value.app_access = devices.value.filter(d => {
+                return d.application_access } ).length            
+        }, query_params="")
         onMounted(() => {
             var map = L.map('map').setView([0,0], 1);
             // Initialize a feature group
@@ -53,5 +69,8 @@ createApp({
                 }
             });
         });
+        return {
+            devices, stats
+        }
     }
 }).use(Quasar).mount('#app');

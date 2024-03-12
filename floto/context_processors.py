@@ -3,7 +3,6 @@ from .api.serializers import ProjectSerializer
 
 def global_values(request):
     selected_project = None
-    projects = []
     if request.user.is_authenticated:
         if not request.session.get('selected_project'):
             try:

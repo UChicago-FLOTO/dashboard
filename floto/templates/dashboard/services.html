@@ -53,6 +53,7 @@
   ></q-circular-progress>
 </div>
 
+{% if user.is_authenticated %}
 <h4>New Service</h4>
 <div>
   <q-banner inline-actions class="text-white bg-red" v-if="services_loading_error_message">
@@ -133,7 +134,7 @@
     </div>
   </q-form>
 </div>
-
+{% endif %}
 {% endblock %}
 
 {% block scripts %}

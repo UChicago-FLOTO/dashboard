@@ -49,7 +49,7 @@ class DeviceViewSet(viewsets.ViewSet):
     ]
 
     permission_classes = [
-        permissions.IsAdmin,
+        permissions.MethodAllowed,
         permissions.DevicePermission,
     ]
 
@@ -253,7 +253,7 @@ class ModelWithOwnerViewSet(viewsets.ModelViewSet):
             action_permissions = self.destroy_permision_classes
         return super(ModelWithOwnerViewSet, self).get_permissions() + [
             permission() for permission in action_permissions
-        ] + [ permissions.IsAdmin() ]
+        ] + [ permissions.MethodAllowed() ]
 
 
 class ServiceViewSet(ModelWithOwnerViewSet):

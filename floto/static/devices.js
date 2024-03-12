@@ -21,7 +21,7 @@ createApp({
         { name: "My Collections", value: (val) => { return val.is_owned_by_current_user } },
         { name: "Public Collections", value: (val) => { return val.is_public } },
       ]  
-      filter_application_access = ref(true)
+      filter_application_access = ref(get_user_email() !== undefined)
       filter_is_ready = ref(true)
       filter_management_access = ref(false)
 

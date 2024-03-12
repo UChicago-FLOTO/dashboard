@@ -328,7 +328,7 @@ class DeviceSerializer(serializers.ModelSerializer):
                 ps.type for ps in peripheral_schemas
                 if self._device_supports_schema(ps, kubernetes_node.status.capacity.keys())
             ]
-        ip_address = [] if not balena_device.get("ip_address") else \
+        ip_address = [] if (request.user.is_anonymous or not balena_device.get("ip_address")) else \
             [ip for ip in balena_device["ip_address"].split(" ")]
         mac_address = [] if not balena_device.get("mac_address") else \
             [mac for mac in balena_device["mac_address"].split(" ")]
@@ -342,7 +342,6 @@ class DeviceSerializer(serializers.ModelSerializer):
             status = instance.status
 
         return {
-            "contact": instance.owner_project.created_by.email,
             "management_access": management_access,
             "application_access": management_access or instance.has_app_access(request.user, active_project),
             "is_ready": is_ready,

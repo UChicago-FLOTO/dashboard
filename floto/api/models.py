@@ -167,6 +167,8 @@ class DeviceData(models.Model):
         return f"{self.address_1}, {self.city}, {self.state}, {self.zip_code}"
 
     def has_app_access(self, user, active_project=None):
+        if user.is_anonymous:
+            return False
         if active_project:
             return self.allow_all_projects or \
                 active_project in self.application_projects.all()

@@ -5,6 +5,7 @@ from django.template import loader
 import datetime
 import json
 import logging
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 from . import util
 from .. import util as floto_util
@@ -58,12 +59,15 @@ def fleets(request):
 
 
 def overview(request):
-    context = {
-        "is_admin": any(g for g in request.session.get("groups", []) 
-                        if g["name"] == "admin"),
-    }
+    context = {}
     template = loader.get_template("dashboard/overview.html")
     return HttpResponse(template.render(context, request))
+
+
+@xframe_options_exempt
+def map(request):
+    template = loader.get_template("dashboard/map.html")
+    return HttpResponse(template.render({}, request))
 
 
 def user(request):

@@ -22,7 +22,11 @@ class HasReadAccessFilterBackend(filters.BaseFilterBackend):
         if active_project_pk:
             active_project = request.user.projects.filter(pk=active_project_pk).first()
 
-        if active_project:
+        if request.user.is_anonymous:
+            return queryset.filter(
+                Q(is_public=True)
+            )
+        elif active_project:
             return queryset.filter(
                 Q(created_by_project=active_project)| Q(is_public=True)
             )
@@ -64,11 +68,7 @@ class DeviceFilter(filters.BaseFilterBackend):
                     }
                 ).data
                 
-                if (
-                    json["management_access"] or 
-                    json["application_access"]
-                ):
-                    filtered_devices.append(json)
+                filtered_devices.append(json)
             except DeviceData.DoesNotExist:
                 LOG.warning(f"Device {device['uuid']} does not have extra data!")
         return filtered_devices

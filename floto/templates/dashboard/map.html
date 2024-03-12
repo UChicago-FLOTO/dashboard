@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html style="width:100%; height:100%;">
+
+<head>
+    <meta charset="utf-8">
+    <title>Map | FLOTO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="{{ site.description }}">
+    <link rel="icon" href="{% static " images/favicon.ico" %}">
+    <link rel="canonical" href="{{request.get_full_path}}">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'main.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet"
+        type="text/css">
+    <link href="https://cdn.jsdelivr.net/npm/quasar@2.12.6/dist/quasar.prod.css" rel="stylesheet" type="text/css">
+</head>
+
+<body style="width:100%; height:100%;">
+    <div id="app" style="width:100%; height:100%;">
+        <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet" type="text/css">
+        <div id="map" style="width:100%; height:100%;"></div>
+    </div>
+    <script>
+        function get_user_email() {
+            // this function generated in a django template
+            {% if user.is_authenticated %}
+            return "{{user.email}}"
+            {% else %}
+            return undefined
+            {% endif %}
+        }
+        function get_active_project() {
+            // this function generated in a django template
+            {% if user.is_authenticated %}
+            return "{{selected_project.uuid}}"
+            {% else %}
+            return undefined
+            {% endif %}
+        }
+    </script>
+    <script src="{%static 'vendor/vue.3.3.4.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quasar@2.12.6/dist/quasar.umd.prod.js"></script>
+    <script src="{% static 'util.js' %}"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{% static 'overview.js' %}"></script>    
+</body>
+</html>
