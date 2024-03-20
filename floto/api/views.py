@@ -18,6 +18,7 @@ from balena import exceptions
 
 from floto.api import filters, permissions
 from floto.api.serializers import (
+    ClaimableResourceSerializer,
     PeripheralSchemaSerializer,
     PeripheralSerializer,
     ProjectSerializer,
@@ -389,6 +390,13 @@ class PeripheralSchemaViewSet(viewsets.ModelViewSet):
 
 class PeripheralViewSet(viewsets.ModelViewSet):
     serializer_class = PeripheralSerializer
+    http_method_names = ["get"]
+
+    def get_queryset(self):
+        return self.serializer_class.Meta.model.objects.all()
+
+class ClaimableResourceViewSet(viewsets.ModelViewSet):
+    serializer_class = ClaimableResourceSerializer
     http_method_names = ["get"]
 
     def get_queryset(self):

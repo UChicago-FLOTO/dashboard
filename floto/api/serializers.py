@@ -59,17 +59,25 @@ class ServicePortSerializer(serializers.ModelSerializer):
         fields = ["protocol", "node_port", "target_port"]
 
 
+class ServiceClaimableResourceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ServiceClaimableResource
+        fields = ["resource"]
+
+
 class ServiceSerializer(CreatedByUserSerializer):
     class Meta(CreatedByUserMeta):
         model = models.Service
         depth = 1
     peripheral_schemas = ServicePeripheralSerializer(many=True)
     ports = ServicePortSerializer(many=True)
+    resources = ServiceClaimableResourceSerializer(many=True)
 
     @transaction.atomic
     def create(self, validated_data):
         peripheral_schema_data = validated_data.pop("peripheral_schemas", [])
         port_data = validated_data.pop("ports", [])
+        resource_data = validated_data.pop("resources", [])
         service = models.Service.objects.create(**validated_data)
         for ps in peripheral_schema_data:
             models.ServicePeripheral.objects.create(
@@ -81,6 +89,12 @@ class ServiceSerializer(CreatedByUserSerializer):
                 protocol=port["protocol"],
                 node_port=port["node_port"],
                 target_port=port["target_port"],
+                service=service,
+            )
+        for resource in resource_data:
+            models.ServiceClaimableResource.objects.create(
+                resource=models.ClaimableResource.objects.get(
+                    resource=resource["resource"]),
                 service=service,
             )
         return service
@@ -242,6 +256,12 @@ class ProjectSerializer(serializers.ModelSerializer):
         depth = 1
     members = UserSerializer(many=True)
     created_by = CreatedByField(default=serializers.CurrentUserDefault())
+
+
+class ClaimableResourceSerializer(serializers.ModelSerializer):
+    class Meta():
+        model = models.ClaimableResource
+        fields = ["resource"]
 
 
 class PeripheralSchemaResourceSerializer(serializers.ModelSerializer):
