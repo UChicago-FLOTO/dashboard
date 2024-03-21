@@ -8,6 +8,7 @@ from floto.auth.models import KeycloakUser
 import logging
 from django.db import transaction
 from django.contrib.auth.models import User
+from django.conf import settings
 
 
 LOG = logging.getLogger(__name__)
@@ -214,7 +215,7 @@ class JobSerializer(CreatedByUserSerializer):
                     timing=timing["timing"],
                 )
 
-        res = util.parse_timings(timings_data, devices_data)
+        res = util.parse_timings(timings_data, devices_data, validated_data["application"].uuid)
         if res["conflicts"]:
             raise ValidationError("Could not schedule on the following devices: \n" + "\n".join(res["conflicts"].keys()), code=409)
         for device in devices_data:
@@ -231,7 +232,8 @@ class JobSerializer(CreatedByUserSerializer):
                         category="JOB",
                     )
 
-        kubernetes.create_deployment(devices_data, job)
+        if not settings.KUBE_READ_ONLY:
+            kubernetes.create_deployment(devices_data, job)
 
         return job
 

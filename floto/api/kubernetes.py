@@ -212,7 +212,7 @@ def _create_job_for_device(job, device, job_environment, balena, namespace):
             try:
                 value = p.configuration.get(label=item).value
             except:
-                # Device is not configured witih this option for some reason
+                # Device is not configured with this option for some reason
                 pass
             config_data[item.label] = value
     core_api.create_namespaced_config_map(namespace, client.V1ConfigMap(

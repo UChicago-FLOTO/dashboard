@@ -35,10 +35,13 @@ class ServicePeripheralInline(admin.StackedInline):
 class ServiceClaimableResourceInline(admin.StackedInline):
     model = models.ServiceClaimableResource
 
+class ServicePortInline(admin.StackedInline):
+    model = models.ServicePort
+
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ["container_ref", "created_by", "created_at", "created_by_project"]
     inlines = (
-        ServicePeripheralInline, ServiceClaimableResourceInline,
+        ServicePeripheralInline, ServiceClaimableResourceInline, ServicePortInline,
     )
 
 admin.site.register(models.Service, ServiceAdmin)

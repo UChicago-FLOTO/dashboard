@@ -290,11 +290,15 @@ else:
 KUBE_JOB_TTL = int(os.environ.get(
     "KUBE_JOB_TTL", str(timedelta(days=7).total_seconds)
 ))
+# Don't 
+KUBE_READ_ONLY = bool(os.environ.get(
+    "KUBE_READ_ONLY", False
+))
 
 # FLOTO configuration
 FLOTO_ENV_PREFIX = os.environ.get("FLOTO_ENV_PREFIX", "FLOTO_")
 FLOTO_ADMIN_PROJECT=os.environ.get("FLOTO_ADMIN_PROJECT")
-
+FLOTO_DISABLE_CELERY=bool(os.environ.get("FLOTO_DISABLE_CELERY", False))
 
 # Celery task configuration
 CELERY_BROKER_URL = "redis://redis:6379"
