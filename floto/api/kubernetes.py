@@ -201,6 +201,7 @@ def _create_job_for_device(job, device, job_environment, balena, namespace):
     device_environment.update(job_environment)
 
     volume_name = get_volume_name()
+    device_volume_name = f"lv-{device['device_uuid']}"
     pod_name = get_pod_name(job.application.uuid, device["device_uuid"])
 
     config_data = {}
@@ -247,7 +248,11 @@ def _create_job_for_device(job, device, job_environment, balena, namespace):
                     client.V1VolumeMount(
                         mount_path=settings.KUBE_PERIPHERAL_VOLUME_MOUNT_PATH,
                         name="peripheral-config"
-                    )
+                    ),
+                    client.V1VolumeMount(
+                        mount_path=settings.KUBE_DEVICE_VOLUME_MOUNT_PATH,
+                        name=device_volume_name,
+                    ),
                 ],
                 resources=client.V1ResourceRequirements(
                     limits={ k: str(v) for k, v in resources.items() },
@@ -313,7 +318,14 @@ def _create_job_for_device(job, device, job_environment, balena, namespace):
                             config_map=client.V1ConfigMapVolumeSource(
                                 name=config_name,
                             )
-                        )
+                        ),
+                        client.V1Volume(
+                            name=device_volume_name,
+                            host_path=client.V1HostPathVolumeSource(
+                                path="/mnt/data/shared_volume",
+                                type="DirectoryOrCreate",
+                            )
+                        ),
                     ],
                     image_pull_secrets=[
                         client.V1LocalObjectReference(

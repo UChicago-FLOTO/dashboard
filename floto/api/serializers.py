@@ -231,7 +231,6 @@ class JobSerializer(CreatedByUserSerializer):
                         note=label,
                         category="JOB",
                     )
-
         if not settings.KUBE_READ_ONLY:
             kubernetes.create_deployment(devices_data, job)
 

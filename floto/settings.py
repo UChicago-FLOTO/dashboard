@@ -274,6 +274,9 @@ KUBE_CONFIG_FILE = os.environ.get(
 KUBE_VOLUME_MOUNT_PATH = os.environ.get(
     "KUBE_VOLUME_MOUNT_PATH", "/share"
 )
+KUBE_DEVICE_VOLUME_MOUNT_PATH = os.environ.get(
+    "KUBE_DEVICE_VOLUME_MOUNT_PATH", "/public"
+)
 KUBE_VOLUME_SIZE = os.environ.get(
     "KUBE_VOLUME_SIZE", "2Gi"
 )
@@ -290,10 +293,7 @@ else:
 KUBE_JOB_TTL = int(os.environ.get(
     "KUBE_JOB_TTL", str(timedelta(days=7).total_seconds)
 ))
-# Don't 
-KUBE_READ_ONLY = bool(os.environ.get(
-    "KUBE_READ_ONLY", False
-))
+KUBE_READ_ONLY = os.environ.get("KUBE_READ_ONLY", "false").lower() == "true"
 
 # FLOTO configuration
 FLOTO_ENV_PREFIX = os.environ.get("FLOTO_ENV_PREFIX", "FLOTO_")
