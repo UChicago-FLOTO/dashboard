@@ -1,5 +1,6 @@
 import os
 from django.apps import apps
+from django.conf import settings
 
 from celery import Celery
 
@@ -15,7 +16,8 @@ app = Celery('floto')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # Load task modules from all registered Django apps.
-app.autodiscover_tasks(lambda: [n.name for n in apps.get_app_configs()])
+if not settings.FLOTO_DISABLE_CELERY:
+        app.autodiscover_tasks(lambda: [n.name for n in apps.get_app_configs()])
 
 
 @app.task(bind=True, ignore_result=True)

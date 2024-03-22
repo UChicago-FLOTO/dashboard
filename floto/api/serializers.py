@@ -8,6 +8,7 @@ from floto.auth.models import KeycloakUser
 import logging
 from django.db import transaction
 from django.contrib.auth.models import User
+from django.conf import settings
 
 
 LOG = logging.getLogger(__name__)
@@ -59,17 +60,25 @@ class ServicePortSerializer(serializers.ModelSerializer):
         fields = ["protocol", "node_port", "target_port"]
 
 
+class ServiceClaimableResourceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ServiceClaimableResource
+        fields = ["resource"]
+
+
 class ServiceSerializer(CreatedByUserSerializer):
     class Meta(CreatedByUserMeta):
         model = models.Service
         depth = 1
     peripheral_schemas = ServicePeripheralSerializer(many=True)
     ports = ServicePortSerializer(many=True)
+    resources = ServiceClaimableResourceSerializer(many=True)
 
     @transaction.atomic
     def create(self, validated_data):
         peripheral_schema_data = validated_data.pop("peripheral_schemas", [])
         port_data = validated_data.pop("ports", [])
+        resource_data = validated_data.pop("resources", [])
         service = models.Service.objects.create(**validated_data)
         for ps in peripheral_schema_data:
             models.ServicePeripheral.objects.create(
@@ -81,6 +90,12 @@ class ServiceSerializer(CreatedByUserSerializer):
                 protocol=port["protocol"],
                 node_port=port["node_port"],
                 target_port=port["target_port"],
+                service=service,
+            )
+        for resource in resource_data:
+            models.ServiceClaimableResource.objects.create(
+                resource=models.ClaimableResource.objects.get(
+                    resource=resource["resource"]),
                 service=service,
             )
         return service
@@ -200,7 +215,7 @@ class JobSerializer(CreatedByUserSerializer):
                     timing=timing["timing"],
                 )
 
-        res = util.parse_timings(timings_data, devices_data)
+        res = util.parse_timings(timings_data, devices_data, validated_data["application"].uuid)
         if res["conflicts"]:
             raise ValidationError("Could not schedule on the following devices: \n" + "\n".join(res["conflicts"].keys()), code=409)
         for device in devices_data:
@@ -216,8 +231,8 @@ class JobSerializer(CreatedByUserSerializer):
                         note=label,
                         category="JOB",
                     )
-
-        kubernetes.create_deployment(devices_data, job)
+        if not settings.KUBE_READ_ONLY:
+            kubernetes.create_deployment(devices_data, job)
 
         return job
 
@@ -242,6 +257,12 @@ class ProjectSerializer(serializers.ModelSerializer):
         depth = 1
     members = UserSerializer(many=True)
     created_by = CreatedByField(default=serializers.CurrentUserDefault())
+
+
+class ClaimableResourceSerializer(serializers.ModelSerializer):
+    class Meta():
+        model = models.ClaimableResource
+        fields = ["resource"]
 
 
 class PeripheralSchemaResourceSerializer(serializers.ModelSerializer):

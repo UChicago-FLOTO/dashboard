@@ -56,11 +56,27 @@ class CollectionDevice(models.Model):
 class Service(CreatedByUserBase):
     container_ref = models.CharField(max_length=1000)
 
+    def __str__(self):
+        return f"{self.container_ref} ({self.uuid})"
+
+
+class ClaimableResource(models.Model):
+    resource = models.CharField(max_length=100, primary_key=True)
+
+    def __str__(self):
+        return f"{self.resource}"
+
+
+class ServiceClaimableResource(models.Model):
+    resource = models.ForeignKey(ClaimableResource, related_name="services", on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, related_name="resources", on_delete=models.CASCADE)
+
 
 class Application(CreatedByUserBase):
     name = models.CharField(max_length=200)
     description = models.CharField(max_length=2000)
     environment = models.JSONField()
+    is_single_tenant = models.BooleanField(default=True)
 
 
 class ApplicationService(models.Model):

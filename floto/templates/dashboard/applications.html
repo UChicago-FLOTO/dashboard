@@ -114,6 +114,17 @@
           ></q-btn-toggle>
         </div>
 
+        <div>
+          <label>
+            Single Tenant:
+          </label>
+          <q-toggle
+            name="is_single_tenant"
+            v-model="form_data.is_single_tenant"
+            toggle-color="primary"
+          ></q-toggle>
+        </div>
+
         <q-stepper-navigation>
           <q-btn type="submit" color="primary" label="Continue"></q-btn>
         </q-stepper-navigation>  
