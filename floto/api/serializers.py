@@ -166,10 +166,16 @@ class JobDeviceSerializer(serializers.ModelSerializer):
         return value
 
 
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Event
+        fields = ["status", "time"]
+
+
 class JobTimingSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.JobTiming
-        fields = ["timing"]
+        fields = ["timing", "events"]
         read_only_fields = ["job"]
 
     def validate_timing(self, value):
@@ -177,6 +183,7 @@ class JobTimingSerializer(serializers.ModelSerializer):
         util.parse_timing_string(value)
         return value
 
+    events = EventSerializer(many=True)
 
 class DeviceTimeslotSerializer(serializers.ModelSerializer):
     class Meta:

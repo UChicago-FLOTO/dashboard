@@ -47,16 +47,17 @@ def parse_advanced_timing_args(args):
     end = None
     for arg in args:
         parts = arg.split("=")
+        # Note, we replace "Z" with +00:00 due to different iso formats
         if parts[0] == "start":
-            start = datetime.fromisoformat(parts[1])
-        elif parts[1] == "end":
-            end = datetime.fromisoformat(parts[1])
+            start = datetime.fromisoformat(parts[1].replace("Z", "+00:00"))
+        elif parts[0] == "end":
+            end = datetime.fromisoformat(parts[1].replace("Z", "+00:00"))
     if not start:
         raise ValidationError(f"Start time must be included with advanced timing")
-    elif not end:
+    if not end:
         raise ValidationError(f"End time must be included with advanced timing")
     return [{
-        "start": start, "end": end,
+        "start": start, "stop": end,
     }]
 
 
