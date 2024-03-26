@@ -51,8 +51,7 @@ createApp({
         }
       })
     }, error_callback=function(res){
-      console.log(res)
-      // TODO
+      console.error(res)
     })
     fetch_with_retry(`/api/devices/`, callback=function(json){
       devices.value = json.filter((dev) => {
@@ -65,8 +64,7 @@ createApp({
         }
       })
     }, error_callback=function(res){
-      console.log(res)
-      // TODO
+      console.error(res)
     })
     fetch_with_retry(`/api/collections/`, callback=function(json){
       collections.value = json
