@@ -139,11 +139,8 @@ def get_job_logs(uuid):
     return logs
 
 
-def create_deployment(devices, job):
+def prepare_deployment(job):
     config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
-
-    environment = json.loads(job.environment).items()
-    balena = get_balena_client()
 
     namespace = get_namespace_name(job.uuid)
     core_api = client.CoreV1Api()
@@ -169,8 +166,21 @@ def create_deployment(devices, job):
             ),
         ))
 
-    for device in devices:
-        _create_job_for_device(job, device, environment, balena, namespace)
+def create_deployment(devices, job):
+    """
+    Args:
+        devices: [str (device_uuids)]
+        job: models.Job
+    """
+    config.load_kube_config(config_file=settings.KUBE_CONFIG_FILE)
+
+    environment = json.loads(job.environment).items()
+    balena = get_balena_client()
+
+    namespace = get_namespace_name(job.uuid)
+
+    for device_uuid in devices:
+        _create_job_for_device(job, device_uuid, environment, balena, namespace)
 
 def _port_name(service_port):
     """Must conform to https://www.rfc-editor.org/rfc/rfc6335.txt
@@ -183,30 +193,30 @@ def _port_name(service_port):
     return f"{service_port.protocol.lower()}-{service_port.target_port}"
     
 
-def _create_job_for_device(job, device, job_environment, balena, namespace):
+def _create_job_for_device(job, device_uuid, job_environment, balena, namespace):
     core_api = client.CoreV1Api()
     containers = []
 
     device_environment = {
         "FLOTO_JOB_UUID": str(job.uuid),
-        "FLOTO_DEVICE_UUID": device["device_uuid"],
+        "FLOTO_DEVICE_UUID": device_uuid,
     }
     device_environment.update({
         env_obj["name"]: env_obj["value"]
         for env_obj in 
-        balena.models.device.env_var.get_all_by_device(uuid_or_id=device["device_uuid"])
+        balena.models.device.env_var.get_all_by_device(uuid_or_id=device_uuid)
         if env_obj["name"].startswith(settings.FLOTO_ENV_PREFIX)
     })
     # Overwrite any variables with the job's env
     device_environment.update(job_environment)
 
     volume_name = get_volume_name()
-    device_volume_name = f"lv-{device['device_uuid']}"
-    pod_name = get_pod_name(job.application.uuid, device["device_uuid"])
+    device_volume_name = f"lv-{device_uuid}"
+    pod_name = get_pod_name(job.application.uuid, device_uuid)
 
     config_data = {}
-    config_name = get_config_map_name(device["device_uuid"])
-    device_model = models.DeviceData.objects.get(pk=device["device_uuid"])
+    config_name = get_config_map_name(device_uuid)
+    device_model = models.DeviceData.objects.get(pk=device_uuid)
     for p in device_model.peripherals.all():
         for item in p.peripheral.schema.configuration_items.all():
             value = ""
@@ -272,7 +282,7 @@ def _create_job_for_device(job, device, job_environment, balena, namespace):
             k8s_services.append(
                 client.V1Service(
                     metadata=client.V1ObjectMeta(
-                        name=get_service_name(device["device_uuid"], service.uuid),
+                        name=get_service_name(device_uuid, service.uuid),
                     ),
                     spec=client.V1ServiceSpec(
                         type="NodePort",
@@ -295,8 +305,8 @@ def _create_job_for_device(job, device, job_environment, balena, namespace):
         api_version="batch/v1",
         kind="Job",
         metadata=client.V1ObjectMeta(
-            name=get_job_name(job.uuid, device["device_uuid"]),
-            labels={"job_name": get_job_name(job.uuid, device["device_uuid"])},
+            name=get_job_name(job.uuid, device_uuid),
+            labels={"job_name": get_job_name(job.uuid, device_uuid)},
         ),
         spec=client.V1JobSpec(
             backoff_limit=0,
@@ -305,7 +315,7 @@ def _create_job_for_device(job, device, job_environment, balena, namespace):
                 spec=client.V1PodSpec(
                     restart_policy="Never",
                     containers=containers,
-                    node_name=get_node_uuid(device["device_uuid"]),
+                    node_name=get_node_uuid(device_uuid),
                     volumes=[
                         client.V1Volume(
                             name=volume_name,
@@ -351,6 +361,10 @@ def _create_job_for_device(job, device, job_environment, balena, namespace):
         timing_type, args = string_parts[0], string_parts[1:]
         if timing_type == "type=on_demand":
             td = util.parse_on_demand_args(args)
+            v1_job.spec.active_deadline_seconds = int(td.total_seconds())
+        elif timing_type == "type=advanced":
+            ts = util.parse_advanced_timing_args(args)
+            td = ts["end"] - ts["start"]
             v1_job.spec.active_deadline_seconds = int(td.total_seconds())
 
     batch_api = client.BatchV1Api()
