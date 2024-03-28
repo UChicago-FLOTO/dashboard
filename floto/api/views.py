@@ -326,8 +326,23 @@ class CollectionViewSet(ModelWithOwnerViewSet):
 
 class TimeslotViewSet(viewsets.ViewSet):
     def list(self, request):
+        object_manager = TimeslotSerializer.Meta.model.objects
+
+        from_str = request.query_params.get("from")
+        if from_str:
+            from_date = util.parse_javascript_iso_string(from_str)
+            if from_date:
+                object_manager = object_manager.filter(stop__gte=from_date)
+
+        to_str = request.query_params.get("to")
+        if to_str:
+            to_date = util.parse_javascript_iso_string(to_str)
+            if to_date:
+                object_manager = object_manager.filter(start__lte=to_date)
+
+
         timeslots_by_devices = defaultdict(list)
-        for obj in TimeslotSerializer.Meta.model.objects.all():
+        for obj in object_manager.all():
             ts = TimeslotSerializer(obj)
             timeslots_by_devices[obj.device_uuid].append(ts.data)
         return Response(timeslots_by_devices)

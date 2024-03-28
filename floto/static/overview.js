@@ -11,20 +11,30 @@ createApp({
             "app_access": 0,
             "retired": 0,
         })
-        fetch_with_retry("/api/devices", callback=function(json){
+        fetch_with_retry("/api/devices", callback = function (json) {
             devices.value = json
             stats.value.online = devices.value.filter(d => {
-                return d.api_heartbeat_state == "online" } ).length
+                return d.api_heartbeat_state == "online"
+            }).length
             stats.value.retired = devices.value.filter(d => {
-                return d.status == "retired" } ).length        
+                return d.status == "retired"
+            }).length
             stats.value.offline = devices.value.length - stats.value.online - stats.value.retired
             stats.value.ready = devices.value.filter(d => {
-                return d.is_ready } ).length
+                return d.is_ready
+            }).length
             stats.value.app_access = devices.value.filter(d => {
-                return d.application_access } ).length            
-        }, query_params="")
+                return d.application_access
+            }).length
+
+            let from = Quasar.date.addToDate(new Date(), {"days": -7}).toISOString()
+            let to = Quasar.date.addToDate(new Date(), {"days": 7}).toISOString()
+            fetch_with_retry(`/api/timeslots?from=${from}&to=${to}`, callback = function (timeslot_json) {
+                create_chart(timeslot_json, devices.value)
+            })
+        }, query_params = "")
         onMounted(() => {
-            var map = L.map('map').setView([0,0], 1);
+            var map = L.map('map').setView([0, 0], 1);
             // Initialize a feature group
             var markers = new L.featureGroup().addTo(map);
             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -55,7 +65,7 @@ createApp({
                         });
                         var marker = L.marker(
                             [device.latitude, device.longitude],
-                            {icon: customIcon}
+                            { icon: customIcon }
                         ).bindPopup(
                             `<b>${device.device_name}</b>${iconExtraHtml}`
                         );
@@ -65,7 +75,7 @@ createApp({
                 });
                 // Only adjust bounds if at least one marker was added
                 if (addedMarkers) {
-                    map.fitBounds(markers.getBounds(), {padding: [1, 1]});
+                    map.fitBounds(markers.getBounds(), { padding: [1, 1] });
                 }
             });
         });
@@ -74,3 +84,39 @@ createApp({
         }
     }
 }).use(Quasar).mount('#app');
+
+
+function create_chart(timeslot_json, devices) {
+    let tasks = []
+    Object.keys(timeslot_json).forEach(uuid => {
+        timeslot_json[uuid].forEach(ts => {
+            tasks.push({
+                "uuid": uuid,
+                "start": ts["start"],
+                "stop": ts["stop"],
+                "name": devices.find(d => d.uuid == uuid).device_name
+            })
+        })
+    })
+    let devicesWithTimeslots = Object.keys(timeslot_json).length
+
+    plot = Plot.plot({
+        marks: [
+            Plot.frame(),
+            Plot.barX(tasks, {
+                y: (d) => d.name,
+                x1: (d) => d3.isoParse(d.start),
+                x2: (d) => d3.isoParse(d.stop),
+                fill: "green",
+            }),
+        ],
+        height: 100 + devicesWithTimeslots * 50,
+        width: 2000,
+        marginLeft: 150,
+        marginBottom: 80,
+        x: { grid: true},
+        style: "font-size: 16px;",
+    })
+    const div = document.querySelector("#chart");
+    div.append(plot);
+}
