@@ -19,6 +19,7 @@ createApp({
 
       job.value.computed_timings = job.value.timings.map(t => {
         return {
+          "events": t.events,
           "string": t.timing,
           "timeslots": job.value.timeslots.filter(ts => ts.note === t.timing)
         }

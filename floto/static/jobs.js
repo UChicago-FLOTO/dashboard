@@ -22,6 +22,11 @@ createApp({
     })
 
     const devices = reactive({"value": []})
+    const device_filters = ref({
+      "ready": true,
+      "match_peripherals": true,
+      "search": "",
+    })
 
     let form_data = reactive({
       environment_component_obj: {},
@@ -54,9 +59,7 @@ createApp({
       console.error(res)
     })
     fetch_with_retry(`/api/devices/`, callback=function(json){
-      devices.value = json.filter((dev) => {
-        return dev["is_ready"]
-      })
+      devices.value = json
       devices.options = devices.value.map((dev) => {
         return {
           "label": dev.device_name,
@@ -88,8 +91,7 @@ createApp({
         }
       })
     }
-
-    watch(() => form_data.devices, async function(old_devices, new_devices){
+    function check_conflicts(old_devices, new_devices){
       const request = new Request(
         url=`/api/jobs/check/`,
         {
@@ -121,8 +123,12 @@ createApp({
         jobs_form_disabled = false
         jobs_loading = false
       })
-    })
+    }
+
+
+    watch(() => form_data.devices, check_conflicts)
     function deviceFilterFn (val, update) {
+      // Calculate required peripheral list.
       required_periph = []
       form_data.application.services.forEach(s => {
         let app_serv = services.value.find(serv => s.service == serv.uuid)
@@ -130,8 +136,9 @@ createApp({
           required_periph.push(ps.peripheral_schema)
         })
       })
-      return devices.value.filter(dev => {
-        if(required_periph.length == 0){
+
+      return devices.value.filter(dev => { // Filter peripherals
+        if(!device_filters.value.match_peripherals || required_periph.length == 0){
           return true
         } else {
           return required_periph.every(rp => {
@@ -140,13 +147,19 @@ createApp({
             })
           })
         }
+      }).filter(dev => { // Filter ready status
+        return !device_filters.value.ready || dev["is_ready"]
+      }).filter(dev => { // Filter search text
+        return device_filters.value.search.length == 0 || 
+          dev.device_name.includes(device_filters.value.search) ||
+          dev.uuid.includes(device_filters.value.search)
       })
     }
 
     return {
       jobs, jobs_loading, jobs_form_disabled, jobs_loading_error_message,
       applications,
-      devices,
+      devices, device_filters,
       collections,
       appFilterFn (val, update) {
         filterFn(applications, val, update)
@@ -160,12 +173,18 @@ createApp({
       },
       select_collection(collection){
         let filtered_devices = deviceFilterFn()
-        form_data.devices = collection.devices.map(dev_obj => dev_obj.device_uuid)
-          .filter(uuid => {
+        collection.devices.map(dev_obj => dev_obj.device_uuid)
+          .filter(uuid => { // UUIDs in the collection & matching filters
             return filtered_devices.some(fd => {
-              return fd.device_uuid == uuid
+              return fd.uuid == uuid
             })
           })
+          .filter( uuid => { // UUID not already selected
+            return form_data.devices.indexOf(uuid) == -1
+          }).forEach(uuid => {
+            form_data.devices.push(uuid)
+          })
+        check_conflicts()
       },
       form_data,
       async submit(e) {
