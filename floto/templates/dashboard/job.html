@@ -43,7 +43,7 @@
               <li 
                 v-for="device_uuid_obj in job.devices" 
                 :set="device = devices.find(device => device.uuid == device_uuid_obj.device_uuid)">
-                <a :href='`/dashboard/devices/${device_uuid_obj.device_uuid}`'>
+                <a :href='`/dashboard/devices/${device_uuid_obj.device_uuid}`' v-if="device">
                   [[ device.device_name ]] ([[ device.uuid ]])
                 </a>
               </li>
@@ -59,10 +59,16 @@
               <li v-for="ts_obj in job.computed_timings" >
                 [[ ts_obj.string ]]
                 <ul>
+                  <li v-for="event in ts_obj.events">
+                    [[ event.status ]] - [[ event.time ]]
+                  </li>
+                </ul>
+                <p>Scheduled at:</p>
+                <ul>
                   <li 
                     v-for="ts in ts_obj.timeslots" 
                     :set="device = devices.find(device => device.uuid == ts.device_uuid)">
-                    <span>[[ device.device_name ]] </span>
+                    <span v-if="device">[[ device.device_name ]] </span>
                     <ul>
                       <li>From [[ ts.start ]]</li>
                       <li>To [[ ts.stop ]]</li>
