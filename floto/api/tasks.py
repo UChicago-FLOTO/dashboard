@@ -1,4 +1,5 @@
 import csv
+from datetime import datetime
 import logging
 import os
 import time
@@ -7,12 +8,14 @@ import time
 from celery.app import shared_task
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
+from floto.api import kubernetes
 
 from floto.api.balena import get_balena_client
 from floto.api.kubernetes import (delete_namespace_if_exists,
                                   get_namespaces_with_no_pods, get_nodes,
                                   label_node)
-from floto.api.models import DeviceData, Fleet, Project
+from floto.api.models import DeviceData, Fleet, Project, Event
 
 LOG = logging.getLogger(__name__)
 
@@ -37,6 +40,8 @@ def label_nodes():
 def cleanup_namespaces():
     """
     Cleanup all namespaces with no pods.
+
+    # TODO this is bad now that we have advanced timings.
     """
     namespaces = get_namespaces_with_no_pods()
     for ns in namespaces:
@@ -134,3 +139,30 @@ def bulk_device_update_csv_reader(devices_data):
             LOG.error(f"Error while updating device with UUID - {row['device_uuid']} from CSV - {e}")
         # sleep to honor the rate limit for geocode API
         time.sleep(1)
+
+
+@shared_task(name='deploy_jobs')
+def deploy_jobs():
+    """
+    Deploy all pending jobs that have reached their time
+    """
+    for event in Event.objects.filter(
+        status="PENDING",
+        time__lt=datetime.now(),
+    ):
+        with transaction.atomic():
+            job = event.timing.job
+            device_uuids = [
+                ts.device_uuid for ts in job.timeslots.all()
+            ]
+            LOG.info(f"Exec {job.uuid} with {len(device_uuids)} devices")
+            try:
+                if not settings.KUBE_READ_ONLY:
+                    kubernetes.create_deployment(device_uuids, job)
+                event.status = "DONE"
+                event.save()
+            except Exception as e:
+                LOG.error(f"Error deploy job {job.uuid}:")
+                LOG.error(e)
+                event.status = "ERROR"
+                event.save()

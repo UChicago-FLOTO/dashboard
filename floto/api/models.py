@@ -111,6 +111,12 @@ class DeviceTimeslot(models.Model):
         OTHER = "OTHER", "Other"
 
     category = models.CharField(max_length=32, choices=Categories.choices)
+    timing = models.ForeignKey(
+        JobTiming,
+        related_name="timeslots",
+        on_delete=models.CASCADE,
+        null=True,
+    )
 
 
 class Fleet(models.Model):
@@ -312,3 +318,19 @@ class ServicePort(models.Model):
     protocol = models.CharField(max_length=64)
     node_port = models.IntegerField()
     target_port = models.IntegerField()
+
+
+class Event(models.Model):
+    time = models.DateTimeField()
+    timing = models.ForeignKey(
+        JobTiming,
+        related_name="events",
+        on_delete=models.CASCADE,
+    )
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        DONE = "DONE", "Done"
+        ERROR = "ERROR", "Error"
+
+    status = models.CharField(max_length=32, choices=Status.choices)
