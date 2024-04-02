@@ -13,6 +13,7 @@ createApp({
       description: "",
       environment_component_obj: {},
       is_public: false,
+      is_single_tenant: true,
       services: [],
     })
     let step = ref(1)
@@ -74,6 +75,7 @@ createApp({
               "description": form_data.description,
               "environment": JSON.stringify(form_data.environment_component_obj.environment),
               "is_public": form_data.is_public,
+              "is_single_tenant": form_data.is_single_tenant,
               "services": form_data.services.map((uuid) => {
                 return {"service": uuid}
               }),
@@ -125,6 +127,7 @@ createApp({
         { label: "Created By", field: "created_by", name: "created_by", sortable: true, align: "left" },
         { label: "Created At", field: "created_at", name: "created_at", sortable: true, align: "left" },
         { label: "Public?", field: "is_public", name: "is_public", sortable: true, align: "left" },
+        { label: "Single-Tenant?", field: "is_single_tenant", name: "is_single_tenant", sortable: true, align: "left" },
         { label: "Description", field: "description", name: "description", sortable: true, align: "left" },
         { label: "Services", field: "services", name: "services", align: "left" },
         { label: "Environment", field: "environment", name: "environment", align: "left" },

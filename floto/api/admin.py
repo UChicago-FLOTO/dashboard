@@ -22,24 +22,35 @@ LOG = logging.getLogger(__name__)
 class CollectionDeviceInline(admin.StackedInline):
     model = models.CollectionDevice
 
-class CollectonAdmin(admin.ModelAdmin):
+class CollectionAdmin(admin.ModelAdmin):
     inlines = (CollectionDeviceInline,)
     list_display = ["name", "created_by", "created_at", "created_by_project"]
 
-admin.site.register(models.Collection, CollectonAdmin)
+admin.site.register(models.Collection, CollectionAdmin)
 
 
 class ServicePeripheralInline(admin.StackedInline):
     model = models.ServicePeripheral
 
+class ServiceClaimableResourceInline(admin.StackedInline):
+    model = models.ServiceClaimableResource
+
+class ServicePortInline(admin.StackedInline):
+    model = models.ServicePort
+
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ["container_ref", "created_by", "created_at", "created_by_project"]
     inlines = (
-        ServicePeripheralInline,
+        ServicePeripheralInline, ServiceClaimableResourceInline, ServicePortInline,
     )
 
 admin.site.register(models.Service, ServiceAdmin)
 
+
+class ClaimableResourceAdmin(admin.ModelAdmin):
+    list_display = ["resource"]
+
+admin.site.register(models.ClaimableResource, ClaimableResourceAdmin)
 
 class ApplicationServiceInline(admin.StackedInline):
     model = models.ApplicationService
