@@ -326,8 +326,4 @@ CELERY_BEAT_SCHEDULE = {
         "task": "rename_devices",
         "schedule": crontab(minute="*/3"),
     },
-    "deploy_jobs": {
-        "task": "deploy_jobs",
-        "schedule": crontab(minute="*/1"),
-    },
 }

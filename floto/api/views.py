@@ -288,11 +288,15 @@ class JobViewSet(ModelWithOwnerViewSet):
         Check if a job with the given devices and timings can be created without issues.
         Returns 200 if check is successful. 
         """
+        # TODO check peripherals for request.data["application"]?
+        # TODO 
+
         return Response(
             util.parse_timings(
                 request.data["timings"], request.data["devices"], request.data["application"]["uuid"]
             )
         )
+
 
 
 class CollectionViewSet(ModelWithOwnerViewSet):

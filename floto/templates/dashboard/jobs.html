@@ -7,7 +7,7 @@
 {% block content %}
 <div class="q-pa-md">
   <h3>Jobs</h3>
-  
+
   <q-select label="Select view" filled v-model="selected_table_filter" :options="table_filter_options"
     :option-label="(o) => o.name">
   </q-select>
@@ -35,9 +35,6 @@
         <ul>
           <li v-for="timing in props.row.timings">
             [[ timing.timing ]]
-            <template v-if="timing.events.length > 0">
-              - [[ timing.events[0].status ]]
-            </template>
           </li>
         </ul>
       </q-td>
@@ -112,50 +109,34 @@
             <div class="col-6">
               <h5>Devices</h5>
               <p>Choose the devices on which your job should run.</p>
-              <div>
-                <q-toggle v-model="device_filters.ready" label="Filter ready"></q-toggle>
-                <q-toggle v-model="device_filters.match_peripherals" label="Filter compatible peripherals"></q-toggle>
-                <q-input v-model="device_filters.search" label="Search"></q-input>
-              </div>
-              <q-scroll-area style="height: 400px;" visible>
-                <q-field v-model="form_data.devices" :rules="[ val => val.length >= 1 || 'Select at least one device']">
-                  <q-list>
-                    <q-item tag="label" v-ripple v-for="device in deviceFilterFn()" :key="device.uuid">
-                      <q-item-section avatar>
-                        <q-checkbox v-model="form_data.devices" :val="device.uuid" />
-                      </q-item-section>
-                      <q-item-section>
-                        <q-item-label>[[ device.device_name ]]</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                    <q-item v-if="deviceFilterFn().length == 0">
-                      <p>
-                        No devices matching query
-                      </p>
-                    </q-item>
-                  </q-list>
-                </q-field>
-              </q-scroll-area>
+              <q-field v-model="form_data.devices" :rules="[ val => val.length >= 1 || 'Select at least one device']">
+                <q-list>
+                  <q-item tag="label" v-ripple v-for="device in deviceFilterFn()" :key="device.uuid">
+                    <q-item-section avatar>
+                      <q-checkbox v-model="form_data.devices" :val="device.uuid" />
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>[[ device.device_name ]]</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-field>
             </div>
             <div class="col-6">
               <h5>Collections</h5>
               <p>Select devices from collection.</p>
-              <q-scroll-area style="height: 400px;" visible>
-                <q-list>
-                  <template v-for="collection in collections">
-                    <q-item tag="label" clickable v-ripple
-                      @click="select_collection(collection)">
-                      <q-item-section avatar>
-                        <q-icon name="arrow_back" />
-                      </q-item-section>
-                      <q-item-section>
-                        <q-item-label>[[ collection.name ]]</q-item-label>
-                        <q-item-label caption>[[ collection.description ]]</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </template>
-                </q-list>
-              </q-scroll-area>
+              <q-list>
+                <q-item tag="label" clickable v-ripple v-for="collection in collections"
+                  @click="select_collection(collection)">
+                  <q-item-section avatar>
+                    <q-icon name="arrow_back" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>[[ collection.name ]]</q-item-label>
+                    <q-item-label caption>[[ collection.description ]]</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
             </div>
           </div>
           <div v-if="Object.keys(pending_timeslots).length != 0">

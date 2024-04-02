@@ -166,16 +166,10 @@ class JobDeviceSerializer(serializers.ModelSerializer):
         return value
 
 
-class EventSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Event
-        fields = ["status", "time"]
-
-
 class JobTimingSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.JobTiming
-        fields = ["timing", "events"]
+        fields = ["timing"]
         read_only_fields = ["job"]
 
     def validate_timing(self, value):
@@ -183,7 +177,6 @@ class JobTimingSerializer(serializers.ModelSerializer):
         util.parse_timing_string(value)
         return value
 
-    events = EventSerializer(many=True)
 
 class DeviceTimeslotSerializer(serializers.ModelSerializer):
     class Meta:
@@ -209,23 +202,17 @@ class JobSerializer(CreatedByUserSerializer):
     def create(self, validated_data):
         devices_data = validated_data.pop("devices")
         timings_data = validated_data.pop("timings")
-
-        job = models.Job.objects.create(**validated_data)
-        for device in devices_data:
-            models.JobDevice.objects.create(
-                job=job,
-                device_uuid=device["device_uuid"],
-            )
-        for timing in timings_data:
-            db_timing = models.JobTiming.objects.create(
-                job=job,
-                timing=timing["timing"],
-            )
-            for ts in util.parse_timing_string(timing["timing"]):
-                models.Event.objects.create(
-                    time=ts["start"],
-                    timing=db_timing,
-                    status=models.Event.Status.PENDING,
+        with transaction.atomic():
+            job = models.Job.objects.create(**validated_data)
+            for device in devices_data:
+                models.JobDevice.objects.create(
+                    job=job,
+                    device_uuid=device["device_uuid"],
+                )
+            for timing in timings_data:
+                models.JobTiming.objects.create(
+                    job=job,
+                    timing=timing["timing"],
                 )
 
         res = util.parse_timings(timings_data, devices_data, validated_data["application"].uuid)
@@ -233,20 +220,19 @@ class JobSerializer(CreatedByUserSerializer):
             raise ValidationError("Could not schedule on the following devices: \n" + "\n".join(res["conflicts"].keys()), code=409)
         for device in devices_data:
             for label, timeslots in res["timeslots"].items():
-                db_timing = models.JobTiming.objects.get(timing=label, job=job)
                 for timeslot in timeslots:
                     start = timeslot["start"]
                     stop = timeslot["stop"]
+
                     models.DeviceTimeslot.objects.create(
                         start=start, stop=stop,
                         device_uuid=device["device_uuid"],
                         job=job,
                         note=label,
                         category="JOB",
-                        timing=db_timing,
                     )
         if not settings.KUBE_READ_ONLY:
-            kubernetes.prepare_deployment(job)
+            kubernetes.create_deployment(devices_data, job)
 
         return job
 

@@ -4,19 +4,11 @@ from datetime import datetime, timedelta
 import logging
 from floto.api import models
 
+
 LOG = logging.getLogger(__name__)
 
 
 def parse_on_demand_args(args):
-    """
-    Args should be a list of
-    [
-        "days=1",
-        "hours=2",
-        "minutes=3",
-    ]
-    and returns this information in a timedelta
-    """
     duration = {"hours": 0, "days": 0, "minutes": 0}
     for arg in args:
         parts = arg.split("=")
@@ -32,34 +24,7 @@ def parse_on_demand_args(args):
                 f"Invalid duration '{parts[1]}' in '{parts}'")
     return timedelta(**duration)
 
-
-def parse_advanced_timing_args(args):
-    """
-    Args should be a list of
-    [
-        "start=2011-11-04T00:05:23",
-        "end=2011-11-04T00:05:23",
-    ]
-    where the dates are ISO format dates. Timezone information
-    can be included via +00:00. Returns this as a timeslot dict list.
-    """
-    start = None
-    end = None
-    for arg in args:
-        parts = arg.split("=")
-        # Note, we replace "Z" with +00:00 due to different iso formats
-        if parts[0] == "start":
-            start = datetime.fromisoformat(parts[1].replace("Z", "+00:00"))
-        elif parts[0] == "end":
-            end = datetime.fromisoformat(parts[1].replace("Z", "+00:00"))
-    if not start:
-        raise ValidationError(f"Start time must be included with advanced timing")
-    if not end:
-        raise ValidationError(f"End time must be included with advanced timing")
-    return [{
-        "start": start, "stop": end,
-    }]
-
+    
 
 def parse_timing_string(value):
     """
@@ -72,8 +37,6 @@ def parse_timing_string(value):
             "start": datetime.now(),
             "stop": datetime.now() + parse_on_demand_args(args),
         }]
-    elif timing_type == "type=advanced":
-        return parse_advanced_timing_args(args)
     else:
         raise ValidationError(f"Invalid timing string {value}")
 
