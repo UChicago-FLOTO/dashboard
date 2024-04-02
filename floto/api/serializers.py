@@ -9,6 +9,8 @@ import logging
 from django.db import transaction
 from django.contrib.auth.models import User
 from django.conf import settings
+from drf_spectacular.utils import extend_schema_serializer, extend_schema_field
+from drf_spectacular.types import OpenApiTypes
 
 
 LOG = logging.getLogger(__name__)
@@ -20,6 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["email"]
 
 
+@extend_schema_field(OpenApiTypes.STR)
 class CreatedByField(serializers.Field):
     def to_representation(self, value):
         return value.email
@@ -34,6 +37,7 @@ class CreatedByUserMeta:
     read_only_fields = ["uuid", "created_at", "updated_at", "created_by"]
 
 
+@extend_schema_serializer(exclude_fields=["created_by"])
 class CreatedByUserSerializer(serializers.ModelSerializer):
     created_by = CreatedByField(default=serializers.CurrentUserDefault())
     created_by_project = serializers.PrimaryKeyRelatedField(
@@ -192,10 +196,8 @@ class DeviceTimeslotSerializer(serializers.ModelSerializer):
 
 
 class TimeslotSerializer(serializers.ModelSerializer):
-    """
-    This serializer is the "public" form. We do not need
-    to expose the notes to a list, nor the jobs.
-    """
+    # This serializer is the "public" form. We do not need
+    # to expose the notes to a list, nor the jobs.
     class Meta:
         model = models.DeviceTimeslot
         fields = ["start", "stop"]
