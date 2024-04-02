@@ -12,6 +12,7 @@ createApp({
       container_ref: "",
       created_by_project: get_active_project(),
       peripheral_schemas: [],
+      resources: [],
       ports: [],
     })
 
@@ -26,6 +27,11 @@ createApp({
     let peripheral_schemas = ref([])
     fetch_with_retry(`/api/peripheral_schema/`, callback=function(json){
       peripheral_schemas.value = json
+    })
+
+    let resources = ref([])
+    fetch_with_retry(`/api/resources/`, callback=function(json){
+      resources.value = json
     })
 
     let new_port_data = ref({
@@ -49,7 +55,7 @@ createApp({
     }
     return {
       services, services_loading, services_form_disabled, services_loading_error_message,
-      peripheral_schemas, new_port_data,
+      peripheral_schemas, new_port_data, resources,
       form_data,
       protocol_options: ['TCP', 'UDP'],
       add_port,
@@ -71,6 +77,11 @@ createApp({
               "peripheral_schemas": form_data.value.peripheral_schemas.map(ps => {
                 return {
                   "peripheral_schema": ps
+                }
+              }),
+              "resources": form_data.value.resources.map(r => {
+                return {
+                  "resource": r
                 }
               }),
               "ports": form_data.value.ports,
@@ -125,6 +136,7 @@ createApp({
         { label: "Created At", field: "created_at", name: "created_at", sortable: true, align: "left" },
         { label: "Public?", field: "is_public", name: "is_public", sortable: true, align: "left" },
         { label: "Peripherals", field: "peripheral_schemas", name: "peripheralschemas", sortable: true, align: "left" },
+        { label: "Resources", field: "resources", name: "resources", sortable: true, align: "left" },
         { label: "Ports", field: "ports", name: "ports", sortable: true, align: "left" },
         { name: 'action', label: 'Action', field: 'action' },
       ],

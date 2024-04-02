@@ -18,6 +18,7 @@ from balena import exceptions
 
 from floto.api import filters, permissions
 from floto.api.serializers import (
+    ClaimableResourceSerializer,
     PeripheralSchemaSerializer,
     PeripheralSerializer,
     ProjectSerializer,
@@ -230,7 +231,7 @@ class EnvViewSet(viewsets.ViewSet):
 
 
 class ModelWithOwnerViewSet(viewsets.ModelViewSet):
-    destroy_permision_classes = [permissions.IsOwnerOfObject]
+    destroy_permission_classes = [permissions.IsOwnerOfObject]
     http_method_names = ["get", "post", "delete"]
     filter_backends = [
         filters.HasReadAccessFilterBackend,
@@ -250,7 +251,7 @@ class ModelWithOwnerViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         action_permissions = []
         if self.action in ("destroy", "unassign"):
-            action_permissions = self.destroy_permision_classes
+            action_permissions = self.destroy_permission_classes
         return super(ModelWithOwnerViewSet, self).get_permissions() + [
             permission() for permission in action_permissions
         ] + [ permissions.MethodAllowed() ]
@@ -277,7 +278,8 @@ class JobViewSet(ModelWithOwnerViewSet):
         return Response(kubernetes.get_job_logs(pk))
 
     def perform_destroy(self, job):
-        kubernetes.destroy_job(job)
+        if not settings.KUBE_READ_ONLY:
+            kubernetes.destroy_job(job)
         super().perform_destroy(job)
 
     @action(methods=["POST"], detail=False, url_path="check")
@@ -287,9 +289,11 @@ class JobViewSet(ModelWithOwnerViewSet):
         Returns 200 if check is successful. 
         """
         # TODO check peripherals for request.data["application"]?
+        # TODO 
+
         return Response(
             util.parse_timings(
-                request.data["timings"], request.data["devices"]
+                request.data["timings"], request.data["devices"], request.data["application"]["uuid"]
             )
         )
 
@@ -389,6 +393,13 @@ class PeripheralSchemaViewSet(viewsets.ModelViewSet):
 
 class PeripheralViewSet(viewsets.ModelViewSet):
     serializer_class = PeripheralSerializer
+    http_method_names = ["get"]
+
+    def get_queryset(self):
+        return self.serializer_class.Meta.model.objects.all()
+
+class ClaimableResourceViewSet(viewsets.ModelViewSet):
+    serializer_class = ClaimableResourceSerializer
     http_method_names = ["get"]
 
     def get_queryset(self):

@@ -21,6 +21,13 @@
         </ul>
       </q-td>
     </template>
+    <template v-slot:body-cell-resources="props">
+      <q-td :props="props">
+        <ul v-for="res in props.row.resources">
+          <li>[[ res.resource ]]</li>
+        </ul>
+      </q-td>
+    </template>
     <template v-slot:body-cell-ports="props">
       <q-td :props="props">
         <ul v-for="port in props.row.ports">
@@ -85,7 +92,7 @@
 
     <div>
       <h5>Peripherals</h5>
-      <p>Choose periphals your service requires.</p>
+      <p>Choose peripherals your service requires.</p>
       <q-list>
         <q-item tag="label" v-ripple v-for="ps in peripheral_schemas">
           <q-item-section avatar>
@@ -94,6 +101,25 @@
           </q-item-section>
           <q-item-section>
             <q-item-label>[[ ps.type ]]</q-item-label>
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </div>
+
+    <div>
+      <h5>Resources</h5>
+      <p>
+        Choose resources that your service wants single-tenancy over. For example, if
+        your service needs isolated access to the network, select "network".
+      </p>
+      <q-list>
+        <q-item tag="label" v-ripple v-for="res in resources">
+          <q-item-section avatar>
+            <q-checkbox v-model="form_data.resources" :val="res.resource">
+            </q-checkbox>
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>[[ res.resource ]]</q-item-label>
           </q-item-section>
         </q-item>
       </q-list>
