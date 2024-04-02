@@ -148,3 +148,16 @@ def parse_timings(timings, devices, application_uuid):
                             "reason": f"Node port '{port}' is already in use on device",
                         })
     return res
+
+
+def parse_javascript_iso_string(date_str):
+    """
+    Javascript ISO date format adds "Z" to the end, but python
+    expects "+00:00". 
+    """
+    try:
+        return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+    except Exception as e:
+        LOG.error(f"Exception parsing date '{date_str}'")
+        LOG.error(e)
+        return None

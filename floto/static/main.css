@@ -144,3 +144,24 @@ code#command_error {
 .q-field__control {
     color: inherit !important;
 }
+
+#map .marker-cluster-small {
+    background-color: rgb(0, 128, 0, 0.6);
+}
+#map .marker-cluster-small div {
+    background-color: rgb(0, 128, 0, 0.6);
+}
+
+#map .marker-cluster-medium {
+    background-color: rgb(0, 128, 0, 0.6);
+}
+#map .marker-cluster-medium div {
+    background-color: rgb(0, 128, 0, 0.6);
+}
+
+#map .marker-cluster-large {
+    background-color: rgb(0, 128, 0, 0.6);
+}
+#map .marker-cluster-large div {
+    background-color: rgb(0, 128, 0, 0.6);
+}
