@@ -183,7 +183,7 @@ class JobTimingSerializer(serializers.ModelSerializer):
         util.parse_timing_string(value)
         return value
 
-    events = EventSerializer(many=True)
+    events = EventSerializer(many=True, read_only=True)
 
 class DeviceTimeslotSerializer(serializers.ModelSerializer):
     class Meta:
