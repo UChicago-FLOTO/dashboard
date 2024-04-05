@@ -137,7 +137,8 @@ createApp({
         })
       })
 
-      return devices.value.filter(dev => { // Filter peripherals
+      return devices.value.filter(dev => dev.application_access
+        ).filter(dev => { // Filter peripherals
         if(!device_filters.value.match_peripherals || required_periph.length == 0){
           return true
         } else {

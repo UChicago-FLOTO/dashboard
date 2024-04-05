@@ -168,7 +168,19 @@ class JobDeviceSerializer(serializers.ModelSerializer):
         read_only_fields = ["job"]
 
     def validate_device_uuid(self, value):
-        # TODO check device uuid
+        try:
+            device = models.DeviceData.objects.get(pk=value)
+        except models.DeviceData.DoesNotExist:
+            raise serializers.ValidationError(f"Invalid device UUID {value}")
+        r = DeviceSerializer(
+            device, context={
+                "balena_device": {},
+                "kubernetes_node": {},
+                "request": self.context["request"],
+            }
+        ).data["application_access"]
+        if not r:
+            raise serializers.ValidationError(f"No application access to device {value}")
         return value
 
 
