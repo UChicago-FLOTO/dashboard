@@ -13,6 +13,7 @@ import logging
 import ssl
 import socket
 import paramiko
+from datetime import datetime
 
 from floto.api.models import (
     DeviceData,
@@ -309,7 +310,7 @@ class ModelWithOwnerViewSet(viewsets.ModelViewSet):
         return context
 
     def get_queryset(self):
-        return self.serializer_class.Meta.model.objects.all()
+        return self.serializer_class.Meta.model.objects.filter(deleted=None)
 
     def get_permissions(self):
         action_permissions = []
@@ -320,6 +321,13 @@ class ModelWithOwnerViewSet(viewsets.ModelViewSet):
             + [permission() for permission in action_permissions]
             + [permissions.MethodAllowed()]
         )
+
+    def perform_destroy(self, obj):
+        """
+        Soft-delete only
+        """
+        obj.deleted = datetime.now()
+        obj.save()
 
 
 @extend_schema_view(

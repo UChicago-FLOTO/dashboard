@@ -28,6 +28,11 @@ class Project(models.Model):
         return f"{self.name} ({self.uuid})"
 
 
+class SoftDeleteManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted=None)
+
+
 class CreatedByUserBase(models.Model):
     """
     Defines a class with common info for something created by a user
@@ -41,7 +46,11 @@ class CreatedByUserBase(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     is_public = models.BooleanField(default=False)
     created_by_project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+    deleted = models.DateTimeField(null=True)
 
+    # Overwrite the default manager to prevent ever selecting something already deleted
+    objects = SoftDeleteManager()
+    objects_all = models.Manager()
 
 class Collection(CreatedByUserBase):
     name = models.CharField(max_length=200)
@@ -117,6 +126,13 @@ class DeviceTimeslot(models.Model):
         on_delete=models.CASCADE,
         null=True,
     )
+    
+    class RelatedJobSoftDeleteManager(models.Manager):
+        def get_queryset(self):
+            return super().get_queryset().filter(job__deleted=None)
+
+    objects = RelatedJobSoftDeleteManager()
+    objects_all = models.Manager()
 
 
 class Fleet(models.Model):
@@ -334,3 +350,11 @@ class Event(models.Model):
         ERROR = "ERROR", "Error"
 
     status = models.CharField(max_length=32, choices=Status.choices)
+
+
+    class RelatedJobSoftDeleteManager(models.Manager):
+        def get_queryset(self):
+            return super().get_queryset().filter(timing__job__deleted=None)
+
+    objects = RelatedJobSoftDeleteManager()
+    objects_all = models.Manager()

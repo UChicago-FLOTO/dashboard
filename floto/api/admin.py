@@ -19,12 +19,17 @@ from . import models
 LOG = logging.getLogger(__name__)
 
 
+class SoftDeleteAdmin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        return self.model.objects_all.all()
+
 class CollectionDeviceInline(admin.StackedInline):
     model = models.CollectionDevice
 
-class CollectionAdmin(admin.ModelAdmin):
+class CollectionAdmin(SoftDeleteAdmin):
     inlines = (CollectionDeviceInline,)
-    list_display = ["name", "created_by", "created_at", "created_by_project"]
+    list_display = ["deleted", "name", "created_by", "created_at", "created_by_project", ]
+    list_filter = ["deleted"]
 
 admin.site.register(models.Collection, CollectionAdmin)
 
@@ -38,8 +43,9 @@ class ServiceClaimableResourceInline(admin.StackedInline):
 class ServicePortInline(admin.StackedInline):
     model = models.ServicePort
 
-class ServiceAdmin(admin.ModelAdmin):
-    list_display = ["container_ref", "created_by", "created_at", "created_by_project"]
+class ServiceAdmin(SoftDeleteAdmin):
+    list_display = ["deleted", "container_ref", "created_by", "created_at", "created_by_project"]
+    list_filter = ["deleted"]
     inlines = (
         ServicePeripheralInline, ServiceClaimableResourceInline, ServicePortInline,
     )
@@ -56,8 +62,9 @@ class ApplicationServiceInline(admin.StackedInline):
     model = models.ApplicationService
 
 
-class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ["name", "created_by", "created_at", "created_by_project"]
+class ApplicationAdmin(SoftDeleteAdmin):
+    list_display = ["deleted", "name", "created_by", "created_at", "created_by_project"]
+    list_filter = ["deleted"]
     inlines = (ApplicationServiceInline,)
 
 
@@ -85,8 +92,9 @@ class DeviceTimeslotInline(admin.StackedInline):
         return False
 
 
-class JobAdmin(admin.ModelAdmin):
-    list_display = ["uuid", "created_by", "created_at", "created_by_project"]
+class JobAdmin(SoftDeleteAdmin):
+    list_display = ["deleted", "uuid", "created_by", "created_at", "created_by_project"]
+    list_filter = ["deleted"]
     inlines = (
         JobDeviceInline, JobTimeslotInline, DeviceTimeslotInline,)
 
