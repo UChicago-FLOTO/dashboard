@@ -33,7 +33,7 @@ class CreatedByField(serializers.Field):
 
 
 class CreatedByUserMeta:
-    fields = "__all__"
+    exclude = ('deleted', )
     read_only_fields = ["uuid", "created_at", "updated_at", "created_by"]
 
 
