@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
@@ -9,6 +9,7 @@ from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    re_path(r'^_nested_admin/', include('nested_admin.urls')),
     path('api/', include((floto.api.urls, "floto.api"), namespace="api")),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),

@@ -1,6 +1,8 @@
 import csv
 import logging
 
+import nested_admin
+
 from django import forms
 from django.conf import settings
 from django.contrib import admin
@@ -19,11 +21,13 @@ from . import models
 LOG = logging.getLogger(__name__)
 
 
-class SoftDeleteAdmin(admin.ModelAdmin):
+class SoftDeleteAdmin(nested_admin.NestedModelAdmin):
     def get_queryset(self, request):
         return self.model.objects_all.all()
 
-class CollectionDeviceInline(admin.StackedInline):
+    ordering = ('-created_at',)
+
+class CollectionDeviceInline(nested_admin.NestedStackedInline):
     model = models.CollectionDevice
 
 class CollectionAdmin(SoftDeleteAdmin):
@@ -34,13 +38,13 @@ class CollectionAdmin(SoftDeleteAdmin):
 admin.site.register(models.Collection, CollectionAdmin)
 
 
-class ServicePeripheralInline(admin.StackedInline):
+class ServicePeripheralInline(nested_admin.NestedStackedInline):
     model = models.ServicePeripheral
 
-class ServiceClaimableResourceInline(admin.StackedInline):
+class ServiceClaimableResourceInline(nested_admin.NestedStackedInline):
     model = models.ServiceClaimableResource
 
-class ServicePortInline(admin.StackedInline):
+class ServicePortInline(nested_admin.NestedStackedInline):
     model = models.ServicePort
 
 class ServiceAdmin(SoftDeleteAdmin):
@@ -58,7 +62,7 @@ class ClaimableResourceAdmin(admin.ModelAdmin):
 
 admin.site.register(models.ClaimableResource, ClaimableResourceAdmin)
 
-class ApplicationServiceInline(admin.StackedInline):
+class ApplicationServiceInline(nested_admin.NestedStackedInline):
     model = models.ApplicationService
 
 
@@ -71,21 +75,29 @@ class ApplicationAdmin(SoftDeleteAdmin):
 admin.site.register(models.Application, ApplicationAdmin)
 
 
-class JobTimeslotInline(admin.StackedInline):
+class EventInline(nested_admin.NestedStackedInline):
+    model = models.Event
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+class JobTimeslotInline(nested_admin.NestedStackedInline):
     model = models.JobTiming
 
     def has_add_permission(self, request, obj=None):
         return False
 
+    inlines = [EventInline]
 
-class JobDeviceInline(admin.StackedInline):
+
+class JobDeviceInline(nested_admin.NestedStackedInline):
     model = models.JobDevice
 
     def has_add_permission(self, request, obj=None):
         return False
 
 
-class DeviceTimeslotInline(admin.StackedInline):
+class DeviceTimeslotInline(nested_admin.NestedStackedInline):
     model = models.DeviceTimeslot
 
     def has_add_permission(self, request, obj=None):
@@ -96,7 +108,7 @@ class JobAdmin(SoftDeleteAdmin):
     list_display = ["deleted", "uuid", "created_by", "created_at", "created_by_project"]
     list_filter = ["deleted"]
     inlines = (
-        JobDeviceInline, JobTimeslotInline, DeviceTimeslotInline,)
+        JobDeviceInline, JobTimeslotInline, DeviceTimeslotInline)
 
 
 admin.site.register(models.Job, JobAdmin)

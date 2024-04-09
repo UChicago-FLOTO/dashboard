@@ -10,7 +10,7 @@
   <h4>
     {{ user.first_name }} {{ user.last_name }}
   </h4>
-  <form>
+  <div>
     <label for="api-key">API Key</label>
     <input readonly :type="key_visible ? 'text' : 'password'" id="api-key"
       class="form-control" value="{{ api_key }}">
@@ -20,7 +20,7 @@
     <button @click="copy_key" id="copy-key" class="btn btn-secondary mt-2">
       Copy Key
     </button>
-  </form>
+  </div>
 
   <h4>Projects</h4>
 

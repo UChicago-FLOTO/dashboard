@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'drf_spectacular',
     'dry_rest_permissions',
+    'nested_admin',
     'floto',
     'floto.api',
     'floto.auth',
@@ -313,10 +314,6 @@ CELERY_BEAT_SCHEDULE = {
     "label_nodes": {
         "task": "label_nodes",
         "schedule": crontab(minute="*/5"),
-    },
-    "cleanup_namespaces": {
-        "task": "cleanup_namespaces",
-        "schedule": crontab(minute="*/30"),
     },
     "sync_balena_device_to_db": {
         "task": "sync_balena_device_to_db",
