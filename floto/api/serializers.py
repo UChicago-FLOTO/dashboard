@@ -33,7 +33,7 @@ class CreatedByField(serializers.Field):
 
 
 class CreatedByUserMeta:
-    fields = "__all__"
+    exclude = ('deleted', )
     read_only_fields = ["uuid", "created_at", "updated_at", "created_by"]
 
 
@@ -256,6 +256,7 @@ class JobSerializer(CreatedByUserSerializer):
             )
         for device in devices_data:
             for label, timeslots in res["timeslots"].items():
+                # Get the DB object we created above for this timing.
                 db_timing = models.JobTiming.objects.get(timing=label, job=job)
                 for timeslot in timeslots:
                     start = timeslot["start"]
