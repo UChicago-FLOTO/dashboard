@@ -71,7 +71,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'mozilla_django_oidc.middleware.SessionRefresh',
     'floto.auth.middleware.UserTokenMiddleware',
-    'floto.auth.middleware.UserGroupsMiddleware',
 ]
 
 ROOT_URLCONF = 'floto.urls'

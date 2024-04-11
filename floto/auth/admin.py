@@ -7,16 +7,9 @@ import logging
 LOG = logging.getLogger(__name__)
 
 
-@admin.action(description="Approve account")
-def approve_account(modeladmin, request, queryset):
-    for user in queryset.all():
-        kc = KeycloakClient()
-        kc.add_user_to_group(user.email, "admin")
-
 class CustomUserAdmin(admin.ModelAdmin):
-    actions = [approve_account]
     readonly_fields = [
-        "is_approved",
+        "has_project",
         "password",
         "id",
         "groups",
@@ -24,13 +17,11 @@ class CustomUserAdmin(admin.ModelAdmin):
         "date_joined",
         "user_permissions",
     ]
-    list_display = ("email", "is_approved", "is_staff", "is_superuser")
+    list_display = ("email", "has_project", "is_staff", "is_superuser")
 
-    @admin.display(description="Approved to use FLOTO")
-    def is_approved(self, instance):
-        kc = KeycloakClient()
-        return any(g for g in kc.get_user_groups(instance.email) 
-                if g["name"] == "admin")
+    @admin.display(description="Has a project")
+    def has_project(self, instance):
+        return any(instance.projects.all())
 
 
 admin.site.register(KeycloakUser, CustomUserAdmin)
