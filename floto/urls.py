@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include, re_path
+from django.views.generic.base import RedirectView
 
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
@@ -17,6 +18,6 @@ urlpatterns = [
     path('dashboard/',
          include((floto.dashboard.urls, "floto.dashboard"), namespace="dashboard")),
     path('oidc/', include('mozilla_django_oidc.urls')),
-    path('', views.index),
+    path('', RedirectView.as_view(url="dashboard/")),
 
 ]

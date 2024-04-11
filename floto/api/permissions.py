@@ -10,12 +10,14 @@ LOG = logging.getLogger(__name__)
 
 class MethodAllowed(permissions.BasePermission):
     def has_permission(self, request, view):
+        # User has permission if any of the following apply
+        # 1. they are requesting GET
+        # 2. they are authenticated with a project
         if request.method in ["GET"]:
             return True
         if not request.user.is_authenticated:
             return False
-        groups = request.session.get("groups", [])
-        return any([g["name"] == "admin" for g in groups])
+        return any(request.user.projects.all())
 
     def has_object_permission(self, request, view, obj):
         return self.has_permission(request, view)
