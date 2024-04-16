@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from drf_spectacular.utils import extend_schema_serializer, extend_schema_field
 from drf_spectacular.types import OpenApiTypes
+from django.urls import reverse
 
 
 LOG = logging.getLogger(__name__)
@@ -466,3 +467,23 @@ class PeripheralInstaceSerializer(serializers.ModelSerializer):
 
     peripheral = PeripheralSerializer()
     configuration = PeripheralConfigurationItemSerializer(many=True)
+
+
+class DatasetSerializer(CreatedByUserSerializer):
+    class Meta(CreatedByUserMeta):
+        model = models.Dataset
+        exclude = ('deleted', 'approved', 'is_public')
+        read_only = ['approved']
+
+    @transaction.atomic
+    def create(self, validated_data):
+        validated_data["approved"] = str(validated_data["created_by_project"].uuid) == settings.FLOTO_ADMIN_PROJECT
+        return models.Dataset.objects.create(**validated_data) 
+
+    def to_representation(self, instance):
+        """Show internal download, so we can track clicks."""
+        ret = super().to_representation(instance)
+        ret['url'] = self.context["request"].build_absolute_uri(
+            reverse("dashboard:download", args=(str(instance.uuid),))
+        )
+        return ret

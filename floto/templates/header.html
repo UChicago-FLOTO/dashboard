@@ -30,6 +30,11 @@
             Jobs
           </button>
         </a>
+        <a href="{% url 'dashboard:data' %}">
+          <button type="button" class="btn btn-primary">
+            Data
+          </button>
+        </a>
       </div>
       <div>
         {% if user.is_authenticated %}

@@ -1,0 +1,30 @@
+{% extends 'default.html' %}
+
+{% load static %}
+
+{% block title %} Data {% endblock %}
+
+{% block content %}
+<div class="q-pa-md">
+  <h3>Data</h3>
+  <q-table
+    :columns="headers"
+    :rows="datasets"
+    :pagination="initialPagination"
+    wrap-cells
+    >
+    <template v-slot:body-cell-url="props">
+      <q-td :props="props">
+        <a :href="props.row.url">
+          <q-btn icon-right="file_download" no-caps flat dense></q-btn>
+        </a>
+      </q-td>
+    </template>
+  </q-table>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'data.js' %}"></script>
+{% endblock %}

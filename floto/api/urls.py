@@ -15,4 +15,5 @@ router.register("projects", views.ProjectViewSet, basename="project")
 router.register("peripheral_schema", views.PeripheralSchemaViewSet, basename="peripheral_schema")
 router.register("peripheral", views.PeripheralViewSet, basename="peripheral")
 router.register("resources", views.ClaimableResourceViewSet, basename="resource")
+router.register("datasets", views.DatasetViewSet, basename="dataset")
 urlpatterns = router.urls

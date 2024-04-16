@@ -1,14 +1,18 @@
 from django.conf import settings
 from django.http import HttpResponse
 from django.template import loader
+from django.shortcuts import redirect
 
 import datetime
 import json
 import logging
+import requests
+from urllib.parse import urljoin
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from . import util
 from .. import util as floto_util
+from floto.api.models import DownloadEvent, Dataset
 
 LOG = logging.getLogger(__name__)
 
@@ -110,3 +114,15 @@ def set_active_project(request):
         return HttpResponse(status=204)
     else:
         return HttpResponse(status=405)
+
+def data(request):
+    template = loader.get_template("dashboard/data.html")
+    return HttpResponse(template.render({}, request))
+
+def download_data(request, uuid):
+    ds = Dataset.objects.get(pk=uuid)
+    DownloadEvent.objects.create(
+        downloaded_by=request.user,
+        dataset=ds,
+    )
+    return redirect(ds.url)

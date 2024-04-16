@@ -28,14 +28,18 @@
     margin-top: 2rem;
 }
 
+.site-footer span {
+    margin-left: 2rem;
+}
+
 .site-header a, .site-footer a {
     color: white;
     text-decoration: none;
 }
 
-.site-header a:hover {
+.site-header a:hover, .site-footer a:hover {
     color: #DDD;
-    text-decoration: none;
+    text-decoration: underline;
 }
 
 .floto-alert {
