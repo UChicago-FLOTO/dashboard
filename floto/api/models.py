@@ -358,3 +358,26 @@ class Event(models.Model):
 
     objects = RelatedJobSoftDeleteManager()
     objects_all = models.Manager()
+
+
+class Dataset(CreatedByUserBase):
+    name = models.CharField(max_length=1024, unique=True)
+    description = models.CharField(max_length=2000)
+    url = models.CharField(max_length=1024)
+    approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.name}"
+
+
+class DownloadEvent(models.Model):
+    downloaded_at = models.DateTimeField(default=datetime.now)
+    downloaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="downloads"
+    )
+    dataset = models.ForeignKey(
+        Dataset,
+        on_delete=models.CASCADE,
+    )

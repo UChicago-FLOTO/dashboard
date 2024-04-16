@@ -325,3 +325,15 @@ class PeripheralInstanceAdmin(admin.ModelAdmin):
 
 
 admin.site.register(models.PeripheralInstance, PeripheralInstanceAdmin)
+
+
+class DatasetAdmin(admin.ModelAdmin):
+    list_display = ["name", "created_by", "approved"]
+
+admin.site.register(models.Dataset, DatasetAdmin)
+
+class DatasetDownloadEventAdmin(admin.ModelAdmin):
+    list_display = ["downloaded_at", "downloaded_by", "dataset"]
+    ordering = ('-downloaded_at',)
+
+admin.site.register(models.DownloadEvent, DatasetDownloadEventAdmin)

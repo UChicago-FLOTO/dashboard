@@ -65,6 +65,7 @@ from floto.api.serializers import (
     CollectionSerializer,
     TimeslotSerializer,
     PeripheralInstaceSerializer,
+    DatasetSerializer,
 )
 from floto.api import util
 from floto.api.models import CollectionDevice
@@ -571,3 +572,20 @@ class ClaimableResourceViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return self.serializer_class.Meta.model.objects.all()
+
+@extend_schema_view(
+    list=extend_schema(
+        description="List all approved datasets",
+    ),
+    retrieve=extend_schema(
+        description="Retrieve the information of a specific dataset.",
+        parameters=[uuid_param],
+    ),
+    create=extend_schema(description="Create a dataset."),
+)
+class DatasetViewSet(viewsets.ModelViewSet):
+    serializer_class = DatasetSerializer
+    http_method_names = ["get", "post"]
+
+    def get_queryset(self):
+        return self.serializer_class.Meta.model.objects.filter(approved=True)

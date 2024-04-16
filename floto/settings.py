@@ -299,6 +299,7 @@ KUBE_READ_ONLY = os.environ.get("KUBE_READ_ONLY", "false").lower() == "true"
 FLOTO_ENV_PREFIX = os.environ.get("FLOTO_ENV_PREFIX", "FLOTO_")
 FLOTO_ADMIN_PROJECT=os.environ.get("FLOTO_ADMIN_PROJECT")
 FLOTO_DISABLE_CELERY=bool(os.environ.get("FLOTO_DISABLE_CELERY", False))
+FLOTO_SWIFT_DATA_PUBLIC_URL=os.environ.get("FLOTO_SWIFT_DATA_PUBLIC_URL", "")
 
 # Celery task configuration
 CELERY_BROKER_URL = "redis://redis:6379"

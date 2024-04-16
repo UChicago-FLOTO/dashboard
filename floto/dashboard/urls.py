@@ -26,6 +26,16 @@ urlpatterns = [
         "fleets",
         login_required(views.fleets),
         name="fleets"),
+    path(
+        "data/",
+        login_required(views.data),
+        name="data",
+    ),
+    path(
+        "data/download/<str:uuid>/",
+        login_required(views.download_data),
+        name="download",
+    ),
     path("user", login_required(views.user), name="user"),
     path("services", views.services, name="services"),
     path("applications",
