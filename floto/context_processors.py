@@ -1,20 +1,32 @@
 from .api.serializers import ProjectSerializer
 from django.conf import settings
+import logging
+
+LOG = logging.getLogger(__name__)
 
 
 def global_values(request):
-    selected_project = None
+    selected_project = {}
+    projects = []
     if request.user.is_authenticated:
-        if not request.session.get('selected_project'):
+        projects = list(request.user.projects.all())
+        if not request.session.get("selected_project"):
             try:
                 request.session['selected_project'] = ProjectSerializer(
-                    request.user.projects.first()
+                    projects[0]
                 ).data
             except Exception as e:
                 # User has no projects
                 pass
-        selected_project = request.session.get('selected_project')
+        selected_project = request.session.get("selected_project", {})
     return {
         "selected_project": selected_project,
-        "swift_data_public_url": settings.FLOTO_SWIFT_DATA_PUBLIC_URL,
+        "projects": [
+            {
+                "uuid": p.uuid,
+                "name": p.name,
+                "selected": str(p.uuid) == selected_project.get("uuid"),
+            }
+            for p in projects
+        ],
     }

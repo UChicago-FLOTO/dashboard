@@ -36,12 +36,36 @@
           </button>
         </a>
       </div>
-      <div>
+      <div id="project_display">
         {% if user.is_authenticated %}
-        <span class="project_name">
-          <i class="q-icon notranslate material-icons" aria-hidden="true" role="img">groups</i>
-          {{ selected_project.name }}
-        </span>
+          <span class="project_name">
+            <i class="q-icon notranslate material-icons" aria-hidden="true" role="img">groups</i>
+            {% if selected_project.name %}
+              {{ selected_project.name }}
+            {% else %}
+              No project set!
+            {% endif %}
+          </span>
+          <form>
+            {% if projects|length > 0 %}
+              <select>
+                {% for p in projects %}
+                <option value="{{p.uuid}}" 
+                  {% if p.selected %}selected{% endif %}
+                >{{ p.name }}</option>
+                {% endfor %}
+              </select>
+              <button type="button" class="btn btn-primary">
+                Save
+              </button>
+            {% else %}
+              <select>
+                <option selected disabled>
+                  You are not a member of any projects, please contact the FLOTO team.
+                </option>
+              </select>
+            {% endif %}
+          </form>
         {% endif %}
       </div>
       <div>

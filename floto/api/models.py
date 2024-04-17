@@ -46,7 +46,7 @@ class CreatedByUserBase(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     is_public = models.BooleanField(default=False)
     created_by_project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
-    deleted = models.DateTimeField(null=True)
+    deleted = models.DateTimeField(null=True, blank=True)
 
     # Overwrite the default manager to prevent ever selecting something already deleted
     objects = SoftDeleteManager()

@@ -84,3 +84,45 @@ function notify(message, type="positive"){
     ],
   })
 }
+
+window.onload = function(){
+  display_el = document.querySelector("#project_display span")
+  form_el = document.querySelector("#project_display form")
+  save_el = document.querySelector("#project_display button")
+  select_el = document.querySelector("#project_display select")
+
+  if(!(display_el && form_el)){
+    return
+  }
+
+  form_el.style["display"] = "none"
+  if(save_el){
+    save_el.onclick = function(){
+      form_el.style["display"] = "none"
+      display_el.style["display"] = "block"
+
+      const request = new Request(
+        url=`/dashboard/set_active_project`,
+        {
+          method: 'POST',
+          mode: 'same-origin',
+          body: JSON.stringify({
+            "uuid": select_el.value,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": document.getElementsByName("csrfmiddlewaretoken")[0].value,
+          },
+          credentials: 'same-origin',
+        }
+      );
+      fetch(request).then(() => {location.reload()})
+    }
+  }
+
+  display_el.onclick = function(){
+    form_el.style["display"] = "block"
+    display_el.style["display"] = "none"
+
+  }
+}
