@@ -38,11 +38,46 @@ createApp({
             }
         }, query_params = "")
         onMounted(() => {
+            const tooltip = document.createElement("div")
+            tooltip.style.display = "none"
+            tooltip.style.position = "fixed"
+            tooltip.style["z-index"] = "999"
+            tooltip.style.backgroundColor = "white"
+            tooltip.style.borderRadius = "3px"
+            tooltip.style.border = "1px solid black"
+            tooltip.style.padding = "5px"
+            document.querySelector("div.main").appendChild(tooltip)
             var map = L.map('map', {"maxZoom": 18}).setView([0,0], 1);
             // Initialize a feature group
             var markers = new L.MarkerClusterGroup({
                 maxClusterRadius: 30,
+                disableClusteringAtZoom: 13,
             })
+            markers.on('clustermouseover', function (a) {
+                overview = {
+                    "online": 0,
+                    "offline": 0,
+                    "retired": 0,
+                }
+                a.layer.getAllChildMarkers().forEach(marker => {
+                    overview[marker.options.icon.options.status] += 1
+                })
+                let overviewHTML = ""
+                for (const status in overview) {
+                    if(overview[status] != 0){
+                        overviewHTML += `<div>${overview[status]} ${status}</div>`
+                    }
+                }
+                tooltip.innerHTML = overviewHTML
+                tooltip.style.display = "block"
+                tooltip.style.left = `${a.originalEvent.x + 10}px`
+                tooltip.style.top = `${a.originalEvent.y + 10}px`
+            });
+            
+            markers.on('clustermouseout', function (a) {
+                tooltip.style.display = "none"
+            });
+            
             map.addLayer(markers)
             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
@@ -57,11 +92,13 @@ createApp({
                 let addedMarkers = false;
                 devices.value.forEach(device => {
                     if (device.latitude && device.longitude) {
+                        let status = device.is_online ? 'online' : 'offline'
                         let iconColor = device.is_online ? 'green' : 'red'
                         let iconExtraHtml = ''
                         if (device.status == 'retired') {
                             iconColor = 'black'
                             iconExtraHtml = '<p>This device is retired, and no longer can be used.</p>'
+                            status = "retired"
                         }
                         let iconSize = device.is_online ? '35px' : '25px';
                         let iconName = 'place';
@@ -69,6 +106,7 @@ createApp({
                         var customIcon = L.divIcon({
                             html: iconHtml,
                             className: 'my-custom-icon',
+                            status,
                         });
                         var marker = L.marker(
                             [device.latitude, device.longitude],
