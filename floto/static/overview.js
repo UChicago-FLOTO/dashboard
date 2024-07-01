@@ -46,7 +46,7 @@ createApp({
             tooltip.style.borderRadius = "3px"
             tooltip.style.border = "1px solid black"
             tooltip.style.padding = "5px"
-            document.querySelector("div.main").appendChild(tooltip)
+            document.querySelector("#app").appendChild(tooltip)
             var map = L.map('map', {"maxZoom": 18}).setView([0,0], 1);
             // Initialize a feature group
             var markers = new L.MarkerClusterGroup({
