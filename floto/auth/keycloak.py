@@ -11,11 +11,11 @@ LOG = logging.getLogger(__name__)
 class KeycloakClient:
     def __init__(self):
         self.keycloak_admin = KeycloakAdmin(
-            server_url="https://auth.floto.science",
+            server_url=settings.OIDC_HOSTNAME,
             client_id=settings.OIDC_RP_ADMIN_CLIENT_ID,
             client_secret_key=settings.OIDC_RP_ADMIN_CLIENT_SECRET,
-            realm_name="floto",
-            user_realm_name="floto",
+            realm_name=settings.OIDC_REALM,
+            user_realm_name=settings.OIDC_REALM,
         )
 
     def get_user_by_email(self, email):
