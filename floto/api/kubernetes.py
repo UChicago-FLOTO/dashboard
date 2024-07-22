@@ -45,7 +45,7 @@ def get_volume_name():
     return "floto-volume"
 
 
-def get_config_for_device(device_uuid):
+def load_config_for_device(device_uuid):
     fleet_name = models.DeviceData.objects.get(pk=device_uuid).fleet.app_name
     config_file = settings.KUBE_CLUSTERS.get(fleet_name)
     if config_file:
@@ -72,7 +72,7 @@ def get_nodes(label_selector="node-role.kubernetes.io/floto-worker=true"):
 
 
 def label_node(node_name, label="node-role.kubernetes.io/floto-worker", value="true"):
-    config.load_kube_config(config_file=get_config_for_device(node_name))
+    load_config_for_device(node_name)
     core_api = client.CoreV1Api()
     core_api.patch_node(
         node_name,
@@ -134,9 +134,7 @@ def delete_namespace_if_exists(namespace_name):
 def destroy_job(job_obj):
     for device in job_obj.devices.all():
         try:
-            config.load_kube_config(
-                config_file=get_config_for_device(device.device_uuid)
-            )
+            load_config_for_device(device.device_uuid)
             batch_api = client.BatchV1Api()
             core_api = client.CoreV1Api()
             batch_api.delete_namespaced_job(
@@ -249,7 +247,7 @@ def _port_name(service_port):
 
 
 def _create_job_for_device(job, device_uuid, job_environment, balena, namespace):
-    config.load_kube_config(config_file=get_config_for_device(device_uuid))
+    load_config_for_device(device_uuid)
     core_api = client.CoreV1Api()
     containers = []
 
