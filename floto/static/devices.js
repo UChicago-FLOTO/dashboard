@@ -30,25 +30,6 @@ createApp({
         devices_loading.value = false
       })
 
-      fetch_with_retry("/api/fleets", callback=function(json){
-        fleets.value = json
-        const route_params = new URLSearchParams(window.location.search);
-        if (route_params.get("selected_fleets")){
-          selected_fleets.value = route_params.get(
-            "selected_fleets").split(",").map((i) => parseInt(i, 10))
-        } else {
-          selected_fleets.value = fleets.value.filter(
-            f => f.app_name == FLOTO_CONFIG.default_fleet).map(x => x.id)
-        }
-        watch(selected_fleets, async function(old_selected, new_selected){
-          console.log(selected_fleets.value)
-          route_params.set("selected_fleets", selected_fleets.value)
-          // window.location.search = route_params
-          window.history.replaceState(null, null, `?${route_params}`)
-        })
-        fleets_loading.value = false
-      })
-
       fetch_with_retry(`/api/collections/`, callback=function(json){
         collections.value = json
         collections.value.forEach(process_created_by)

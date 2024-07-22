@@ -268,9 +268,11 @@ SPECTACULAR_SETTINGS = {
 }
 
 # Kubernetes Variables
-KUBE_CONFIG_FILE = os.environ.get(
-    "KUBE_CONFIG_FILE", "/config/kube/config"
-)
+KUBE_CLUSTERS = {}  # CSV of FLEET_NAME=KUBE_CONFIG_FILE
+for cluster in os.environ.get("KUBE_CLUSTERS", "=").split(","):
+    fleet_name, config_file = cluster.split("=", 1)
+    KUBE_CLUSTERS[fleet_name] = config_file
+
 KUBE_VOLUME_MOUNT_PATH = os.environ.get(
     "KUBE_VOLUME_MOUNT_PATH", "/share"
 )
