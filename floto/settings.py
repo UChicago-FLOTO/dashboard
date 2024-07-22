@@ -268,12 +268,11 @@ SPECTACULAR_SETTINGS = {
 }
 
 # Kubernetes Variables
-KUBE_CLUSTERS = {  # Mapping of fleet
-    "floto-k3s": "/config/kube/config",
-}
-KUBE_CONFIG_FILE = os.environ.get(
-    "KUBE_CONFIG_FILE", "/config/kube/config"
-)
+KUBE_CLUSTERS = {}  # CSV of FLEET_NAME=KUBE_CONFIG_FILE
+for cluster in os.environ.get("KUBE_CLUSTERS", "=").split(","):
+    fleet_name, config_file = cluster.split("=", 1)
+    KUBE_CLUSTERS[fleet_name] = config_file
+
 KUBE_VOLUME_MOUNT_PATH = os.environ.get(
     "KUBE_VOLUME_MOUNT_PATH", "/share"
 )
@@ -313,18 +312,18 @@ CELERY_IMPORTS = [
     "floto.api.tasks",
 ]
 CELERY_BEAT_SCHEDULE = {
-    "label_nodes": {
-        "task": "label_nodes",
-        "schedule": crontab(minute="*/5"),
-    },
-    "sync_balena_device_to_db": {
-        "task": "sync_balena_device_to_db",
-        "schedule": crontab(minute="*/5"),
-    },
-    "rename_devices": {
-        "task": "rename_devices",
-        "schedule": crontab(minute="*/3"),
-    },
+    # "label_nodes": {
+    #     "task": "label_nodes",
+    #     "schedule": crontab(minute="*/5"),
+    # },
+    # "sync_balena_device_to_db": {
+    #     "task": "sync_balena_device_to_db",
+    #     "schedule": crontab(minute="*/5"),
+    # },
+    # "rename_devices": {
+    #     "task": "rename_devices",
+    #     "schedule": crontab(minute="*/3"),
+    # },
     "deploy_jobs": {
         "task": "deploy_jobs",
         "schedule": crontab(minute="*/1"),

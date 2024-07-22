@@ -35,12 +35,14 @@ class HasReadAccessFilterBackend(filters.BaseFilterBackend):
                 Q(created_by_project__in=request.user.projects.all()) | Q(is_public=True)
             )
 
+
 class DeviceFilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, devices, view):
         filtered_devices = []
         try:
             nodes = kubernetes.get_nodes()
-        except:
+        except Exception as e:
+            LOG.error(e)
             nodes = []
 
         nodes_by_id = {
