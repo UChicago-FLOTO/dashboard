@@ -312,18 +312,18 @@ CELERY_IMPORTS = [
     "floto.api.tasks",
 ]
 CELERY_BEAT_SCHEDULE = {
-    # "label_nodes": {
-    #     "task": "label_nodes",
-    #     "schedule": crontab(minute="*/5"),
-    # },
-    # "sync_balena_device_to_db": {
-    #     "task": "sync_balena_device_to_db",
-    #     "schedule": crontab(minute="*/5"),
-    # },
-    # "rename_devices": {
-    #     "task": "rename_devices",
-    #     "schedule": crontab(minute="*/3"),
-    # },
+    "label_nodes": {
+        "task": "label_nodes",
+        "schedule": crontab(minute="*/5"),
+    },
+    "sync_balena_device_to_db": {
+        "task": "sync_balena_device_to_db",
+        "schedule": crontab(minute="*/5"),
+    },
+    "rename_devices": {
+        "task": "rename_devices",
+        "schedule": crontab(minute="*/3"),
+    },
     "deploy_jobs": {
         "task": "deploy_jobs",
         "schedule": crontab(minute="*/1"),
