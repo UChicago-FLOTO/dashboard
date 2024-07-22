@@ -39,9 +39,10 @@ class DeviceFilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, devices, view):
         filtered_devices = []
         try:
-            nodes = kubernetes.get_nodes().items
+            nodes = kubernetes.get_nodes()
         except:
             nodes = []
+
         nodes_by_id = {
             node.metadata.name: node
             for node in nodes

@@ -268,6 +268,9 @@ SPECTACULAR_SETTINGS = {
 }
 
 # Kubernetes Variables
+KUBE_CLUSTERS = {  # Mapping of fleet
+    "floto-k3s": "/config/kube/config",
+}
 KUBE_CONFIG_FILE = os.environ.get(
     "KUBE_CONFIG_FILE", "/config/kube/config"
 )
