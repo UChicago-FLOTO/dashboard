@@ -292,6 +292,7 @@ def _create_job_for_device(job, device_uuid, job_environment, balena, namespace)
                         ports=[
                             client.V1ServicePort(
                                 port=p.target_port,
+                                name=f"sp-{_port_name(p)}",
                                 target_port=_port_name(p),
                                 node_port=p.node_port,
                                 protocol=p.protocol,
