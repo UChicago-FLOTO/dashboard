@@ -25,7 +25,7 @@ class Project(models.Model):
     )
 
     def __str__(self):
-        return f"{self.name} ({self.uuid})"
+        return f"{self.name}"
 
 
 class SoftDeleteManager(models.Manager):
@@ -86,6 +86,9 @@ class Application(CreatedByUserBase):
     description = models.CharField(max_length=2000)
     environment = models.JSONField()
     is_single_tenant = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
 
 
 class ApplicationService(models.Model):

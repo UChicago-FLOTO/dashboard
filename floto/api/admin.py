@@ -104,9 +104,27 @@ class DeviceTimeslotInline(nested_admin.NestedStackedInline):
         return False
 
 
+class JobDeviceFilter(admin.SimpleListFilter):
+    title = _("Device")
+
+    parameter_name = "job_device"
+
+    def lookups(self, request, model_admin):
+        return [
+            (d.device_uuid, _(str(d)))
+            for d in models.DeviceData.objects.all()
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(
+                devices__device_uuid=self.value(),
+            )
+
+
 class JobAdmin(SoftDeleteAdmin):
     list_display = ["deleted", "uuid", "created_by", "created_at", "created_by_project"]
-    list_filter = ["deleted"]
+    list_filter = ["deleted", "created_at", "created_by", "application", JobDeviceFilter]
     inlines = (
         JobDeviceInline, JobTimeslotInline, DeviceTimeslotInline)
 
@@ -115,6 +133,7 @@ admin.site.register(models.Job, JobAdmin)
 
 
 class ProjectAdmin(admin.ModelAdmin):
+    list_filter = ["members"]
     list_display = ["created_at", "uuid", "name"]
 
 
@@ -209,7 +228,8 @@ class DeviceDataAdmin(admin.ModelAdmin):
     # overrides the change_list.html template to show import and download csv links
     change_list_template = "admin/devices_change_list_admin.html"
     list_display = ["name", "device_uuid", "owner_project", "fleet", "created_at", "address", "contact"]
-    list_filter = [GeocodeListFilter, "fleet", "name"]
+    list_filter = [GeocodeListFilter, "fleet", "owner_project", "created_at", "application_projects"]
+    search_fields = ["name", "device_uuid", "contact", "address_1", "address_2", "city", "state", "zip_code"]
     actions = [move_device_to_application_fleet, retire_devices]
 
     def get_urls(self):
