@@ -12,13 +12,14 @@ createApp({
     return {
       datasets,
       headers: [
+        { label: "Created", field: "created_at", name: "created_at", sortable: true, align: "left" },
         { label: "Name", field: "name", name: "name", sortable: true, align: "left" },
         { name: 'description', label: 'Description', field: 'description', align: "left" },
         { name: 'url', label: 'Download', field: 'url' },
       ],
       initialPagination: {
         rowsPerPage: 10,
-        sortBy: 'name',
+        sortBy: 'created_at',
         descending: true,
       }
     }
