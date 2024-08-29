@@ -7,7 +7,6 @@ from floto.auth.models import KeycloakUser
 
 import logging
 from django.db import transaction
-from django.contrib.auth.models import User
 from django.conf import settings
 from drf_spectacular.utils import extend_schema_serializer, extend_schema_field
 from drf_spectacular.types import OpenApiTypes
@@ -15,12 +14,6 @@ from django.urls import reverse
 
 
 LOG = logging.getLogger(__name__)
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["email"]
 
 
 @extend_schema_field(OpenApiTypes.STR)
@@ -46,7 +39,7 @@ class CreatedByUserSerializer(serializers.ModelSerializer):
     )
 
     def validate_created_by_project(self, value):
-        if not value in self.context["request"].user.projects.all():
+        if value not in self.context["request"].user.projects.all():
             raise serializers.ValidationError("You are not a member of that project")
         return value
 
@@ -478,7 +471,7 @@ class DatasetSerializer(CreatedByUserSerializer):
     @transaction.atomic
     def create(self, validated_data):
         validated_data["approved"] = str(validated_data["created_by_project"].uuid) == settings.FLOTO_ADMIN_PROJECT
-        return models.Dataset.objects.create(**validated_data) 
+        return models.Dataset.objects.create(**validated_data)
 
     def to_representation(self, instance):
         """Show internal download, so we can track clicks."""

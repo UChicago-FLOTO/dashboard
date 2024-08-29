@@ -144,7 +144,7 @@ class Fleet(models.Model):
     is_app_fleet = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{'*' if self.is_app_fleet else ''}{self.app_name} ({self.id})"
+        return f"{'*' if self.is_app_fleet else ''}{self.app_name} (id: {self.id})"
 
 
 class DeviceData(models.Model):

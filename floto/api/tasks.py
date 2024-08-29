@@ -12,9 +12,7 @@ from django.db import transaction
 from floto.api import kubernetes
 
 from floto.api.balena import get_balena_client
-from floto.api.kubernetes import (delete_namespace_if_exists,
-                                  get_namespaces_with_no_pods, get_nodes,
-                                  label_node)
+from floto.api.kubernetes import (get_nodes, label_node)
 from floto.api.models import DeviceData, Fleet, Project, Event
 
 LOG = logging.getLogger(__name__)
@@ -26,27 +24,13 @@ def label_nodes():
     Label all kubernetes nodes that match to balena devices
     """
     nodes = get_nodes(label_selector="!node-role.kubernetes.io/floto-worker")
-    for node in nodes.items:
+    for node in nodes:
         try:
-            DeviceData.objects.get(device_uuid=node.metadata.name)
             LOG.info(f"Giving floto-worker role to name {node.metadata.name}")
             label_node(node.metadata.name)
         except:
             # Node is unknown, do not do anything
             pass
-
-
-@shared_task(name='cleanup_namespaces')
-def cleanup_namespaces():
-    """
-    Cleanup all namespaces with no pods.
-
-    # TODO this is bad now that we have advanced timings.
-    """
-    namespaces = get_namespaces_with_no_pods()
-    for ns in namespaces:
-        LOG.info(f"Deleting empty job namespace {ns.metadata.name}")
-        delete_namespace_if_exists(ns.metadata.name)
 
 
 @shared_task(name="sync_balena_device_to_db")
@@ -93,11 +77,11 @@ def rename_devices():
     if os.path.isfile(label_filepath):
         labels = {}
         with open(label_filepath) as f:
-            labelreader=csv.DictReader(f)
-            for l in labelreader:
-                uuid = l.get("uuid")
-                name = l.get("labelname")
-                labels[uuid]=name
+            labelreader = csv.DictReader(f)
+            for label in labelreader:
+                uuid = label.get("uuid")
+                name = label.get("labelname")
+                labels[uuid] = name
         balena = get_balena_client()
         for d in balena.models.device.get_all():
             device_name = d.get("device_name")
@@ -105,7 +89,7 @@ def rename_devices():
             labelname = labels.get(device_uuid)
             if labelname and labelname != device_name:
                 LOG.info(f"setting device name from {device_name} to {labelname}")
-                balena.models.device.rename(device_uuid,labelname)
+                balena.models.device.rename(device_uuid, labelname)
 
 
 @shared_task(name="bulk_device_update_csv_reader")

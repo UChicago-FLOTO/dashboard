@@ -1,6 +1,6 @@
-function fetch_with_retry(url, callback, error_callback=base_error_callback, backoff_count=0, query_params=get_query_params()) {
-  url += "?" + query_params
-  fetch(url).then((response) => {
+function fetch_with_retry(url, callback, error_callback=base_error_callback, backoff_count=0) {
+  let updated_url = with_query_params(url)
+  fetch(updated_url).then((response) => {
     if (response.ok) {
       return response.json();
     }
@@ -18,7 +18,7 @@ function fetch_with_retry(url, callback, error_callback=base_error_callback, bac
       } else {
         new_count = backoff_count + 1
         setTimeout(
-          fetch_with_retry(url, callback, error_callback=error_callback, backoff_count=(new_count + 1)),
+          fetch_with_retry(updated_url, callback, error_callback=error_callback, backoff_count=(new_count + 1)),
           new_count * 1000
         )
       }  
@@ -34,14 +34,13 @@ function get_headers(){
   return headers  
 }
 
-function get_query_params(){
+function with_query_params(url){
+  let url_obj = new URL(url, window.location.origin)
   let ap = get_active_project()
   if(ap){
-    return new URLSearchParams({
-      "active_project": get_active_project(),
-    })
+    url_obj.searchParams.set("active_project", ap)
   }
-  return new URLSearchParams()
+  return url_obj.href
 }
 
 function get_token(){
