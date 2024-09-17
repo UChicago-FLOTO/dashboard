@@ -390,6 +390,8 @@ class JobViewSet(ModelWithOwnerViewSet):
     def perform_destroy(self, job):
         if not settings.KUBE_READ_ONLY:
             kubernetes.destroy_job(job)
+            job.cleaned_up = True
+            job.save()
         super().perform_destroy(job)
 
     @action(methods=["POST"], detail=False, url_path="check")

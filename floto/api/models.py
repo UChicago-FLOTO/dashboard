@@ -52,6 +52,7 @@ class CreatedByUserBase(models.Model):
     objects = SoftDeleteManager()
     objects_all = models.Manager()
 
+
 class Collection(CreatedByUserBase):
     name = models.CharField(max_length=200)
     description = models.CharField(max_length=2000)
@@ -99,6 +100,7 @@ class ApplicationService(models.Model):
 class Job(CreatedByUserBase):
     application = models.ForeignKey(Application, on_delete=models.CASCADE)
     environment = models.JSONField()
+    cleaned_up = models.BooleanField(default=False)
 
 
 class JobDevice(models.Model):

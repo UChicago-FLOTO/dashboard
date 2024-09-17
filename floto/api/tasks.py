@@ -1,5 +1,5 @@
 import csv
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import os
 import time
@@ -15,7 +15,7 @@ from floto.api.balena import get_balena_client
 from floto.api.kubernetes import (delete_namespace_if_exists,
                                   get_namespaces_with_no_pods, get_nodes,
                                   label_node)
-from floto.api.models import DeviceData, Fleet, Project, Event
+from floto.api.models import DeviceData, Fleet, Job, Project, Event
 
 LOG = logging.getLogger(__name__)
 
@@ -39,14 +39,17 @@ def label_nodes():
 @shared_task(name='cleanup_namespaces')
 def cleanup_namespaces():
     """
-    Cleanup all namespaces with no pods.
-
-    # TODO this is bad now that we have advanced timings.
+    Cleanup all jobs that are over in k8s
     """
-    namespaces = get_namespaces_with_no_pods()
-    for ns in namespaces:
-        LOG.info(f"Deleting empty job namespace {ns.metadata.name}")
-        delete_namespace_if_exists(ns.metadata.name)
+    for job in Job.objects_all.filter(cleaned_up=False):
+        # If all timeslots have finished, we can terminate in k8s
+        ts = job.timeslots.filter(stop__gte=datetime.now(timezone.utc))
+        if not ts:
+            LOG.info(f"Cleaning up job {job.uuid}")
+            kubernetes.destroy_job(job)
+
+            job.cleaned_up = True
+            job.save()
 
 
 @shared_task(name="sync_balena_device_to_db")

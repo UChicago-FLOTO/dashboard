@@ -123,8 +123,8 @@ class JobDeviceFilter(admin.SimpleListFilter):
 
 
 class JobAdmin(SoftDeleteAdmin):
-    list_display = ["deleted", "uuid", "created_by", "created_at", "created_by_project"]
-    list_filter = ["deleted", "created_at", "created_by", "application", JobDeviceFilter]
+    list_display = ["deleted", "uuid", "created_by", "created_at", "created_by_project", "cleaned_up"]
+    list_filter = ["deleted", "created_at", "created_by", "application",  "cleaned_up", JobDeviceFilter]
     inlines = (
         JobDeviceInline, JobTimeslotInline, DeviceTimeslotInline)
 

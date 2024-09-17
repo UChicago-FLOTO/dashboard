@@ -7,7 +7,6 @@ from floto.auth.models import KeycloakUser
 
 import logging
 from django.db import transaction
-from django.contrib.auth.models import User
 from django.conf import settings
 from drf_spectacular.utils import extend_schema_serializer, extend_schema_field
 from drf_spectacular.types import OpenApiTypes
@@ -15,12 +14,6 @@ from django.urls import reverse
 
 
 LOG = logging.getLogger(__name__)
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["email"]
 
 
 @extend_schema_field(OpenApiTypes.STR)
@@ -222,6 +215,7 @@ class TimeslotSerializer(serializers.ModelSerializer):
 class JobSerializer(CreatedByUserSerializer):
     class Meta(CreatedByUserMeta):
         model = models.Job
+        exclude = ('deleted', 'cleaned_up',)
 
     @transaction.atomic
     def create(self, validated_data):
