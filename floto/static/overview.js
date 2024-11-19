@@ -92,15 +92,15 @@ createApp({
                 let addedMarkers = false;
                 devices.value.forEach(device => {
                     if (device.latitude && device.longitude) {
-                        let status = device.is_online ? 'online' : 'offline'
-                        let iconColor = device.is_online ? 'green' : 'red'
+                        let status = device.api_heartbeat_state
+                        let iconColor = device.api_heartbeat_state == "online" ? 'green' : 'red'
                         let iconExtraHtml = ''
                         if (device.status == 'retired') {
                             iconColor = 'black'
                             iconExtraHtml = '<p>This device is retired, and no longer can be used.</p>'
                             status = "retired"
                         }
-                        let iconSize = device.is_online ? '35px' : '25px';
+                        let iconSize = device.api_heartbeat_state == "online" ? '35px' : '25px';
                         let iconName = 'place';
                         let iconHtml = `<div style="color: ${iconColor}; font-size: ${iconSize};" class="q-icon material-icons">${iconName}</div>`;
                         var customIcon = L.divIcon({
