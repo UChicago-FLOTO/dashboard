@@ -36,15 +36,15 @@ publish-latest:
 
 .PHONY: start
 start: .env
-	docker-compose $(ENV_FILE_PARAM) up -d
+	docker compose $(ENV_FILE_PARAM) up -d
 
 .PHONY: clean
 clean:
-	docker-compose $(ENV_FILE_PARAM) down
+	docker compose $(ENV_FILE_PARAM) down
 
 .PHONY: migrations
 migrations: start
-	docker-compose exec floto python manage.py makemigrations --check
+	docker compose exec floto python manage.py makemigrations --check
 
 requirements-frozen.txt: build
 	docker run --rm $(DOCKER_IMAGE) pip freeze > $@
