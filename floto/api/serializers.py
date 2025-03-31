@@ -39,7 +39,7 @@ class CreatedByUserSerializer(serializers.ModelSerializer):
     )
 
     def validate_created_by_project(self, value):
-        if not value in self.context["request"].user.projects.all():
+        if value not in self.context["request"].user.projects.all():
             raise serializers.ValidationError("You are not a member of that project")
         return value
 
@@ -472,7 +472,7 @@ class DatasetSerializer(CreatedByUserSerializer):
     @transaction.atomic
     def create(self, validated_data):
         validated_data["approved"] = str(validated_data["created_by_project"].uuid) == settings.FLOTO_ADMIN_PROJECT
-        return models.Dataset.objects.create(**validated_data) 
+        return models.Dataset.objects.create(**validated_data)
 
     def to_representation(self, instance):
         """Show internal download, so we can track clicks."""
