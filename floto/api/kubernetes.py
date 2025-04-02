@@ -227,7 +227,10 @@ def create_deployment(devices, job):
         devices: [str (device_uuids)]
         job: models.Job
     """
-    environment = json.loads(job.environment).items()
+    if type(job.environment) is str:
+        environment = json.loads(job.environment).items()
+    else:
+        environment = job.environment.items()
     balena = get_balena_client()
     namespace = get_namespace_name(job.uuid)
     for device_uuid in devices:

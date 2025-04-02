@@ -122,11 +122,20 @@ class JobDeviceFilter(admin.SimpleListFilter):
             )
 
 
+class JobForm(forms.ModelForm):
+    class Meta:
+        model = models.Job
+        fields = "__all__"
+        widgets = {
+            "environment": forms.Textarea(attrs={"rows": 5, "cols": 40}),
+        }
+
 class JobAdmin(SoftDeleteAdmin):
     list_display = ["deleted", "uuid", "created_by", "created_at", "created_by_project", "cleaned_up"]
     list_filter = ["deleted", "created_at", "created_by", "application",  "cleaned_up", JobDeviceFilter]
     inlines = (
         JobDeviceInline, JobTimeslotInline, DeviceTimeslotInline)
+    form = JobForm
 
 
 admin.site.register(models.Job, JobAdmin)
