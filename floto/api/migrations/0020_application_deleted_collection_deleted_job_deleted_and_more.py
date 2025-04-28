@@ -4,30 +4,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('floto_api', '0019_devicetimeslot_timing_alter_devicedata_status_event'),
+        ("floto_api", "0019_devicetimeslot_timing_alter_devicedata_status_event"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='application',
-            name='deleted',
+            model_name="application",
+            name="deleted",
             field=models.DateTimeField(null=True),
         ),
         migrations.AddField(
-            model_name='collection',
-            name='deleted',
+            model_name="collection",
+            name="deleted",
             field=models.DateTimeField(null=True),
         ),
         migrations.AddField(
-            model_name='job',
-            name='deleted',
+            model_name="job",
+            name="deleted",
             field=models.DateTimeField(null=True),
         ),
         migrations.AddField(
-            model_name='service',
-            name='deleted',
+            model_name="service",
+            name="deleted",
             field=models.DateTimeField(null=True),
         ),
     ]

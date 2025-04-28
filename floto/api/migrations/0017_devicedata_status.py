@@ -4,15 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('floto_api', '0016_alter_serviceperipheral_service_serviceport'),
+        ("floto_api", "0016_alter_serviceperipheral_service_serviceport"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='devicedata',
-            name='status',
-            field=models.CharField(blank=True, choices=[('retired', 'retired'), ('', '--will use balena status--')], max_length=512),
+            model_name="devicedata",
+            name="status",
+            field=models.CharField(
+                blank=True,
+                choices=[("retired", "retired"), ("", "--will use balena status--")],
+                max_length=512,
+            ),
         ),
     ]

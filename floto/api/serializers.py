@@ -27,7 +27,7 @@ class CreatedByField(serializers.Field):
 
 
 class CreatedByUserMeta:
-    exclude = ('deleted', )
+    exclude = ("deleted",)
     read_only_fields = ["uuid", "created_at", "updated_at", "created_by"]
 
 
@@ -167,14 +167,17 @@ class JobDeviceSerializer(serializers.ModelSerializer):
         except models.DeviceData.DoesNotExist:
             raise serializers.ValidationError(f"Invalid device UUID {value}")
         r = DeviceSerializer(
-            device, context={
+            device,
+            context={
                 "balena_device": {},
                 "kubernetes_node": {},
                 "request": self.context["request"],
-            }
+            },
         ).data["application_access"]
         if not r:
-            raise serializers.ValidationError(f"No application access to device {value}")
+            raise serializers.ValidationError(
+                f"No application access to device {value}"
+            )
         return value
 
 
@@ -215,7 +218,10 @@ class TimeslotSerializer(serializers.ModelSerializer):
 class JobSerializer(CreatedByUserSerializer):
     class Meta(CreatedByUserMeta):
         model = models.Job
-        exclude = ('deleted', 'cleaned_up',)
+        exclude = (
+            "deleted",
+            "cleaned_up",
+        )
 
     @transaction.atomic
     def create(self, validated_data):
@@ -466,18 +472,21 @@ class PeripheralInstaceSerializer(serializers.ModelSerializer):
 class DatasetSerializer(CreatedByUserSerializer):
     class Meta(CreatedByUserMeta):
         model = models.Dataset
-        exclude = ('deleted', 'approved', 'is_public')
-        read_only = ['approved']
+        exclude = ("deleted", "approved", "is_public")
+        read_only = ["approved"]
 
     @transaction.atomic
     def create(self, validated_data):
-        validated_data["approved"] = str(validated_data["created_by_project"].uuid) == settings.FLOTO_ADMIN_PROJECT
+        validated_data["approved"] = (
+            str(validated_data["created_by_project"].uuid)
+            == settings.FLOTO_ADMIN_PROJECT
+        )
         return models.Dataset.objects.create(**validated_data)
 
     def to_representation(self, instance):
         """Show internal download, so we can track clicks."""
         ret = super().to_representation(instance)
-        ret['url'] = self.context["request"].build_absolute_uri(
+        ret["url"] = self.context["request"].build_absolute_uri(
             reverse("dashboard:download", args=(str(instance.uuid),))
         )
         return ret

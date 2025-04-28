@@ -8,32 +8,56 @@ import uuid
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('floto_api', '0001_initial'),
+        ("floto_api", "0001_initial"),
     ]
 
     operations = [
-       migrations.CreateModel(
-            name='Collection',
+        migrations.CreateModel(
+            name="Collection",
             fields=[
-                ('name', models.CharField(max_length=200)),
-                ('description', models.CharField(max_length=2000)),
-                ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(default=datetime.datetime.now)),
-                ('updated_at', models.DateTimeField(default=datetime.datetime.now)),
-                ('is_public', models.BooleanField(default=False)),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-
+                ("name", models.CharField(max_length=200)),
+                ("description", models.CharField(max_length=2000)),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4, primary_key=True, serialize=False
+                    ),
+                ),
+                ("created_at", models.DateTimeField(default=datetime.datetime.now)),
+                ("updated_at", models.DateTimeField(default=datetime.datetime.now)),
+                ("is_public", models.BooleanField(default=False)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='CollectionDevice',
+            name="CollectionDevice",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('device_uuid', models.CharField(max_length=36)),
-                ('collection', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='devices', to='floto_api.collection')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("device_uuid", models.CharField(max_length=36)),
+                (
+                    "collection",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="devices",
+                        to="floto_api.collection",
+                    ),
+                ),
             ],
         ),
     ]

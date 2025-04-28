@@ -4,45 +4,44 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('floto_api', '0014_alter_serviceperipheral_service'),
+        ("floto_api", "0014_alter_serviceperipheral_service"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='devicedata',
-            name='contact',
+            model_name="devicedata",
+            name="contact",
             field=models.EmailField(blank=True, max_length=254, null=True),
         ),
         migrations.AlterField(
-            model_name='devicedata',
-            name='address_1',
-            field=models.CharField(blank=True, default='', max_length=128),
+            model_name="devicedata",
+            name="address_1",
+            field=models.CharField(blank=True, default="", max_length=128),
         ),
         migrations.AlterField(
-            model_name='devicedata',
-            name='address_2',
-            field=models.CharField(blank=True, default='', max_length=128),
+            model_name="devicedata",
+            name="address_2",
+            field=models.CharField(blank=True, default="", max_length=128),
         ),
         migrations.AlterField(
-            model_name='devicedata',
-            name='city',
-            field=models.CharField(blank=True, default='', max_length=64),
+            model_name="devicedata",
+            name="city",
+            field=models.CharField(blank=True, default="", max_length=64),
         ),
         migrations.AlterField(
-            model_name='devicedata',
-            name='country',
-            field=models.CharField(blank=True, default='', max_length=64),
+            model_name="devicedata",
+            name="country",
+            field=models.CharField(blank=True, default="", max_length=64),
         ),
         migrations.AlterField(
-            model_name='devicedata',
-            name='state',
-            field=models.CharField(blank=True, default='', max_length=64),
+            model_name="devicedata",
+            name="state",
+            field=models.CharField(blank=True, default="", max_length=64),
         ),
         migrations.AlterField(
-            model_name='devicedata',
-            name='zip_code',
-            field=models.CharField(blank=True, default='', max_length=6),
+            model_name="devicedata",
+            name="zip_code",
+            field=models.CharField(blank=True, default="", max_length=6),
         ),
     ]

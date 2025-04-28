@@ -8,40 +8,63 @@ import uuid
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('floto_api', '0021_alter_devicedata_status_downloadevent'),
+        ("floto_api", "0021_alter_devicedata_status_downloadevent"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='devicedata',
-            name='status',
-            field=models.CharField(blank=True, choices=[('', '--will use balena status--'), ('retired', 'retired')], max_length=512),
+            model_name="devicedata",
+            name="status",
+            field=models.CharField(
+                blank=True,
+                choices=[("", "--will use balena status--"), ("retired", "retired")],
+                max_length=512,
+            ),
         ),
         migrations.CreateModel(
-            name='Dataset',
+            name="Dataset",
             fields=[
-                ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(default=datetime.datetime.now)),
-                ('updated_at', models.DateTimeField(default=datetime.datetime.now)),
-                ('is_public', models.BooleanField(default=False)),
-                ('deleted', models.DateTimeField(null=True)),
-                ('name', models.CharField(max_length=1024, unique=True)),
-                ('description', models.CharField(max_length=2000)),
-                ('url', models.CharField(max_length=1024)),
-                ('approved', models.BooleanField(default=False)),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('created_by_project', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='floto_api.project')),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4, primary_key=True, serialize=False
+                    ),
+                ),
+                ("created_at", models.DateTimeField(default=datetime.datetime.now)),
+                ("updated_at", models.DateTimeField(default=datetime.datetime.now)),
+                ("is_public", models.BooleanField(default=False)),
+                ("deleted", models.DateTimeField(null=True)),
+                ("name", models.CharField(max_length=1024, unique=True)),
+                ("description", models.CharField(max_length=2000)),
+                ("url", models.CharField(max_length=1024)),
+                ("approved", models.BooleanField(default=False)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "created_by_project",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="floto_api.project",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.AlterField(
-            model_name='downloadevent',
-            name='dataset',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='floto_api.dataset'),
+            model_name="downloadevent",
+            name="dataset",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="floto_api.dataset"
+            ),
         ),
     ]

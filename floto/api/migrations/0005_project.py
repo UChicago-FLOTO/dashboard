@@ -8,22 +8,33 @@ import uuid
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('floto_api', '0004_alter_collectiondevice_device_uuid'),
+        ("floto_api", "0004_alter_collectiondevice_device_uuid"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Project',
+            name="Project",
             fields=[
-                ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(default=datetime.datetime.now)),
-                ('name', models.CharField(max_length=200)),
-                ('description', models.CharField(max_length=2000)),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pi', to=settings.AUTH_USER_MODEL)),
-                ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4, primary_key=True, serialize=False
+                    ),
+                ),
+                ("created_at", models.DateTimeField(default=datetime.datetime.now)),
+                ("name", models.CharField(max_length=200)),
+                ("description", models.CharField(max_length=2000)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="pi",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                ("members", models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
             ],
         ),
     ]

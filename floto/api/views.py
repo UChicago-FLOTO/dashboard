@@ -342,6 +342,7 @@ class ModelWithOwnerViewSet(viewsets.ModelViewSet):
 class ServiceViewSet(ModelWithOwnerViewSet):
     serializer_class = ServiceSerializer
 
+
 @extend_schema_view(
     list=extend_schema(description="List all applications."),
     create=extend_schema(description="Create an application."),
@@ -352,6 +353,7 @@ class ServiceViewSet(ModelWithOwnerViewSet):
 )
 class ApplicationViewSet(ModelWithOwnerViewSet):
     serializer_class = ApplicationSerializer
+
 
 @extend_schema_view(
     list=extend_schema(description="List all jobs."),
@@ -574,6 +576,7 @@ class ClaimableResourceViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return self.serializer_class.Meta.model.objects.all()
+
 
 @extend_schema_view(
     list=extend_schema(

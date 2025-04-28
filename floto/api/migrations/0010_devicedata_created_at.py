@@ -5,15 +5,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('floto_api', '0009_fleet_is_app_fleet'),
+        ("floto_api", "0009_fleet_is_app_fleet"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='devicedata',
-            name='created_at',
+            model_name="devicedata",
+            name="created_at",
             field=models.DateTimeField(default=datetime.datetime.now),
         ),
     ]

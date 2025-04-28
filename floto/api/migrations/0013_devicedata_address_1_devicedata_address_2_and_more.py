@@ -4,55 +4,58 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('floto_api', '0012_alter_peripheralconfigurationitem_peripheral_and_more'),
+        ("floto_api", "0012_alter_peripheralconfigurationitem_peripheral_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='devicedata',
-            name='address_1',
+            model_name="devicedata",
+            name="address_1",
             field=models.CharField(blank=True, max_length=128, null=True),
         ),
         migrations.AddField(
-            model_name='devicedata',
-            name='address_2',
+            model_name="devicedata",
+            name="address_2",
             field=models.CharField(blank=True, max_length=128, null=True),
         ),
         migrations.AddField(
-            model_name='devicedata',
-            name='city',
+            model_name="devicedata",
+            name="city",
             field=models.CharField(blank=True, max_length=64, null=True),
         ),
         migrations.AddField(
-            model_name='devicedata',
-            name='deployment_name',
+            model_name="devicedata",
+            name="deployment_name",
             field=models.CharField(blank=True, max_length=200, null=True),
         ),
         migrations.AddField(
-            model_name='devicedata',
-            name='latitude',
-            field=models.DecimalField(blank=True, decimal_places=3, max_digits=9, null=True),
+            model_name="devicedata",
+            name="latitude",
+            field=models.DecimalField(
+                blank=True, decimal_places=3, max_digits=9, null=True
+            ),
         ),
         migrations.AddField(
-            model_name='devicedata',
-            name='longitude',
-            field=models.DecimalField(blank=True, decimal_places=3, max_digits=9, null=True),
+            model_name="devicedata",
+            name="longitude",
+            field=models.DecimalField(
+                blank=True, decimal_places=3, max_digits=9, null=True
+            ),
         ),
         migrations.AddField(
-            model_name='devicedata',
-            name='state',
+            model_name="devicedata",
+            name="state",
             field=models.CharField(blank=True, max_length=64, null=True),
         ),
         migrations.AddField(
-            model_name='devicedata',
-            name='country',
+            model_name="devicedata",
+            name="country",
             field=models.CharField(blank=True, max_length=64, null=True),
         ),
         migrations.AddField(
-            model_name='devicedata',
-            name='zip_code',
+            model_name="devicedata",
+            name="zip_code",
             field=models.CharField(blank=True, max_length=6, null=True),
-        )
+        ),
     ]

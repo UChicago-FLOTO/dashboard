@@ -65,7 +65,7 @@ class KeycloakUser(auth_models.AbstractUser):
 
     def get_full_name(self):
         first_name = self.keycloak_user.get("firstName", "")
-        last_name = self.keycloak_user.get("lastName" "")
+        last_name = self.keycloak_user.get("lastName")
         return f"{first_name} {last_name}".strip()
 
     def get_short_name(self):
@@ -91,8 +91,6 @@ class KeycloakUser(auth_models.AbstractUser):
         # Therefore, the whole model has to be replaced
         self.auth_token.delete()
         return token_models.Token.objects.create(user=self, key=new_api_token())
-
-    
 
 
 @dispatch.receiver(signals.post_save, sender=KeycloakUser)

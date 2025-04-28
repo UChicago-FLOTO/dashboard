@@ -6,26 +6,41 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('floto_api', '0005_project'),
+        ("floto_api", "0005_project"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='project',
-            name='members',
-            field=models.ManyToManyField(related_name='projects', to=settings.AUTH_USER_MODEL),
+            model_name="project",
+            name="members",
+            field=models.ManyToManyField(
+                related_name="projects", to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.CreateModel(
-            name='DeviceData',
+            name="DeviceData",
             fields=[
-                ('device_uuid', models.CharField(max_length=36, primary_key=True, serialize=False)),
-                ('allow_all_projects', models.BooleanField(default=False)),
-                ('name', models.CharField(max_length=200)),
-                ('application_projects', models.ManyToManyField(related_name='application_projects', to='floto_api.project')),
-                ('owner_project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='floto_api.project')),
+                (
+                    "device_uuid",
+                    models.CharField(max_length=36, primary_key=True, serialize=False),
+                ),
+                ("allow_all_projects", models.BooleanField(default=False)),
+                ("name", models.CharField(max_length=200)),
+                (
+                    "application_projects",
+                    models.ManyToManyField(
+                        related_name="application_projects", to="floto_api.project"
+                    ),
+                ),
+                (
+                    "owner_project",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="floto_api.project",
+                    ),
+                ),
             ],
         ),
     ]

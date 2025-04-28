@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['SECRET_KEY']
+SECRET_KEY = os.environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_ENV", "DEBUG") == "DEBUG"
@@ -37,64 +37,64 @@ if DEBUG:
 else:
     ALLOWED_HOSTS = ["portal.floto.science"]
     USE_X_FORWARDED_HOST = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'bootstrap5',
-    'mozilla_django_oidc',
-    'rest_framework',
-    'rest_framework.authtoken',
-    'drf_spectacular',
-    'dry_rest_permissions',
-    'nested_admin',
-    'floto',
-    'floto.api',
-    'floto.auth',
-    'floto.dashboard',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "bootstrap5",
+    "mozilla_django_oidc",
+    "rest_framework",
+    "rest_framework.authtoken",
+    "drf_spectacular",
+    "dry_rest_permissions",
+    "nested_admin",
+    "floto",
+    "floto.api",
+    "floto.auth",
+    "floto.dashboard",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'mozilla_django_oidc.middleware.SessionRefresh',
-    'floto.auth.middleware.UserTokenMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "mozilla_django_oidc.middleware.SessionRefresh",
+    "floto.auth.middleware.UserTokenMiddleware",
 ]
 
-ROOT_URLCONF = 'floto.urls'
+ROOT_URLCONF = "floto.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [
             os.path.join(BASE_DIR, "floto", "templates"),
         ],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'floto.context_processors.global_values'
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "floto.context_processors.global_values",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'floto.wsgi.application'
+WSGI_APPLICATION = "floto.wsgi.application"
 
 
 # Database
@@ -125,16 +125,16 @@ else:
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -142,9 +142,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -167,7 +167,7 @@ STATICFILES_FINDERS = (
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOG_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "INFO")
 LOG_VERBOSITY = os.getenv("DJANGO_LOG_VERBOSITY", "SHORT")
@@ -207,11 +207,15 @@ LOGGING = {
         },
         "pipeline": {"handlers": ["console"], "level": "INFO"},
         "kubernetes": {
-            'handlers': ['console'], 'level': LOG_LEVEL_STR, "propagate": False,
+            "handlers": ["console"],
+            "level": LOG_LEVEL_STR,
+            "propagate": False,
         },
         "urllib3": {
-            'handlers': ['console'], 'level': "INFO", "propagate": False,
-        }
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }
 
@@ -223,17 +227,25 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 OIDC_RP_SIGN_ALGO = "RS256"
-OIDC_OP_JWKS_ENDPOINT="https://auth.floto.science/realms/floto/protocol/openid-connect/certs"
-#OIDC_RP_SCOPES = "openid email group role"
+OIDC_OP_JWKS_ENDPOINT = (
+    "https://auth.floto.science/realms/floto/protocol/openid-connect/certs"
+)
+# OIDC_RP_SCOPES = "openid email group role"
 
-OIDC_RP_CLIENT_ID = os.environ['OIDC_RP_CLIENT_ID']
-OIDC_RP_CLIENT_SECRET = os.environ['OIDC_RP_CLIENT_SECRET']
-OIDC_RP_ADMIN_CLIENT_ID = os.environ['OIDC_RP_ADMIN_CLIENT_ID']
-OIDC_RP_ADMIN_CLIENT_SECRET = os.environ['OIDC_RP_ADMIN_CLIENT_SECRET']
+OIDC_RP_CLIENT_ID = os.environ["OIDC_RP_CLIENT_ID"]
+OIDC_RP_CLIENT_SECRET = os.environ["OIDC_RP_CLIENT_SECRET"]
+OIDC_RP_ADMIN_CLIENT_ID = os.environ["OIDC_RP_ADMIN_CLIENT_ID"]
+OIDC_RP_ADMIN_CLIENT_SECRET = os.environ["OIDC_RP_ADMIN_CLIENT_SECRET"]
 
-OIDC_OP_AUTHORIZATION_ENDPOINT = "https://auth.floto.science/realms/floto/protocol/openid-connect/auth"
-OIDC_OP_TOKEN_ENDPOINT = "https://auth.floto.science/realms/floto/protocol/openid-connect/token"
-OIDC_OP_USER_ENDPOINT = "https://auth.floto.science/realms/floto/protocol/openid-connect/userinfo"
+OIDC_OP_AUTHORIZATION_ENDPOINT = (
+    "https://auth.floto.science/realms/floto/protocol/openid-connect/auth"
+)
+OIDC_OP_TOKEN_ENDPOINT = (
+    "https://auth.floto.science/realms/floto/protocol/openid-connect/token"
+)
+OIDC_OP_USER_ENDPOINT = (
+    "https://auth.floto.science/realms/floto/protocol/openid-connect/userinfo"
+)
 
 LOGIN_URL = "oidc_authentication_init"
 LOGIN_REDIRECT_URL = "/dashboard"
@@ -249,22 +261,22 @@ BALENA_TUNNEL_HOST = os.environ.get("BALENA_TUNNEL_HOST")
 
 # DRF
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
+    "DEFAULT_PERMISSION_CLASSES": [
         "floto.api.permissions.MethodAllowed",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
-        'rest_framework.authentication.SessionAuthentication',
+        "rest_framework.authentication.SessionAuthentication",
     ],
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # API docs settings
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'FLOTO API',
-    'DESCRIPTION': 'The application for FLOTO',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
+    "TITLE": "FLOTO API",
+    "DESCRIPTION": "The application for FLOTO",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 # Kubernetes Variables
@@ -273,34 +285,25 @@ for cluster in os.environ.get("KUBE_CLUSTERS", "=").split(","):
     fleet_name, config_file = cluster.split("=", 1)
     KUBE_CLUSTERS[fleet_name] = config_file
 
-KUBE_VOLUME_MOUNT_PATH = os.environ.get(
-    "KUBE_VOLUME_MOUNT_PATH", "/share"
-)
+KUBE_VOLUME_MOUNT_PATH = os.environ.get("KUBE_VOLUME_MOUNT_PATH", "/share")
 KUBE_DEVICE_VOLUME_MOUNT_PATH = os.environ.get(
     "KUBE_DEVICE_VOLUME_MOUNT_PATH", "/public"
 )
-KUBE_VOLUME_SIZE = os.environ.get(
-    "KUBE_VOLUME_SIZE", "2Gi"
-)
+KUBE_VOLUME_SIZE = os.environ.get("KUBE_VOLUME_SIZE", "2Gi")
 KUBE_PERIPHERAL_VOLUME_MOUNT_PATH = "/config"
-KUBE_SECRET_NAMESPACE = os.environ.get(
-    "KUBE_SECRET_NAMESPACE", "default"
-)
+KUBE_SECRET_NAMESPACE = os.environ.get("KUBE_SECRET_NAMESPACE", "default")
 if os.environ.get("KUBE_IMAGE_PULL_SECRETS"):
-    KUBE_IMAGE_PULL_SECRETS = os.environ.get(
-        "KUBE_IMAGE_PULL_SECRETS").split(",")
+    KUBE_IMAGE_PULL_SECRETS = os.environ.get("KUBE_IMAGE_PULL_SECRETS").split(",")
 else:
     KUBE_IMAGE_PULL_SECRETS = []
 
-KUBE_JOB_TTL = int(os.environ.get(
-    "KUBE_JOB_TTL", str(timedelta(days=7).total_seconds)
-))
+KUBE_JOB_TTL = int(os.environ.get("KUBE_JOB_TTL", str(timedelta(days=7).total_seconds)))
 KUBE_READ_ONLY = os.environ.get("KUBE_READ_ONLY", "false").lower() == "true"
 
 # FLOTO configuration
 FLOTO_ENV_PREFIX = os.environ.get("FLOTO_ENV_PREFIX", "FLOTO_")
-FLOTO_ADMIN_PROJECT=os.environ.get("FLOTO_ADMIN_PROJECT")
-FLOTO_DISABLE_CELERY=bool(os.environ.get("FLOTO_DISABLE_CELERY", False))
+FLOTO_ADMIN_PROJECT = os.environ.get("FLOTO_ADMIN_PROJECT")
+FLOTO_DISABLE_CELERY = bool(os.environ.get("FLOTO_DISABLE_CELERY", False))
 
 # Celery task configuration
 CELERY_BROKER_URL = "redis://redis:6379"

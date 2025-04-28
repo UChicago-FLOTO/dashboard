@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('floto_api', '0002_add_collection'),
+        ("floto_api", "0002_add_collection"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='collectiondevice',
-            name='device_uuid',
+            model_name="collectiondevice",
+            name="device_uuid",
             field=models.UUIDField(),
         ),
     ]

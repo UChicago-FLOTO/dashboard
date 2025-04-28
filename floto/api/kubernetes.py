@@ -62,8 +62,8 @@ def get_nodes(label_selector="node-role.kubernetes.io/floto-worker=true"):
         # We query this because node names may not be unique across clusters,
         # so that we should only get the node from the correct fleet.
         fleet_devices = set(
-            d.device_uuid for d in
-            models.DeviceData.objects.filter(fleet__app_name=fleet_name)
+            d.device_uuid
+            for d in models.DeviceData.objects.filter(fleet__app_name=fleet_name)
         )
         for node in core_api.list_node(label_selector=label_selector).items:
             if node.metadata.name in fleet_devices:
@@ -186,9 +186,9 @@ def get_job_logs(uuid):
                     )
                 except:
                     # Device probably went down
-                    logs[pod.spec.node_name][
-                        container.image
-                    ] = "Error getting logs for this container."
+                    logs[pod.spec.node_name][container.image] = (
+                        "Error getting logs for this container."
+                    )
     return logs
 
 

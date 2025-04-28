@@ -8,7 +8,6 @@ import uuid
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -17,84 +16,195 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Application',
+            name="Application",
             fields=[
-                ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(default=datetime.datetime.now)),
-                ('updated_at', models.DateTimeField(default=datetime.datetime.now)),
-                ('is_public', models.BooleanField(default=False)),
-                ('name', models.CharField(max_length=200)),
-                ('description', models.CharField(max_length=2000)),
-                ('environment', models.JSONField()),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4, primary_key=True, serialize=False
+                    ),
+                ),
+                ("created_at", models.DateTimeField(default=datetime.datetime.now)),
+                ("updated_at", models.DateTimeField(default=datetime.datetime.now)),
+                ("is_public", models.BooleanField(default=False)),
+                ("name", models.CharField(max_length=200)),
+                ("description", models.CharField(max_length=2000)),
+                ("environment", models.JSONField()),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Job',
+            name="Job",
             fields=[
-                ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(default=datetime.datetime.now)),
-                ('updated_at', models.DateTimeField(default=datetime.datetime.now)),
-                ('is_public', models.BooleanField(default=False)),
-                ('environment', models.JSONField()),
-                ('application', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='floto_api.application')),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4, primary_key=True, serialize=False
+                    ),
+                ),
+                ("created_at", models.DateTimeField(default=datetime.datetime.now)),
+                ("updated_at", models.DateTimeField(default=datetime.datetime.now)),
+                ("is_public", models.BooleanField(default=False)),
+                ("environment", models.JSONField()),
+                (
+                    "application",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="floto_api.application",
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Service',
+            name="Service",
             fields=[
-                ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(default=datetime.datetime.now)),
-                ('updated_at', models.DateTimeField(default=datetime.datetime.now)),
-                ('is_public', models.BooleanField(default=False)),
-                ('container_ref', models.CharField(max_length=1000)),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4, primary_key=True, serialize=False
+                    ),
+                ),
+                ("created_at", models.DateTimeField(default=datetime.datetime.now)),
+                ("updated_at", models.DateTimeField(default=datetime.datetime.now)),
+                ("is_public", models.BooleanField(default=False)),
+                ("container_ref", models.CharField(max_length=1000)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='JobTiming',
+            name="JobTiming",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('timing', models.CharField(max_length=2000)),
-                ('job', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='timings', to='floto_api.job')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("timing", models.CharField(max_length=2000)),
+                (
+                    "job",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="timings",
+                        to="floto_api.job",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='JobDevice',
+            name="JobDevice",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('device_uuid', models.CharField(max_length=36)),
-                ('job', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='devices', to='floto_api.job')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("device_uuid", models.CharField(max_length=36)),
+                (
+                    "job",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="devices",
+                        to="floto_api.job",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='DeviceTimeslot',
+            name="DeviceTimeslot",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('start', models.DateTimeField()),
-                ('stop', models.DateTimeField()),
-                ('device_uuid', models.CharField(max_length=36)),
-                ('note', models.CharField(max_length=2000)),
-                ('category', models.CharField(choices=[('JOB', 'Job'), ('OTHER', 'Other')], max_length=32)),
-                ('job', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='timeslots', to='floto_api.job')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("start", models.DateTimeField()),
+                ("stop", models.DateTimeField()),
+                ("device_uuid", models.CharField(max_length=36)),
+                ("note", models.CharField(max_length=2000)),
+                (
+                    "category",
+                    models.CharField(
+                        choices=[("JOB", "Job"), ("OTHER", "Other")], max_length=32
+                    ),
+                ),
+                (
+                    "job",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="timeslots",
+                        to="floto_api.job",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ApplicationService',
+            name="ApplicationService",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('application', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='services', to='floto_api.application')),
-                ('service', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='applications', to='floto_api.service')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "application",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="services",
+                        to="floto_api.application",
+                    ),
+                ),
+                (
+                    "service",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="applications",
+                        to="floto_api.service",
+                    ),
+                ),
             ],
         ),
     ]

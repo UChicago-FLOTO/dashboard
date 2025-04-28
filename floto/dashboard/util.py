@@ -29,7 +29,8 @@ def post(request, view_name, body=None, default_ret=None):
         res_json = None
         messages.error(
             request,
-            f"Unexpected error, API returned status {res.status_code}. {res.text}")
+            f"Unexpected error, API returned status {res.status_code}. {res.text}",
+        )
     return default_ret
 
 
@@ -39,9 +40,7 @@ def getURL(request, view_name, request_kwargs=None, default_ret=None):
     headers = {k: v for k, v in request.headers.items()}
     headers["Accept"] = "application/json"
     res = requests.get(
-        request.build_absolute_uri(
-            reverse(view_name, kwargs=request_kwargs)
-        ),
+        request.build_absolute_uri(reverse(view_name, kwargs=request_kwargs)),
         headers=headers,
     )
     try:
@@ -53,8 +52,8 @@ def getURL(request, view_name, request_kwargs=None, default_ret=None):
     except Exception:
         res_json = None
         messages.error(
-            request,
-            f"Unexpected error, API returned status {res.status_code}")
+            request, f"Unexpected error, API returned status {res.status_code}"
+        )
     return default_ret
 
 
@@ -85,8 +84,9 @@ def get_all_releases(request, fleet=None):
         fleets = [fleet]
     fleets_by_id = get_fleets_by_id(request)
     for fleet in fleets:
-        res = getURL(request, "api:fleet-releases",
-                     request_kwargs={"pk": fleet}, default_ret=[])
+        res = getURL(
+            request, "api:fleet-releases", request_kwargs={"pk": fleet}, default_ret=[]
+        )
         for r in res:
             r["fleet"] = fleets_by_id[r["belongs_to__application"]["__id"]]
             r["note"] = r["note"] if r["note"] else ""
@@ -106,6 +106,7 @@ def transform_device_dict(releases_by_id, fleets_by_id, device):
         device["fleet"] = fleets_by_id[fleet_id]["app_name"]
     except (KeyError, TypeError):
         device["fleet"] = "None"
+
 
 def parse_date(date_string):
     return datetime.datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%fZ")

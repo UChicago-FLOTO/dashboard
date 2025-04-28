@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('floto_api', '0022_alter_devicedata_status_dataset_and_more'),
+        ("floto_api", "0022_alter_devicedata_status_dataset_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='job',
-            name='cleaned_up',
+            model_name="job",
+            name="cleaned_up",
             field=models.BooleanField(default=False),
         ),
     ]

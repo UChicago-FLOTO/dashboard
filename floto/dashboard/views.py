@@ -33,7 +33,7 @@ def releases(request, fleet=None):
     releases = util.get_all_releases(request, fleet)
 
     context = {
-       "releases": sorted(releases, key=lambda r: (r["id"]), reverse=True),
+        "releases": sorted(releases, key=lambda r: (r["id"]), reverse=True),
     }
     template = loader.get_template("dashboard/releases.html")
     return HttpResponse(template.render(context, request))
@@ -44,14 +44,15 @@ def fleets(request):
     releases_by_id = util.get_releases_by_id(request)
     processed_fleets = []
     for fleet in fleets:
-        processed_fleets.append({
-            "app_name": fleet["app_name"],
-        })
+        processed_fleets.append(
+            {
+                "app_name": fleet["app_name"],
+            }
+        )
         try:
             release_id = fleet["should_be_running__release"]["__id"]
             note = releases_by_id[release_id]["note"]
-            processed_fleets[-1]["target_release"] = note \
-                if note else release_id
+            processed_fleets[-1]["target_release"] = note if note else release_id
         except (KeyError, TypeError):
             processed_fleets[-1]["target_release"] = "None"
 
@@ -108,16 +109,18 @@ def job(request, uuid):
 
 
 def set_active_project(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         project = json.loads(request.body)
         floto_util.set_active_project(request, project["uuid"])
         return HttpResponse(status=204)
     else:
         return HttpResponse(status=405)
 
+
 def data(request):
     template = loader.get_template("dashboard/data.html")
     return HttpResponse(template.render({}, request))
+
 
 def download_data(request, uuid):
     ds = Dataset.objects.get(pk=uuid)

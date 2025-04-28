@@ -12,13 +12,13 @@ from django.db import transaction
 from floto.api import kubernetes
 
 from floto.api.balena import get_balena_client
-from floto.api.kubernetes import (get_nodes, label_node)
+from floto.api.kubernetes import get_nodes, label_node
 from floto.api.models import DeviceData, Fleet, Job, Project, Event
 
 LOG = logging.getLogger(__name__)
 
 
-@shared_task(name='label_nodes')
+@shared_task(name="label_nodes")
 def label_nodes():
     """
     Label all kubernetes nodes that match to balena devices
@@ -33,7 +33,7 @@ def label_nodes():
             pass
 
 
-@shared_task(name='cleanup_namespaces')
+@shared_task(name="cleanup_namespaces")
 def cleanup_namespaces():
     """
     Cleanup all jobs that are over in k8s
@@ -119,7 +119,9 @@ def bulk_device_update_csv_reader(devices_data):
         try:
             device = DeviceData.objects.get(device_uuid=row["device_uuid"])
         except ObjectDoesNotExist:
-            LOG.error(f"device with UUID - {row['device_uuid']} does not exist. Skipping")
+            LOG.error(
+                f"device with UUID - {row['device_uuid']} does not exist. Skipping"
+            )
             continue
         device.device_uuid = row["device_uuid"]
         device.deployment_name = row["deployment_name"]
@@ -136,12 +138,14 @@ def bulk_device_update_csv_reader(devices_data):
         try:
             device.save()
         except Exception as e:
-            LOG.error(f"Error while updating device with UUID - {row['device_uuid']} from CSV - {e}")
+            LOG.error(
+                f"Error while updating device with UUID - {row['device_uuid']} from CSV - {e}"
+            )
         # sleep to honor the rate limit for geocode API
         time.sleep(1)
 
 
-@shared_task(name='deploy_jobs')
+@shared_task(name="deploy_jobs")
 def deploy_jobs():
     """
     Deploy all pending jobs that have reached their time
@@ -152,9 +156,7 @@ def deploy_jobs():
     ):
         with transaction.atomic():
             job = event.timing.job
-            device_uuids = [
-                ts.device_uuid for ts in job.timeslots.all()
-            ]
+            device_uuids = [ts.device_uuid for ts in job.timeslots.all()]
             LOG.info(f"Exec {job.uuid} with {len(device_uuids)} devices")
             try:
                 if not settings.KUBE_READ_ONLY:

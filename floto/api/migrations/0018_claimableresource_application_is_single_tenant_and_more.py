@@ -5,29 +5,53 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('floto_api', '0017_devicedata_status'),
+        ("floto_api", "0017_devicedata_status"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ClaimableResource',
+            name="ClaimableResource",
             fields=[
-                ('resource', models.CharField(max_length=100, primary_key=True, serialize=False)),
+                (
+                    "resource",
+                    models.CharField(max_length=100, primary_key=True, serialize=False),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='application',
-            name='is_single_tenant',
+            model_name="application",
+            name="is_single_tenant",
             field=models.BooleanField(default=True),
         ),
         migrations.CreateModel(
-            name='ServiceClaimableResource',
+            name="ServiceClaimableResource",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('resource', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='services', to='floto_api.claimableresource')),
-                ('service', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='resources', to='floto_api.service')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "resource",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="services",
+                        to="floto_api.claimableresource",
+                    ),
+                ),
+                (
+                    "service",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="resources",
+                        to="floto_api.service",
+                    ),
+                ),
             ],
         ),
     ]

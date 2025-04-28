@@ -44,30 +44,33 @@ class DevicePermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         # Always check for management permission
-        if DevicePermission.MANAGEMENT_VIEWS.get(
-                view.basename, {}).get(view.name):
+        if DevicePermission.MANAGEMENT_VIEWS.get(view.basename, {}).get(view.name):
             pk = view.kwargs.get("pk")
             if pk:
                 device = DeviceData.objects.get(pk=pk)
                 return DeviceSerializer(
-                    device, context={
+                    device,
+                    context={
                         "balena_device": {},
                         "kubernetes_node": {},
                         "request": request,
-                    }
+                    },
                 ).data["management_access"]
         # Check write methods against application views
-        if request.method not in SAFE_METHODS and \
-                DevicePermission.APPLICATION_VIEWS.get(view.basename, {}).get(view.name):
+        if (
+            request.method not in SAFE_METHODS
+            and DevicePermission.APPLICATION_VIEWS.get(view.basename, {}).get(view.name)
+        ):
             pk = view.kwargs.get("pk")
             if pk:
                 device = DeviceData.objects.get(pk=pk)
                 return DeviceSerializer(
-                    device, context={
+                    device,
+                    context={
                         "balena_device": {},
                         "kubernetes_node": {},
                         "request": request,
-                    }
+                    },
                 ).data["application_access"]
         # Otherwise, view is allowed
         return True

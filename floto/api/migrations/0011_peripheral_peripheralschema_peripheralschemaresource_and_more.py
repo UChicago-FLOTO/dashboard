@@ -5,63 +5,147 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('floto_api', '0010_devicedata_created_at'),
+        ("floto_api", "0010_devicedata_created_at"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Peripheral',
+            name="Peripheral",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=512)),
-                ('documentation_url', models.CharField(max_length=1024)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=512)),
+                ("documentation_url", models.CharField(max_length=1024)),
             ],
         ),
         migrations.CreateModel(
-            name='PeripheralSchema',
+            name="PeripheralSchema",
             fields=[
-                ('type', models.CharField(max_length=512, primary_key=True, serialize=False)),
+                (
+                    "type",
+                    models.CharField(max_length=512, primary_key=True, serialize=False),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='PeripheralSchemaResource',
+            name="PeripheralSchemaResource",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('label', models.CharField(max_length=512)),
-                ('count', models.IntegerField()),
-                ('schema', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='resources', to='floto_api.peripheralschema')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("label", models.CharField(max_length=512)),
+                ("count", models.IntegerField()),
+                (
+                    "schema",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="resources",
+                        to="floto_api.peripheralschema",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='PeripheralSchemaConfigItem',
+            name="PeripheralSchemaConfigItem",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('label', models.CharField(max_length=512)),
-                ('schema', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='configuration_items', to='floto_api.peripheralschema')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("label", models.CharField(max_length=512)),
+                (
+                    "schema",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="configuration_items",
+                        to="floto_api.peripheralschema",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='PeripheralInstance',
+            name="PeripheralInstance",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('device', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='peripherals', to='floto_api.devicedata')),
-                ('peripheral', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='floto_api.peripheral')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "device",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="peripherals",
+                        to="floto_api.devicedata",
+                    ),
+                ),
+                (
+                    "peripheral",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="floto_api.peripheral",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='PeripheralConfigurationItem',
+            name="PeripheralConfigurationItem",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('value', models.CharField(max_length=2048)),
-                ('label', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='floto_api.peripheralschemaconfigitem')),
-                ('peripheral', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='floto_api.peripheralinstance')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("value", models.CharField(max_length=2048)),
+                (
+                    "label",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="floto_api.peripheralschemaconfigitem",
+                    ),
+                ),
+                (
+                    "peripheral",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="floto_api.peripheralinstance",
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='peripheral',
-            name='schema',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='floto_api.peripheralschema'),
+            model_name="peripheral",
+            name="schema",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="floto_api.peripheralschema",
+            ),
         ),
     ]

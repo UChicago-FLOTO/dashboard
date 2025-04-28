@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('floto_api', '0008_fleet_devicedata_fleet'),
+        ("floto_api", "0008_fleet_devicedata_fleet"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='fleet',
-            name='is_app_fleet',
+            model_name="fleet",
+            name="is_app_fleet",
             field=models.BooleanField(default=False),
         ),
     ]

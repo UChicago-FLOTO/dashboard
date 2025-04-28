@@ -5,23 +5,50 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('floto_api', '0011_peripheral_peripheralschema_peripheralschemaresource_and_more'),
+        (
+            "floto_api",
+            "0011_peripheral_peripheralschema_peripheralschemaresource_and_more",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='peripheralconfigurationitem',
-            name='peripheral',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='configuration', to='floto_api.peripheralinstance'),
+            model_name="peripheralconfigurationitem",
+            name="peripheral",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="configuration",
+                to="floto_api.peripheralinstance",
+            ),
         ),
         migrations.CreateModel(
-            name='ServicePeripheral',
+            name="ServicePeripheral",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('peripheral_schema', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='floto_api.peripheralschema')),
-                ('service', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='peripherals', to='floto_api.service')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "peripheral_schema",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="floto_api.peripheralschema",
+                    ),
+                ),
+                (
+                    "service",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="peripherals",
+                        to="floto_api.service",
+                    ),
+                ),
             ],
         ),
     ]

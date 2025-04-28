@@ -12,7 +12,7 @@ def global_values(request):
         projects = list(request.user.projects.all())
         if not request.session.get("selected_project"):
             try:
-                request.session['selected_project'] = ProjectSerializer(
+                request.session["selected_project"] = ProjectSerializer(
                     projects[0]
                 ).data
             except Exception as e:
