@@ -1,6 +1,5 @@
 from collections import defaultdict
 import json
-from urllib import response
 
 from django.conf import settings
 from django.http import Http404
@@ -50,7 +49,6 @@ from floto.api.openapi import (
 from floto.auth.models import KeycloakUser
 
 from .balena import get_balena_client
-from balena import exceptions
 
 from floto.api import filters, permissions
 from floto.api.serializers import (

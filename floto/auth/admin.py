@@ -1,6 +1,5 @@
 from django.contrib import admin
 from .models import KeycloakUser
-from .keycloak import KeycloakClient
 
 import logging
 

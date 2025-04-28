@@ -28,7 +28,7 @@ def label_nodes():
         try:
             LOG.info(f"Giving floto-worker role to name {node.metadata.name}")
             label_node(node.metadata.name)
-        except:
+        except Exception:
             # Node is unknown, do not do anything
             pass
 

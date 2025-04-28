@@ -1,5 +1,4 @@
 from .api.serializers import ProjectSerializer
-from django.conf import settings
 import logging
 
 LOG = logging.getLogger(__name__)
@@ -15,7 +14,7 @@ def global_values(request):
                 request.session["selected_project"] = ProjectSerializer(
                     projects[0]
                 ).data
-            except Exception as e:
+            except Exception:
                 # User has no projects
                 pass
         selected_project = request.session.get("selected_project", {})

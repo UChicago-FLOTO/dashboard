@@ -1,4 +1,3 @@
-from floto.auth.keycloak import KeycloakClient
 
 import logging
 

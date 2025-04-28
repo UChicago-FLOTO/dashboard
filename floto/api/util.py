@@ -28,7 +28,7 @@ def parse_on_demand_args(args):
             raise ValidationError(f"Unknown duration unit: '{parts[0]}'")
         try:
             duration[parts[0]] = int(parts[1])
-        except ValueError as e:
+        except ValueError:
             raise ValidationError(f"Invalid duration '{parts[1]}' in '{parts}'")
     return timedelta(**duration)
 
@@ -53,9 +53,9 @@ def parse_advanced_timing_args(args):
         elif parts[0] == "end":
             end = datetime.fromisoformat(parts[1].replace("Z", "+00:00"))
     if not start:
-        raise ValidationError(f"Start time must be included with advanced timing")
+        raise ValidationError("Start time must be included with advanced timing")
     if not end:
-        raise ValidationError(f"End time must be included with advanced timing")
+        raise ValidationError("End time must be included with advanced timing")
     return [
         {
             "start": start,

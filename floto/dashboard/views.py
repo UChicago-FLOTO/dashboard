@@ -1,13 +1,9 @@
-from django.conf import settings
 from django.http import HttpResponse
 from django.template import loader
 from django.shortcuts import redirect
 
-import datetime
 import json
 import logging
-import requests
-from urllib.parse import urljoin
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from . import util

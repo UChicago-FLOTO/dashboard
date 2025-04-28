@@ -4,7 +4,6 @@ import logging
 import nested_admin
 
 from django import forms
-from django.conf import settings
 from django.contrib import admin
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
@@ -14,7 +13,6 @@ from django.urls import path
 
 from floto.api.balena import get_balena_client
 from floto.api.tasks import bulk_device_update_csv_reader
-from floto.api.views import DeviceViewSet
 
 from . import models
 

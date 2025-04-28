@@ -6,7 +6,6 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 import floto.api.urls
 import floto.dashboard.urls
-from . import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),

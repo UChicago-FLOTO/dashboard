@@ -184,7 +184,7 @@ def get_job_logs(uuid):
                             container=container.name,
                         )
                     )
-                except:
+                except Exception:
                     # Device probably went down
                     logs[pod.spec.node_name][container.image] = (
                         "Error getting logs for this container."
@@ -282,7 +282,7 @@ def _create_job_for_device(job, device_uuid, job_environment, balena, namespace)
             value = ""
             try:
                 value = p.configuration.get(label=item).value
-            except:
+            except Exception:
                 # Device is not configured with this option for some reason
                 pass
             config_data[item.label] = value
