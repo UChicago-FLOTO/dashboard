@@ -13,7 +13,7 @@ from floto.api import kubernetes
 
 from floto.api.balena import get_balena_client
 from floto.api.kubernetes import get_nodes, label_node
-from floto.api.models import DeviceData, Fleet, Job, Project, Event
+from floto.api.models import DeviceData, Fleet, Job, Project, Event, KubernetesEvent
 
 LOG = logging.getLogger(__name__)
 
@@ -168,3 +168,21 @@ def deploy_jobs():
                 LOG.error(e)
                 event.status = "ERROR"
                 event.save()
+
+
+@shared_task(name="collect_events")
+def collect_events():
+    # Gets all kubernetes events, saves to DB if not there already.
+    events = kubernetes.get_kube_events(namespace=None)
+    for event in events:
+        uid = event.metadata.uid
+        if KubernetesEvent.objects.filter(uid=uid).exists():
+            # TODO update the event if needed
+            continue
+        try:
+            event_obj = KubernetesEvent.from_kubernetes_event(event)
+            event_obj.save()
+        except Exception as e:
+            LOG.error(f"Error gathering event {event.metadata.uid}")
+            LOG.exception(e)
+            continue
