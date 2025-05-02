@@ -360,8 +360,8 @@ class DeviceSerializer(serializers.ModelSerializer):
         project's access. Otherwise consider any of this user's projects for access.
         """
 
-        balena_device = self.context["balena_device"]
-        kubernetes_node = self.context["kubernetes_node"]
+        balena_device = self.context.get("balena_device", {})
+        kubernetes_node = self.context.get("kubernetes_node")
         request = self.context["request"]
 
         peripheral_schemas = self.context.get(
@@ -490,3 +490,19 @@ class DatasetSerializer(CreatedByUserSerializer):
             reverse("dashboard:download", args=(str(instance.uuid),))
         )
         return ret
+
+
+class KubernetesEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.KubernetesEvent
+        fields = [
+            "uid",
+            "name",
+            "event_type",
+            "reason",
+            "message",
+            "event_time",
+            "created_at",
+            "job",
+            "device",
+        ]

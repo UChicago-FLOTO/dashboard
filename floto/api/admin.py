@@ -445,5 +445,6 @@ admin.site.register(models.DownloadEvent, DatasetDownloadEventAdmin)
 
 @admin.register(models.KubernetesEvent)
 class KubernetesEventAdmin(admin.ModelAdmin):
-    list_display = ('namespace', 'event_type', 'reason', 'involved_object_name', 'event_time', 'count')
-    search_fields = ('reason', 'message', 'involved_object_name')
+    list_display = ('namespace', 'created_at', 'event_type', 'reason', 'message', 'count')
+    search_fields = ('reason', 'message', 'involved_object_name', 'job__uuid', 'device__device_uuid', 'namespace')
+    list_filter = ('created_at', 'event_type', 'job', 'device')

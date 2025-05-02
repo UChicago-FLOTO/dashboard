@@ -23,6 +23,7 @@ from floto.api.models import (
     PeripheralSchemaConfigItem,
     Project,
     Collection,
+    Job,
 )
 from floto.api.openapi import (
     InlineDeviceSerializer,
@@ -54,6 +55,7 @@ from floto.api import filters, permissions
 from floto.api.serializers import (
     ClaimableResourceSerializer,
     DeviceSerializer,
+    KubernetesEventSerializer,
     PeripheralSchemaSerializer,
     PeripheralSerializer,
     ProjectSerializer,
@@ -183,6 +185,17 @@ class DeviceViewSet(viewsets.ViewSet):
         balena = get_balena_client()
         res = balena.logs.history(pk, count)
         return Response(res)
+
+    @action(
+        methods=["GET"], detail=True, url_path="events",
+        permission_classes=permission_classes,
+    )
+    def events(self, request, pk):
+        events = []
+        for obj in DeviceData.objects.get(pk=pk).kubernetes_events.all():
+            ts = KubernetesEventSerializer(obj)
+            events.append(ts.data)
+        return Response(events)
 
     @action(methods=["POST"], detail=True, url_path="action")
     def device_action(self, request, pk):
@@ -380,8 +393,11 @@ class JobViewSet(ModelWithOwnerViewSet):
 
     @action(methods=["GET"], detail=True, url_path="events")
     def events(self, request, pk):
-        event_list = kubernetes.get_job_events(pk)
-        return Response(event_list, status=status.HTTP_200_OK)
+        events = []
+        for obj in Job.objects.get(pk=pk).kubernetes_events.all():
+            ts = KubernetesEventSerializer(obj)
+            events.append(ts.data)
+        return Response(events)
 
     @action(methods=["GET"], detail=True, url_path="logs")
     def logs(self, request, pk):
