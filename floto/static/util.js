@@ -54,7 +54,12 @@ function process_created_by(obj){
   obj.is_owned_by_current_user = obj.created_by_project == get_active_project()
   if ("environment" in obj){
     if (typeof obj.environment == "string"){
-      obj.parsed_env = JSON.parse(obj.environment)
+      try{
+        obj.parsed_env = JSON.parse(obj.environment)
+      } catch (e){
+        console.warn(`Failed to parse environment as JSON '${obj.environment}'`)
+        obj.parsed_env = {}
+      }
     } else {
       obj.parsed_env = obj.environment
     }

@@ -208,7 +208,7 @@ LOGGING = {
         "pipeline": {"handlers": ["console"], "level": "INFO"},
         "kubernetes": {
             "handlers": ["console"],
-            "level": LOG_LEVEL_STR,
+            "level": "INFO",  #LOG_LEVEL_STR,
             "propagate": False,
         },
         "urllib3": {
@@ -334,5 +334,9 @@ CELERY_BEAT_SCHEDULE = {
     "cleanup_namespaces": {
         "task": "cleanup_namespaces",
         "schedule": crontab(minute="*/15"),
+    },
+    "collect_events": {
+        "task": "collect_events",
+        "schedule": crontab(minute="*/3"),
     },
 }

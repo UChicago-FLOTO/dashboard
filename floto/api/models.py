@@ -4,6 +4,10 @@ from datetime import datetime
 
 from django.conf import settings
 from django.db import models
+from django.utils.dateparse import parse_datetime
+from django.utils.timezone import make_aware
+
+from floto.api import kubernetes
 
 LOG = logging.getLogger(__name__)
 
@@ -366,6 +370,97 @@ class Event(models.Model):
 
     objects = RelatedJobSoftDeleteManager()
     objects_all = models.Manager()
+
+
+class KubernetesEvent(models.Model):
+    # Basically everything in kubernetes is optional, so everything is nullable
+    uid = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    namespace = models.CharField(max_length=255, null=True, blank=True)
+    event_type = models.CharField(max_length=50, null=True, blank=True)
+    reason = models.CharField(max_length=255, null=True, blank=True)
+    message = models.TextField(null=True, blank=True)
+
+    involved_object_kind = models.CharField(max_length=255, null=True, blank=True)
+    involved_object_name = models.CharField(max_length=255, null=True, blank=True)
+    involved_object_namespace = models.CharField(max_length=255, null=True, blank=True)
+    involved_object_uid = models.CharField(max_length=255, null=True, blank=True)
+
+    event_time = models.DateTimeField(null=True, blank=True)
+    first_timestamp = models.DateTimeField(null=True, blank=True)
+    last_timestamp = models.DateTimeField(null=True, blank=True)
+
+    source_component = models.CharField(max_length=255, null=True, blank=True)
+    source_host = models.CharField(max_length=255, null=True, blank=True)
+
+    count = models.PositiveIntegerField(default=1, null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    job = models.ForeignKey(
+        Job, related_name="kubernetes_events", on_delete=models.CASCADE, null=True, blank=True
+    )
+    device = models.ForeignKey(
+        DeviceData, related_name="kubernetes_events", on_delete=models.CASCADE, null=True, blank=True
+    )
+
+    def __str__(self):
+        return f"{self.event_type} - {self.reason} for {self.involved_object_kind}/{self.involved_object_name}"
+
+    class Meta:
+        ordering = ['-event_time']
+        verbose_name = "Kubernetes Event"
+        verbose_name_plural = "Kubernetes Events"
+
+    @classmethod
+    def from_kubernetes_event(cls, event):
+        def to_datetime(k8s_time):
+            if not k8s_time:
+                return None
+            if isinstance(k8s_time, str):
+                dt = parse_datetime(k8s_time)
+                return make_aware(dt) if dt else None
+            return make_aware(k8s_time) if not k8s_time.tzinfo else k8s_time
+
+        try:
+            job = kubernetes.get_job_from_namespace(event.metadata.namespace)
+        except Exception:
+            job = None
+
+        device = None
+        if event.involved_object.kind.lower() == "node":
+            try:
+                device = DeviceData.objects.get(pk=event.involved_object.name)
+            except DeviceData.DoesNotExist:
+                device = None
+        elif event.involved_object.kind.lower() == "pod":
+            try:
+                # Look up the node for the pod
+                device_pk = kubernetes.get_pod_node(event.involved_object.name, event.metadata.namespace)
+                device = DeviceData.objects.get(pk=device_pk)
+            except DeviceData.DoesNotExist:
+                device = None
+
+        return KubernetesEvent(
+            uid=event.metadata.uid,
+            name=event.metadata.name,
+            namespace=event.metadata.namespace,
+            event_type=event.type,
+            reason=event.reason,
+            message=event.message,
+            involved_object_kind=event.involved_object.kind,
+            involved_object_name=event.involved_object.name,
+            involved_object_namespace=event.involved_object.namespace,
+            involved_object_uid=event.involved_object.uid,
+            event_time=to_datetime(event.event_time),
+            first_timestamp=to_datetime(event.first_timestamp),
+            last_timestamp=to_datetime(event.last_timestamp),
+            source_component=getattr(event.source, 'component', None),
+            source_host=getattr(event.source, 'host', None),
+            count=event.count or 1,
+            job=job,
+            device=device,
+        )
 
 
 class Dataset(CreatedByUserBase):

@@ -17,6 +17,17 @@ def get_namespace_name(job_uuid):
     return f"job-{job_uuid}"
 
 
+def get_job_from_namespace(namespace):
+    if "job-" not in namespace:
+        return None
+    try:
+        return models.Job.objects.get(pk=namespace.split("-", 1)[1])
+    except (models.Job.DoesNotExist, IndexError) as e:
+        LOG.error("couldn't get job for namespace %s", namespace)
+        LOG.exception(e)
+        return None
+
+
 def get_job_name(job_uuid, device_uuid):
     # We need different job names per device, and need length < 64.
     # hexdigest 6 gives a hash of length 12, which means out job name
@@ -101,21 +112,31 @@ def get_namespaces_with_no_pods():
 
 
 def get_job_events(uuid):
+    """Get events for a job - essentially just wrapped kubeneretes events
+    """
+    events = get_kube_events(uuid)
+    sorted(events, key=lambda e: e.first_timestamp)
+    return (
+        {
+            "message": e.message,
+            "created_at": e.first_timestamp,
+            "updated_at": e.last_timestamp,
+            "type": e.type,
+        }
+        for e in events
+    )
+
+
+def get_kube_events(namespace=None):
     events = []
     for config_file in settings.KUBE_CLUSTERS.values():
         config.load_kube_config(config_file=config_file)
         core_api = client.CoreV1Api()
-        event_list = core_api.list_namespaced_event(get_namespace_name(uuid))
-        events.extend(
-            {
-                "message": e.message,
-                "created_at": e.first_timestamp,
-                "updated_at": e.last_timestamp,
-                "type": e.type,
-            }
-            for e in event_list.items
-        )
-    sorted(events, key=lambda e: e["created_at"])
+        if namespace:
+            event_list = core_api.list_namespaced_event(get_namespace_name(namespace))
+        else:
+            event_list = core_api.list_event_for_all_namespaces()
+        events.extend(event_list.items)
     return events
 
 
@@ -431,3 +452,18 @@ def _create_job_for_device(job, device_uuid, job_environment, balena, namespace)
 
     for service in k8s_services:
         core_api.create_namespaced_service(namespace, service)
+
+
+def get_pod_node(pod_name, namespace):
+    for config_file in settings.KUBE_CLUSTERS.values():
+        try:
+            config.load_kube_config(config_file=config_file)
+
+            v1 = client.CoreV1Api()
+            pod = v1.read_namespaced_pod(name=pod_name, namespace=namespace)
+            node_name = pod.spec.node_name
+            if node_name:
+                return node_name
+        except Exception:
+            continue
+    return None
