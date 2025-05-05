@@ -34,6 +34,9 @@ createApp({
       fetch_with_retry(`/api/jobs/${uuid}/logs`, callback=function(json){
         job.value.logs = json
       })
+      fetch_with_retry(`/api/jobs/${uuid}/health`, callback=function(json){
+        job.value.health = json
+      })
     })
     fetch_with_retry(`/api/devices/`, callback=function(json){
       devices.value = json

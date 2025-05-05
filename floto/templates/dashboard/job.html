@@ -8,6 +8,7 @@
       <q-tab name="devices_tab">Devices + Timeslots</q-tab>
       <q-tab name="events_tab">Events</q-tab>
       <q-tab name="logs_tab">Logs</q-tab>
+      <q-tab name="health_tab">Health</q-tab>
     </q-tabs>
     <q-tab-panels v-model="tab">
       <q-tab-panel name="overview_tab">
@@ -132,13 +133,41 @@
             <q-expansion-item
               expand-separator
               :label="container"
-              v-for="(logs, container, index) in containers"
+              v-for="(logs_obj, container, index) in containers"
             >
-              <pre>[[ logs ]]</pre>
+              <pre>[[ logs_obj.logs ]]</pre>
+              <template v-if="logs_obj.error">
+                <span>[[ logs_obj.error ]]</span>
+              </template>
             </q-expansion-item>
           </q-expansion-item>
         </div>
         <div v-empty>Unable to fetch logs</div>
+      </q-tab-panel>
+      <q-tab-panel name="health_tab">
+        <div
+          v-for="(health_obj, device_uuid, index) in job.health"
+          :set="device = devices.find(d => d.uuid == device_uuid)"
+        >
+          <h5>[[device.device_name]] - [[health_obj.pod]]</h5>
+          <ul>
+            <li
+              v-for="(state_obj, container, index) in health_obj.containers"
+            >
+              [[container]]
+              <ul>
+                <li v-for="(details, state, index) in state_obj">
+                  [[state]]
+                  <ul>
+                    <li v-for="(v, k, index) in details">
+                      [[k]] - [[v]]
+                    </li>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        <div v-empty>Unable to fetch health</div>
       </q-tab-panel>
     </q-tab-panels>
   </q-card>

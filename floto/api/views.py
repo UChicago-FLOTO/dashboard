@@ -403,6 +403,10 @@ class JobViewSet(ModelWithOwnerViewSet):
     def logs(self, request, pk):
         return Response(kubernetes.get_job_logs(pk))
 
+    @action(methods=["GET"], detail=True, url_path="health")
+    def health(self, request, pk):
+        return Response(kubernetes.get_pod_health(pk))
+
     def perform_destroy(self, job):
         if not settings.KUBE_READ_ONLY:
             kubernetes.destroy_job(job)
