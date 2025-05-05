@@ -1,139 +1,148 @@
-{% extends 'default.html' %}
-
-{% load static %}
-
-{% block title %} Jobs {% endblock %}
-
-{% block content %}
+{% extends 'default.html' %} {% load static %} {% block title %} Jobs {% endblock %} {% block content %}
 <div class="q-pa-md">
   <h4>Job [[ job.uuid ]]</h4>
 
-  <div class="q-markup-table q-table__container q-table__card q-table--horizontal-separator q-table--no-wrap">
-    <table class="q-table">
-      <tbody>
-        <tr>
-          <td>Created By</td>
-          <td>[[ job.created_by ]]</td>
-        </tr>
-        <tr>
-          <td>Created At</td>
-          <td>[[ job.created_at ]]</td>
-        </tr>
-        <tr>
-          <td>Is Public</td>
-          <td>[[ job.is_public ]]</td>
-        </tr>
-        <tr>
-          <td>Application</td>
-          <td>
-            <div>[[ application.name ]] ([[ application.uuid ]]) </div>
-            <ul>
-              <li 
-                v-for="service_obj in application.services"
-                :set="service = services.find(service => service.uuid === service_obj.service)">
-                [[ service.container_ref ]] ([[ service.uuid ]])
-              </li>
-            </ul>  
-          </td>
-        </tr>
-        <tr>
-          <td>Devices</td>
-          <td>
-            <ul>
-              <li 
-                v-for="device_uuid_obj in job.devices" 
-                :set="device = devices.find(device => device.uuid == device_uuid_obj.device_uuid)">
-                <a :href='`/dashboard/devices/${device_uuid_obj.device_uuid}`' v-if="device">
-                  [[ device.device_name ]] ([[ device.uuid ]])
-                </a>
-              </li>
-            </ul>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            Time Slots
-          </td>
-          <td>
-            <ul>
-              <li v-for="ts_obj in job.computed_timings" >
-                [[ ts_obj.string ]]
-                <ul>
-                  <li v-for="event in ts_obj.events">
-                    [[ event.status ]] - [[ event.time ]]
-                  </li>
-                </ul>
-                <p>Scheduled at:</p>
-                <ul>
-                  <li 
-                    v-for="ts in ts_obj.timeslots" 
-                    :set="device = devices.find(device => device.uuid == ts.device_uuid)">
-                    <span v-if="device">[[ device.device_name ]] </span>
-                    <ul>
-                      <li>From [[ ts.start ]]</li>
-                      <li>To [[ ts.stop ]]</li>
-                    </ul>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            Environment
-          </td>
-          <td>
-            <ul>
-              <li v-for="(value, name, index) in job.parsed_env">
-                [[ name ]]: [[ value ]]
-              </li>
-            </ul>  
-          </td>
-        </tr>
-        <tr>
-          <td>
-            Events
-          </td>
-          <td>
-            <ul>
-              <li v-for="e in job.events">
-                [[ e.created_at ]]: [[ e.type ]] [[e.message]]
-              </li>
-            </ul>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            Logs
-          </td>
-          <td>
-            <div 
-              v-for="(containers, device_uuid, index) in job.logs"
-              :set="device = devices.find(d => d.uuid == device_uuid)"
+  <q-card>
+    <q-tabs v-model="tab" bg-color="primary">
+      <q-tab name="overview_tab">Overview</q-tab>
+      <q-tab name="devices_tab">Devices + Timeslots</q-tab>
+      <q-tab name="events_tab">Events</q-tab>
+      <q-tab name="logs_tab">Logs</q-tab>
+    </q-tabs>
+    <q-tab-panels v-model="tab">
+      <q-tab-panel name="overview_tab">
+        <q-markup-table flat bordered wrap-cells>
+          <template v-slot:default>
+            <tbody>
+              <tr>
+                <td>Created By</td>
+                <td>[[ job.created_by ]]</td>
+              </tr>
+              <tr>
+                <td>Created At</td>
+                <td>[[ job.created_at ]]</td>
+              </tr>
+              <tr>
+                <td>Is Public</td>
+                <td>[[ job.is_public ]]</td>
+              </tr>
+              <tr>
+                <td>Application</td>
+                <td>
+                  <div>[[ application.name ]] ([[ application.uuid ]])</div>
+                  <ul>
+                    <li
+                      v-for="service_obj in application.services"
+                      :set="service = services.find(service => service.uuid === service_obj.service)"
+                    >
+                      <template v-if="service">
+                        [[ service.container_ref ]] ([[ service.uuid ]])
+                      </template>
+                    </li>
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <td>Environment</td>
+                <td>
+                  <ul>
+                    <li v-for="(value, name, index) in job.parsed_env">
+                      [[ name ]]: [[ value ]]
+                    </li>
+                  </ul>
+                </td>
+              </tr>
+            </tbody>
+          </template>
+        </q-markup-table>
+      </q-tab-panel>
+      <q-tab-panel name="devices_tab">
+        <h5>Devices</h5>
+        <ul>
+          <li
+            v-for="device_uuid_obj in job.devices"
+            :set="device = devices.find(device => device.uuid == device_uuid_obj.device_uuid)"
+          >
+            <a
+              :href="`/dashboard/devices/${device_uuid_obj.device_uuid}`"
+              v-if="device"
             >
-              <q-expansion-item
-                expand-separator
-                :label="device.device_name"
-                :caption="device_uuid"
-              >
-                <q-expansion-item
-                  expand-separator
-                  :label="container"
-                  v-for="(logs, container, index) in containers"
-                >
-                  <pre>[[ logs ]]</pre>
-                </q-expansion-item>
-              </q-expansion-item>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-{% endblock %}
+              [[ device.device_name ]] ([[ device.uuid ]])
+            </a>
+          </li>
+        </ul>
 
-{% block scripts %}
+        <h5>Time Slots</h5>
+        <ul>
+          <li v-for="ts_obj in job.computed_timings">
+            [[ ts_obj.string ]]
+            <ul>
+              <li v-for="event in ts_obj.events">
+                [[ event.status ]] - [[ event.time ]]
+              </li>
+            </ul>
+            <p>Scheduled at:</p>
+            <ul>
+              <li
+                v-for="ts in ts_obj.timeslots"
+                :set="device = devices.find(device => device.uuid == ts.device_uuid)"
+              >
+                <span v-if="device">[[ device.device_name ]] </span>
+                <ul>
+                  <li>From [[ ts.start ]]</li>
+                  <li>To [[ ts.stop ]]</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </q-tab-panel>
+      <q-tab-panel name="events_tab">
+        <q-markup-table flat bordered wrap-cells>
+          <template v-slot:default>
+            <thead>
+              <tr>
+                <th class="text-left">Time</th>
+                <th class="text-left">Type</th>
+                <th class="text-left">Message</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="event in job.events" :key="event.uid">
+                <td class="text-left">
+                  [[ event.event_time ? event.event_time : `~${event.created_at}` ]]
+                </td>
+                <td class="text-left">[[ event.event_type ]]</td>
+                <td class="text-left">[[ event.message ]]</td>
+              </tr>
+            </tbody>
+          </template>
+        </q-markup-table>
+      </q-tab-panel>
+      <q-tab-panel name="logs_tab">
+        <div
+          v-for="(containers, device_uuid, index) in job.logs"
+          :set="device = devices.find(d => d.uuid == device_uuid)"
+        >
+          <q-expansion-item
+            expand-separator
+            :label="device.device_name"
+            :caption="device_uuid"
+          >
+            <q-expansion-item
+              expand-separator
+              :label="container"
+              v-for="(logs, container, index) in containers"
+            >
+              <pre>[[ logs ]]</pre>
+            </q-expansion-item>
+          </q-expansion-item>
+        </div>
+        <div v-empty>Unable to fetch logs</div>
+      </q-tab-panel>
+    </q-tab-panels>
+  </q-card>
+</div>
+{% endblock %} {% block scripts %}
 <script src="{% static 'job.js' %}"></script>
 {% endblock %}
