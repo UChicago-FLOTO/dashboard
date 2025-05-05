@@ -78,7 +78,7 @@
             [[ ts_obj.string ]]
             <ul>
               <li v-for="event in ts_obj.events">
-                [[ event.status ]] - [[ event.time ]]
+                [[ event.status === 'DONE' ? 'DEPLOYED' : event.status ]] - [[ event.time ]]
               </li>
             </ul>
             <p>Scheduled at:</p>
