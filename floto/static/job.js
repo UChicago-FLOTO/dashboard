@@ -7,6 +7,8 @@ createApp({
     const application = ref({})
     const devices = ref([])
     const services = ref([])
+    let tab = ref("overview_tab")
+
 
     let uuid = window.location.pathname.split("/")[3]
     fetch_with_retry(`/api/jobs/${uuid}`, callback=function(json){
@@ -41,6 +43,6 @@ createApp({
     })
 
     return {
-      job, application, devices, services,
+      job, application, devices, services, tab
     }
 }}).use(Quasar).mount('#app')

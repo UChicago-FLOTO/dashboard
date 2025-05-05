@@ -7,44 +7,44 @@
 {% block content %}
 
 <div class="device_header">
-  <h3>Device [[ device.value.device_name ]]</h3>
+  <h3>Device [[ state.device.device_name ]]</h3>
 
   <div class="flex_container">
     <table class="device_summary">
       <tr>
         <th>Name: </th>
-        <td>[[ device.value.device_name ]]</td>
+        <td>[[ state.device.device_name ]]</td>
       </tr>
       <tr>
         <th>UUID: </th>
-        <td>[[ device.value.uuid ]]</td>
+        <td>[[ state.device.uuid ]]</td>
       </tr>
     </table>
     <div class="bars">
       <table>
         <tr>
-          <td>Temp: [[ device.value.cpu_temp ]]°C</td>
+          <td>Temp: [[ state.device.cpu_temp ]]°C</td>
           <td>
-            <q-linear-progress :value="device.value.cpu_temp_percentage" color="white" :height="12" class="q-mt-md" />     
+            <q-linear-progress :value="state.device.cpu_temp_percentage" color="white" :height="12" class="q-mt-md" />     
           </td>
         </tr>
         <tr>
-          <td>CPU: [[ device.value.cpu_usage ]]%</td>
+          <td>CPU: [[ state.device.cpu_usage ]]%</td>
           <td>
-            <q-linear-progress :value="device.value.cpu_usage_percentage" color="white" :height="12" class="q-mt-md" />     
+            <q-linear-progress :value="state.device.cpu_usage_percentage" color="white" :height="12" class="q-mt-md" />     
 
           </td>
         </tr>
         <tr>
-          <td>Memory: [[ device.value.memory_percentage*100 ]]%</td>
+          <td>Memory: [[ state.device.memory_percentage*100 ]]%</td>
           <td>
-            <q-linear-progress :value="device.value.memory_percentage"  color="white" :height="12" class="q-mt-md" />     
+            <q-linear-progress :value="state.device.memory_percentage"  color="white" :height="12" class="q-mt-md" />     
           </td>
         </tr>
         <tr>
-          <td class="bars_label">Storage: [[ device.value.storage_percentage*100 ]]%</td>
+          <td class="bars_label">Storage: [[ state.device.storage_percentage*100 ]]%</td>
           <td>
-            <q-linear-progress :value="device.value.storage_percentage" color="white" :height="12" class="q-mt-md" />     
+            <q-linear-progress :value="state.device.storage_percentage" color="white" :height="12" class="q-mt-md" />     
           </td>
         </tr>
       </table>
@@ -59,6 +59,7 @@
     >
     <q-tab name="overview_tab">Overview</q-tab>
     <q-tab name="command_tab">Command</q-tab>
+    <q-tab name="event_tab">Events</q-tab>
     <q-tab name="logs_tab">Logs</q-tab>
   </q-tabs>
   <q-tab-panels v-model="tab">
@@ -68,32 +69,32 @@
           <tr>
             <th class="text-left">Heartbeat State</th>
             <td class="text-left">
-              [[ device.value.api_heartbeat_state ]] since [[ device.value.last_connectivity_event ]]
+              [[ state.device.api_heartbeat_state ]] since [[ state.device.last_connectivity_event ]]
             </td>
           </tr>
           <tr>
             <th class="text-left">VPN connected</th>
             <td class="text-left">
-              [[ device.value.is_online ]] since [[ device.value.last_vpn_event ]]
+              [[ state.device.is_online ]] since [[ state.device.last_vpn_event ]]
             </td>
           </tr>
           <tr>
             <th class="text-left">Status</th>
-            <td class="text-left">[[ device.value.status ]]</td>
+            <td class="text-left">[[ state.device.status ]]</td>
           </tr>
           <tr>
             <th class="text-left">OS Version</th>
-            <td class="text-left">[[ device.value.os_version ]] </td>
+            <td class="text-left">[[ state.device.os_version ]] </td>
           </tr>
           <tr>
             <th class="text-left">Supervisor Version</th>
-            <td class="text-left">[[ device.value.supervisor_version ]] </td>
+            <td class="text-left">[[ state.device.supervisor_version ]] </td>
           </tr>
           <tr>
             <th class="text-left">IP address</th>
             <td>
               <ul>
-                <li v-for="ip in device.value.ip_address">[[ ip ]]</li>
+                <li v-for="ip in state.device.ip_address">[[ ip ]]</li>
               </ul>
             </td>
           </tr>
@@ -101,7 +102,7 @@
             <th class="text-left">MAC address</th>
             <td>
               <ul>
-                <li v-for="ip in device.value.mac_address">[[ ip ]]</li>
+                <li v-for="ip in state.device.mac_address">[[ ip ]]</li>
               </ul>
             </td>
           </tr>
@@ -109,9 +110,9 @@
         <div class="col-6">
           <h5>Environment</h5>
           <table class="table">
-            <tr v-for="env_obj in environment.value">
+            <tr v-for="env_obj in state.environment">
               <th class="text-left">[[ env_obj.name ]]</th>
-              <td class="text-left">[[ env_obj.value ]]</td>
+              <td class="text-left">[[ state.env_obj ]]</td>
             </tr>
           </table>
           <h5>Peripherals</h5>
@@ -122,7 +123,7 @@
               <th class="text-left">Docs</th>
               <th class="text-left">Configuration</th>
             </tr>
-            <tr v-for="p in device.value.peripherals">
+            <tr v-for="p in state.device.peripherals">
               <td class="text-left">[[ p.peripheral.name ]]</td>
               <td class="text-left">[[ p.peripheral.schema.type ]]</td>
               <td class="text-left"><a target="_blank" :href="[[p.peripheral.documentation_url]]">Link</a></td>
@@ -149,14 +150,14 @@
             icon-right="add" no-caps flat dense color="primary"
             @click="add_peripheral_dialog = true"
           >Add new peripheral</q-btn>
-          <div v-if="device.value.peripheral_resources">
+          <div v-if="state.device.peripheral_resources">
             <h6>Detected Peripherals</h6>
             <p>
               We have detected that the following peripheral types might be
               set up on your device.
             </p>
             <ul>
-              <li v-for="p in device.value.peripheral_resources">
+              <li v-for="p in state.device.peripheral_resources">
                 [[ p ]]
               </li>
             </ul>
@@ -165,7 +166,7 @@
       </div>
     </q-tab-panel>
     <q-tab-panel name="command_tab">
-      <div v-if="device.value.is_online">
+      <div v-if="state.device.is_online">
         <div>
           <q-form @submit.prevent="run_command" class="row">
             <q-input
@@ -188,6 +189,41 @@
         <p>Device is offline, cannot run commands</p>
       </div>
     </q-tab-panel>
+    <q-tab-panel name="event_tab">
+      <template v-if="state.events_loading">
+        <q-circular-progress
+          v-if="logs_loading"   
+          size="100px"
+          indeterminate
+          rounded
+        ></q-circular-progress>
+      </template>      
+      <q-markup-table flat bordered wrap-cells>
+        <template v-slot:default>
+        <thead>
+          <tr>
+            <th class="text-left">Time</th>
+            <th class="text-left">Type</th>
+            <th class="text-left">Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="event in state.events" :key="event.uid">
+            <td class="text-left">
+              [[ event.event_time ? event.event_time : `~${event.created_at}` ]]
+            </td>
+            <td class="text-left">
+              [[ event.event_type ]]
+            </td>
+            <td class="text-left">
+              [[ event.message ]]
+            </td>
+          </tr>
+        </tbody>
+        </template>
+      </q-markup-table>
+    </q-tab-panel>
+
     <q-tab-panel name="logs_tab">
       <template v-if="logs_loading">
         <q-circular-progress
@@ -199,7 +235,7 @@
       </template>
       <template v-else>
         <pre>
-<template v-for="entry in logs.value">[[ entry.message ]]
+<template v-for="entry in state.logs">[[ entry.message ]]
 </template>
         </pre>            
       </template>
@@ -269,7 +305,7 @@
 </q-dialog>
 
 
-<div v-if="device_loading" class="center_of_screen">
+<div v-if="state.device_loading" class="center_of_screen">
   <q-circular-progress
     size="100px"
     indeterminate
