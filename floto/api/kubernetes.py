@@ -4,6 +4,7 @@ import json
 from kubernetes import client, config
 from django.conf import settings
 import hashlib
+from concurrent import futures
 
 from floto.api import models
 
@@ -195,22 +196,70 @@ def get_job_logs(uuid):
         config.load_kube_config(config_file=config_file)
         core_api = client.CoreV1Api()
         pod_list = core_api.list_namespaced_pod(get_namespace_name(uuid))
-        for pod in pod_list.items:
-            for container in pod.spec.containers:
-                try:
-                    logs[pod.spec.node_name][container.image] = (
-                        core_api.read_namespaced_pod_log(
-                            pod.metadata.name,
-                            get_namespace_name(uuid),
-                            container=container.name,
-                        )
+        ns = get_namespace_name(uuid)
+
+        def fetch_logs(pod, container):
+            try:
+                log_data = {
+                    "logs": core_api.read_namespaced_pod_log(
+                        pod.metadata.name,
+                        ns,
+                        container=container.name,
+                        tail_lines=100,
                     )
-                except Exception:
-                    # Device probably went down
-                    logs[pod.spec.node_name][container.image] = (
-                        "Error getting logs for this container."
-                    )
+                }
+            except Exception as e:
+                LOG.exception(e)
+                log_data = {
+                    "error": "Error getting logs for this container."
+                }
+
+            # Note container.image is not the same as pod.spec.containers[0].image
+            # but image_id seems to be a better
+            return pod.spec.node_name, container.image, log_data
+        with futures.ThreadPoolExecutor(max_workers=20) as executor:
+            log_futures = [
+                executor.submit(fetch_logs, pod, container)
+                for pod in pod_list.items
+                for container in pod.spec.containers
+            ]
+            for future in futures.as_completed(log_futures):
+                node_name, image, log_data = future.result()
+                logs[node_name][image] = log_data
+
     return logs
+
+
+def get_pod_health(uuid):
+    """
+    Returns a map of
+    {
+        device: {
+            containers: {
+                image: V1ContainerState
+            }
+            pod: Status
+        }
+    }
+    """
+    health = defaultdict(dict)
+    for config_file in settings.KUBE_CLUSTERS.values():
+        config.load_kube_config(config_file=config_file)
+        core_api = client.CoreV1Api()
+        pod_list = core_api.list_namespaced_pod(get_namespace_name(uuid))
+        for pod in pod_list.items:
+            health[pod.spec.node_name]["pod"] = pod.status.phase
+            health[pod.spec.node_name]["containers"] = defaultdict(dict)
+            for container in pod.status.container_statuses:
+                # Note container.image is not the same as pod.spec.containers[0].image
+                # but image_id seems to be a better
+                try:
+                    for k, v in container.state.to_dict().items():
+                        if v:
+                            health[pod.spec.node_name]["containers"][container.image_id][k] = v
+                except Exception:
+                    health[pod.spec.node_name]["containers"][container.image_id] = {}
+    return health
 
 
 def prepare_deployment(job):
