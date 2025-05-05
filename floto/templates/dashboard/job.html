@@ -135,7 +135,7 @@
               :label="container"
               v-for="(logs_obj, container, index) in containers"
             >
-              <pre>[[ logs_obj.logs ]]</pre>
+              <pre v-if="logs_obj.logs">[[ logs_obj.logs ]]</pre>
               <template v-if="logs_obj.error">
                 <span>[[ logs_obj.error ]]</span>
               </template>
