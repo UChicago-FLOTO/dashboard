@@ -142,7 +142,7 @@
             </q-expansion-item>
           </q-expansion-item>
         </div>
-        <div v-empty>Unable to fetch logs</div>
+        <div v-if="job.logs">Unable to fetch logs</div>
       </q-tab-panel>
       <q-tab-panel name="health_tab">
         <div
@@ -167,7 +167,7 @@
             </li>
           </ul>
         </div>
-        <div v-empty>Unable to fetch health</div>
+        <div v-if="!job.logs">Unable to fetch health</div>
       </q-tab-panel>
     </q-tab-panels>
   </q-card>
