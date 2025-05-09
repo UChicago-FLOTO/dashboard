@@ -221,25 +221,25 @@
             <tr>
               <td>Temp: [[ device_overview.cpu_temp ]]°C</td>
               <td>
-                <q-linear-progress :value="(device_overview.cpu_temp / 100.0)" color="blue" :height="12" class="q-mt-md" />     
+                <q-linear-progress :value="Number(device_overview.cpu_temp / 100.0)" color="blue" :height="12" class="q-mt-md" />     
               </td>
             </tr>
             <tr>
               <td>CPU: [[ device_overview.cpu_usage ]]%</td>
               <td>
-                <q-linear-progress :value="(device_overview.cpu_usage / 100.0)" color="blue" :height="12" class="q-mt-md" />     
+                <q-linear-progress :value="Number(device_overview.cpu_usage / 100.0)" color="blue" :height="12" class="q-mt-md" />     
               </td>
             </tr>
             <tr>
               <td>Memory: [[ (device_overview.memory_usage / device_overview.memory_total).toFixed(2)*100 ]]%</td>
               <td>
-                <q-linear-progress :value="(device_overview.memory_usage / device_overview.memory_total).toFixed(2)"  color="blue" :height="12" class="q-mt-md" />     
+                <q-linear-progress :value="Number(device_overview.memory_usage / device_overview.memory_total).toFixed(2)"  color="blue" :height="12" class="q-mt-md" />     
               </td>
             </tr>
             <tr>
               <td>Storage: [[ (device_overview.storage_usage / device_overview.storage_total).toFixed(2)*100 ]]%</td>
               <td>
-                <q-linear-progress :value="(device_overview.storage_usage / device_overview.storage_total).toFixed(2)"  color="blue" :height="12" class="q-mt-md" />     
+                <q-linear-progress :value="Number(device_overview.storage_usage / device_overview.storage_total).toFixed(2)"  color="blue" :height="12" class="q-mt-md" />     
               </td>
             </tr>
           </table>

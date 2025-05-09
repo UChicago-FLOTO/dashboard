@@ -160,11 +160,11 @@ class JobAdmin(SoftDeleteAdmin):
         "cleaned_up",
     ]
     list_filter = [
+        "cleaned_up",
         "deleted",
         "created_at",
         "created_by",
         "application",
-        "cleaned_up",
         JobDeviceFilter,
     ]
     inlines = (JobDeviceInline, JobTimeslotInline, DeviceTimeslotInline)

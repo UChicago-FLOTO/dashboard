@@ -259,7 +259,6 @@ createApp({
         { label: "Public?", field: "is_public", name: "is_public", sortable: true, align: "left" },
         { label: "Application", field: "application", name: "application", align: "left" },
         { label: "Devices", field: "Devices", name: "devices", align: "left" },
-        { label: "Environment", field: "environment", name: "environment", align: "left" },
         { label: "Timings", field: "timings", name: "timings", align: "left" },
         { name: 'action', label: 'Action', field: 'action' },
       ],

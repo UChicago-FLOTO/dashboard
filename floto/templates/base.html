@@ -24,38 +24,38 @@
       {% block page_main %}{% endblock %}
 
       {% include "footer.html" %}
+      <script>
+        function get_user_email(){
+          // this function generated in a django template
+          {% if user.is_authenticated %}
+          return "{{user.email}}"
+          {% else %}
+          return undefined
+          {% endif %}
+        }
+        function get_active_project(){
+          // this function generated in a django template
+          {% if user.is_authenticated %}
+          return "{{selected_project.uuid}}"
+          {% else %}
+          return undefined
+          {% endif %}
+        }
+      </script>
+      <script src="{%static 'vendor/vue.3.3.4.js' %}"></script>
+      <script src="https://cdn.jsdelivr.net/npm/quasar@2.12.6/dist/quasar.umd.prod.js"></script>
+      <script src="{% static 'util.js' %}"></script>
+      <script src="{% static 'environment_component.js' %}"></script>
+      <script src="{% static 'timing_component.js' %}"></script>
+      <script>
+        FLOTO_CONFIG = {
+          // TODO this is a second place configuration is done in.
+          // This could be replaced with a context processor to add
+          // this info from settings.py
+          default_fleet: "floto-k3s",
+        }
+      </script>
+      {% block scripts %}{% endblock %}
     </div>
-    <script>
-      function get_user_email(){
-        // this function generated in a django template
-        {% if user.is_authenticated %}
-        return "{{user.email}}"
-        {% else %}
-        return undefined
-        {% endif %}
-      }
-      function get_active_project(){
-        // this function generated in a django template
-        {% if user.is_authenticated %}
-        return "{{selected_project.uuid}}"
-        {% else %}
-        return undefined
-        {% endif %}
-      }
-    </script>
-    <script src="{%static 'vendor/vue.3.3.4.js' %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/quasar@2.12.6/dist/quasar.umd.prod.js"></script>
-    <script src="{% static 'util.js' %}"></script>
-    <script src="{% static 'environment_component.js' %}"></script>
-    <script src="{% static 'timing_component.js' %}"></script>
-    <script>
-      FLOTO_CONFIG = {
-        // TODO this is a second place configuration is done in.
-        // This could be replaced with a context processor to add
-        // this info from settings.py
-        default_fleet: "floto-k3s",
-      }
-    </script>
-    {% block scripts %}{% endblock %}
   </body>
 </html>

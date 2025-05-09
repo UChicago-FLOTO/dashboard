@@ -219,6 +219,8 @@ LOGGING = {
     },
 }
 
+APPEND_SLASH = True
+
 # Auth
 AUTH_USER_MODEL = "floto_auth.KeycloakUser"
 

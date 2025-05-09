@@ -25,26 +25,26 @@
         <tr>
           <td>Temp: [[ state.device.cpu_temp ]]°C</td>
           <td>
-            <q-linear-progress :value="state.device.cpu_temp_percentage" color="white" :height="12" class="q-mt-md" />     
+            <q-linear-progress :value="Number(state.device.cpu_temp_percentage)" color="white" :height="12" class="q-mt-md" />     
           </td>
         </tr>
         <tr>
           <td>CPU: [[ state.device.cpu_usage ]]%</td>
           <td>
-            <q-linear-progress :value="state.device.cpu_usage_percentage" color="white" :height="12" class="q-mt-md" />     
+            <q-linear-progress :value="Number(state.device.cpu_usage_percentage)" color="white" :height="12" class="q-mt-md" />     
 
           </td>
         </tr>
         <tr>
           <td>Memory: [[ state.device.memory_percentage*100 ]]%</td>
           <td>
-            <q-linear-progress :value="state.device.memory_percentage"  color="white" :height="12" class="q-mt-md" />     
+            <q-linear-progress :value="Number(state.device.memory_percentage)"  color="white" :height="12" class="q-mt-md" />     
           </td>
         </tr>
         <tr>
           <td class="bars_label">Storage: [[ state.device.storage_percentage*100 ]]%</td>
           <td>
-            <q-linear-progress :value="state.device.storage_percentage" color="white" :height="12" class="q-mt-md" />     
+            <q-linear-progress :value="Number(state.device.storage_percentage)" color="white" :height="12" class="q-mt-md" />     
           </td>
         </tr>
       </table>
