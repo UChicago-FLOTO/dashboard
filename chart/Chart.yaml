@@ -1,0 +1,16 @@
+apiVersion: v2
+name: floto
+description: Helm chart for Floto (web + celery), with optional MariaDB/Redis
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+
+dependencies:
+  - name: mariadb
+    repository: https://charts.bitnami.com/bitnami
+    version: X.Y.Z           # pin a tested version
+    condition: mariadb.enabled
+  - name: redis
+    repository: https://charts.bitnami.com/bitnami
+    version: X.Y.Z           # pin a tested version
+    condition: redis.enabled

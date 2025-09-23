@@ -1,0 +1,67 @@
+image:
+  repository: floto-dev
+  tag: latest
+  pullPolicy: IfNotPresent
+
+floto:
+  port: 8000                 # maps your ${FLOTO_PORT}
+  replicas: 1
+
+env:                          # non-sensitive env (ConfigMap material)
+  - name: DJANGO_SETTINGS_MODULE
+    value: floto.settings
+
+secrets:                      # sensitive env (Secret material)
+  DB_PASSWORD: ""
+  DB_USER: ""
+  DB_NAME: ""
+  DB_ROOT_PASSWORD: ""
+
+persistence:
+  media:
+    enabled: true
+    size: 5Gi
+  config:
+    enabled: true
+    size: 1Gi
+  static:
+    enabled: true
+    size: 1Gi
+
+mariadb:
+  enabled: true               # flip to false to use external DB
+  auth:
+    rootPassword: ""
+    username: ""
+    password: ""
+    database: ""
+  primary:
+    persistence:
+      enabled: true
+      size: 5Gi
+
+redis:
+  enabled: true               # flip to false to use external Redis
+  architecture: standalone
+  master:
+    persistence:
+      enabled: true
+      size: 1Gi
+
+externalDatabase:
+  enabled: false
+  host: ""
+  port: 3306
+  database: ""
+  username: ""
+  passwordSecretRef:
+    name: ""                  # k8s Secret name
+    key: ""                   # key inside that Secret
+
+externalRedis:
+  enabled: false
+  host: ""
+  port: 6379
+  passwordSecretRef:
+    name: ""
+    key: ""
